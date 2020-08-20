@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageIconUrl />
+    <Authors>Open Logic LLC Contributors</Authors>
+    <Company>Open Logic LLC</Company>
+    <RepositoryUrl>https://github.com/openlogicllc/seaq</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/openlogicllc/seaq</PackageProjectUrl>
+    <PackageTags>seaq elasticsearch</PackageTags>
+    <PackageLicenseFile>LICENSE.TXT</PackageLicenseFile>
+    <Description>Seaq, an application search solution based on Elasticsearch.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MessagePack" Version="2.1.90" />
+    <PackageReference Include="Nest" Version="7.8.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Serilog" Version="2.9.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Queries\Comparators\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\.assets\images\icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\..\LICENSE.TXT">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
