@@ -59,9 +59,9 @@ jobs:
       - name: pack
         run: |
           dotnet pack src/$PROJECT_NAME.sln
-          --include-source
-          --include-symbols
           --no-build
+          --include-symbols
+          --include-source
           --configuration $ENV
           /p:Version=$VERSION
           /p:SymbolPackageFormat=snupkg
