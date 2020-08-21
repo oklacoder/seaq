@@ -3,11 +3,11 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <PackageIcon>icon.png</PackageIcon>
+    <PackageIcon></PackageIcon>
     <PackageIconUrl />
-    <Authors>Open Logic LLC Contributors</Authors>
-    <Company>Open Logic LLC</Company>
-    <RepositoryUrl>https://github.com/openlogicllc/seaq</RepositoryUrl>
+    <Authors>oklacoder</Authors>
+    <Company></Company>
+    <RepositoryUrl>https://github.com/oklacoder/seaq</RepositoryUrl>
     <PackageProjectUrl>https://github.com/openlogicllc/seaq</PackageProjectUrl>
     <PackageTags>seaq elasticsearch</PackageTags>
     <PackageLicenseFile>LICENSE.TXT</PackageLicenseFile>
@@ -27,10 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\.assets\images\icon.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
     <None Include="..\..\LICENSE.TXT">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
