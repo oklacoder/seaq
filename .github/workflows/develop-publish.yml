@@ -9,7 +9,7 @@ env:
   ENV: Debug
   PROJECT_ROOT: 'Seaq'
   PROJECT_NAME: 'Seaq'
-  SEMVER: '0.0.1'
+  SEMVER: '0.0.2'
   SUFFIX: 'beta'
   BRANCH: ''
   VERSION: ''
@@ -57,7 +57,15 @@ jobs:
         shell: bash
 
       - name: pack
-        run: dotnet pack src/$PROJECT_NAME.sln --no-build --include-symbols --include-source --configuration $ENV /p:Version=$VERSION /p:SymbolPackageFormat=snupkg --output staging/nupkg
+        run: |
+          dotnet pack src/$PROJECT_NAME.sln
+          --include-source
+          --include-symbols
+          --no-build
+          --configuration $ENV
+          /p:Version=$VERSION
+          /p:SymbolPackageFormat=snupkg
+          --output staging/nupkg
         shell: bash
 
       - name: show staging files
