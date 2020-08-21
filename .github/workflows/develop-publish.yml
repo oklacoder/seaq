@@ -57,15 +57,7 @@ jobs:
         shell: bash
 
       - name: pack
-        run: |
-          dotnet pack src/$PROJECT_NAME.sln
-          --no-build
-          --include-symbols
-          --include-source
-          --configuration $ENV
-          /p:Version=$VERSION
-          /p:SymbolPackageFormat=snupkg
-          --output staging/nupkg
+        run: dotnet pack src/$PROJECT_NAME.sln --no-build --include-symbols --include-source --configuration $ENV /p:Version=$VERSION /p:SymbolPackageFormat=snupkg --output staging/nupkg
         shell: bash
 
       - name: show staging files
