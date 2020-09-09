@@ -20,7 +20,7 @@ namespace Seaq.Elasticsearch
 
         public static class Fields
         {
-            public const string SortField = "sort";
+            public const string LowerField = "lower";
             public const string KeywordField = "keyword";
         }
 

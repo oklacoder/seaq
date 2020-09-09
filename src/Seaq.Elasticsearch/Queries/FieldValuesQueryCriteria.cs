@@ -40,7 +40,7 @@ namespace Seaq.Elasticsearch.Queries
         {
             var schemas = cluster.GetStoreSchemas(StoreIdNames.ToArray());
 
-            AggregatableFields = schemas?.SelectMany(x => x.GetAggregatableFieldNames(_fieldNameUtilities, FieldName))?.ToArray() ?? new string[] { };
+            AggregatableFields = schemas?.SelectMany(x => x.GetSortableFieldNames(_fieldNameUtilities, FieldName))?.ToArray() ?? new string[] { };
                 
         }
 
@@ -76,10 +76,10 @@ namespace Seaq.Elasticsearch.Queries
         {
             var search = new QueryContainerDescriptor<T>();
 
-            search.Bool(b => b
-                .Filter(f => f
-                    .Bool(fb =>
-                        GetBoolQueryForFieldValues<T>())));
+            //search.Bool(b => b
+            //    .Filter(f => f
+            //        .Bool(fb =>
+            //            GetBoolQueryForFieldValues<T>())));
 
             return search;
         }
@@ -106,7 +106,9 @@ namespace Seaq.Elasticsearch.Queries
             {
                 returnVal.Terms(key, t => t
                     .Field(key)
+                    .Size(10)
                     .MinimumDocumentCount(1)
+                    .Include($".*{QueryText.ToLowerInvariant()}.*")//need this to be case insensitive
                     .Order(o => o.KeyAscending().CountDescending()));
             }
 

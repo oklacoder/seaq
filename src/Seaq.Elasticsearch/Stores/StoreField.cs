@@ -36,12 +36,17 @@ namespace Seaq.Elasticsearch.Stores
 
         public bool? IsKeywordField => Name.Contains(WellKnownKeys.Fields.KeywordField, System.StringComparison.OrdinalIgnoreCase);
 
-        public bool? IsSortField => Name.Contains(WellKnownKeys.Fields.SortField, System.StringComparison.OrdinalIgnoreCase);
+        public bool? IsSortField => Name.Contains(WellKnownKeys.Fields.LowerField, System.StringComparison.OrdinalIgnoreCase);
 
         public string[] GetKeywordFieldNames => 
             IsKeywordField == true ? 
                 new[] { Name } : 
                 Fields?.SelectMany(x => x?.GetKeywordFieldNames)?.ToArray() ?? new string[] { };
+
+        public string[] GetSortFieldNames =>
+            IsSortField == true ?
+                new[] { Name } :
+                Fields?.SelectMany(x => x?.GetSortFieldNames)?.ToArray() ?? new string[] { };
 
         public string GetBoostedFieldName => Boost.HasValue ? $"{Name}^{Boost}" : Name;
 

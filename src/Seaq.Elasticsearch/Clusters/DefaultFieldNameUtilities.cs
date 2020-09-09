@@ -26,7 +26,7 @@ namespace Seaq.Elasticsearch.Queries
             return GetElasticPropertyName(
                 type,
                 propertyName,
-                WellKnownKeys.Fields.SortField);
+                WellKnownKeys.Fields.LowerField);
         }
 
         public string GetElasticPropertyNameWithoutSuffix(

@@ -105,6 +105,31 @@ namespace Seaq.Elasticsearch.Stores
                 new string[] { };
         }
 
+        public string[] GetSortableFieldNames()
+        {
+            return Fields?
+                .Where(x => x.IsFilterable == true)?
+                .SelectMany(x => x?.GetSortFieldNames)?
+                .ToArray() ??
+                new string[] { };
+        }
+
+        public string[] GetSortableFieldNames(IFieldNameUtilities fieldNameUtilities, params string[] fieldNames)
+        {
+            var type = fieldNameUtilities.GetSearchableType(this.StoreType);
+            var fns = fieldNames.Select(x => fieldNameUtilities.GetElasticPropertyNameWithoutSuffix(type, x));
+            return Fields?
+                .Where(x => x?.IsFilterable == true &&
+                    //fns.Any(fn => fn.Equals(x?.Name, StringComparison.OrdinalIgnoreCase))
+                    fns.Any(fn => x?.FieldTree?.Any(z => z.Equals(fn, StringComparison.OrdinalIgnoreCase)) == true)
+                )
+                .SelectMany(x => x.GetSortFieldNames)
+                .ToArray() ??
+                new string[] { };
+        }
+
+
+
         public string[] GetAllBoostedFieldNames()
         {
             return Fields?

@@ -64,7 +64,7 @@ namespace Seaq.Elasticsearch.Tests
             var buckets = result.Buckets;
 
             var expectedCount = documents.Where(x => x.LastName == tester.LastName).Count();
-            var actualCount = buckets.FirstOrDefault(x => x.Key.Contains(nameof(Person.LastName)))?.Values.FirstOrDefault(x => x.Key.Contains(tester.LastName)).Count;
+            var actualCount = buckets.FirstOrDefault(x => x.Key.Contains(nameof(Person.LastName)))?.Values?.FirstOrDefault(x => x?.Key.Equals(tester.LastName, StringComparison.OrdinalIgnoreCase) == true)?.Count;
 
             Decommission(cluster);
             Assert.True(buckets.Count == 1);
