@@ -26,6 +26,7 @@ namespace Seaq.Elasticsearch.Tests
             this.output = output;
         }
 
+
         [Fact]
         public void Can_Filter_Query()
         {

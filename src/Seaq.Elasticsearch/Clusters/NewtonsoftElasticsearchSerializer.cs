@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -10,7 +11,7 @@ using Seaq.Elasticsearch.Documents;
 
 namespace Seaq.Elasticsearch.Clusters
 {
-    public class NewtonsoftElasticsearchSerializer : 
+    public partial class NewtonsoftElasticsearchSerializer : 
         ISeaqElasticsearchSerializer
     {
         readonly Func<string, Type> TryGetStoreType;
@@ -57,6 +58,11 @@ namespace Seaq.Elasticsearch.Clusters
 
                 //type = TryGetStoreType(iDoc.StoreId);
                 type = TryGetStoreType(iDoc.Type);
+            }
+
+            if (type == null)
+            {
+                type = typeof(Seaq.Elasticsearch.Documents.DynamicDocument);
             }
 
             var result = JsonConvert.DeserializeObject(json, type);
