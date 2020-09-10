@@ -39,6 +39,8 @@ namespace Seaq.Elasticsearch.Documents
 
         public string[] Suggestions { get; }
 
+        
+
         // The inner dictionary.
         Dictionary<string, object> dictionary
             = new Dictionary<string, object>();
@@ -51,6 +53,11 @@ namespace Seaq.Elasticsearch.Documents
             {
                 return dictionary.Count;
             }
+        }
+
+        public override IEnumerable<string> GetDynamicMemberNames()
+        {
+            return dictionary.Keys;
         }
 
         // If you try to get a value of a property
