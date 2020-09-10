@@ -6,6 +6,10 @@ namespace Seaq.Elasticsearch.Documents
         DynamicObject, 
         IDocument
     {
+        public DynamicDocument()
+        {
+
+        }
         public DynamicDocument(
             string documentId,
             string storeId,
