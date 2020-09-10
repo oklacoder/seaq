@@ -26,28 +26,36 @@ namespace Seaq.Elasticsearch.Stores
         [DataMember(Name = nameof(Fields))]
         public StoreField[] Fields { get; }
 
+        [DataMember(Name = nameof(FieldTree))]
         public string[] FieldTree => Fields == null ?
             new[] { this.Name } :
             new[] { this.Name }.Concat(Fields?.Select(x => $"{x.Name}")).ToArray();
 
+        [DataMember(Name = nameof(HasKeywordField))]
         public bool? HasKeywordField => Fields?.Any(p => p.IsKeywordField == true);
 
+        [DataMember(Name = nameof(HasSortField))]
         public bool? HasSortField => Fields?.Any(p => p.IsSortField == true);
 
+        [DataMember(Name = nameof(IsKeywordField))]
         public bool? IsKeywordField => Name.Contains(WellKnownKeys.Fields.KeywordField, System.StringComparison.OrdinalIgnoreCase);
 
+        [DataMember(Name = nameof(IsSortField))]
         public bool? IsSortField => Name.Contains(WellKnownKeys.Fields.LowerField, System.StringComparison.OrdinalIgnoreCase);
 
+        [DataMember(Name = nameof(GetKeywordFieldNames))]
         public string[] GetKeywordFieldNames => 
             IsKeywordField == true ? 
                 new[] { Name } : 
                 Fields?.SelectMany(x => x?.GetKeywordFieldNames)?.ToArray() ?? new string[] { };
 
+        [DataMember(Name = nameof(GetSortFieldNames))]
         public string[] GetSortFieldNames =>
             IsSortField == true ?
                 new[] { Name } :
                 Fields?.SelectMany(x => x?.GetSortFieldNames)?.ToArray() ?? new string[] { };
 
+        [DataMember(Name = nameof(GetBoostedFieldName))]
         public string GetBoostedFieldName => Boost.HasValue ? $"{Name}^{Boost}" : Name;
 
         //This constructor, with the array of fields instead of the ienum,
