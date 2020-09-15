@@ -12,31 +12,31 @@ namespace Seaq.Elasticsearch.Stores
             StoreId = new StoreId(
                 settings.ScopeId, 
                 settings.Moniker);
-            Type = settings.Type;
+            TypeFullName = settings.TypeFullName;
         }
         public Store(
             Store store,
             StoreSchema storeSchema)
         {
             StoreId = store.StoreId;
-            Type = store.Type;
+            TypeFullName = store.TypeFullName;
             StoreSchema = storeSchema;
         }
         public Store(
           StoreId storeId,
           StoreSchema storeSchema,
-          Type type)
+          string typeFullName)
         {
           StoreId = storeId;
           StoreSchema = storeSchema;
-          Type = type;
+          TypeFullName = typeFullName;
         }
 
         public StoreId StoreId { get; }
 
         public StoreSchema StoreSchema { get; }
 
-        public Type Type { get; }
+        public string TypeFullName { get; }
 
     }
 }

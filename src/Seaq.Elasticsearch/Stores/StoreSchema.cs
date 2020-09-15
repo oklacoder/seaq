@@ -79,7 +79,7 @@ namespace Seaq.Elasticsearch.Stores
             CreateStoreSettings settings)
         {
             StoreId = Stores.StoreId.FormatAsIndexId(settings.ScopeId, settings.Moniker);
-            StoreType = settings.Type.FullName;
+            StoreType = settings.TypeFullName;
         }
 
         public string[] GetAggregatableFieldNames()

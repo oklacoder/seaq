@@ -88,7 +88,12 @@ namespace Seaq.Elasticsearch.Tests
             return new Cluster(settings);
         }
 
-        [Fact]
+        private string GetPersonTypeFullName()
+        {
+            return typeof(Person).FullName;
+        }
+
+        //[Fact]
         public void Cheater()
         {
             const string appScope = "kb-local-dev";
@@ -98,7 +103,7 @@ namespace Seaq.Elasticsearch.Tests
             var storeSettings = new CreateStoreSettings(
                 typeof(Kitchenbuddy.Dialect.Model.Ingredient).FullName, 
                 "kb-local-dev", 
-                typeof(Kitchenbuddy.Dialect.Model.Ingredient));
+                typeof(Kitchenbuddy.Dialect.Model.Ingredient).FullName);
             var store = cluster.CreateStore(storeSettings);
 
             ingredient.Id = Guid.NewGuid().ToString("N");
@@ -156,7 +161,7 @@ namespace Seaq.Elasticsearch.Tests
         {
             var cluster = new Cluster(settings);
 
-            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
 
             var store = cluster.CreateStore(storeSettings);
 
@@ -171,7 +176,7 @@ namespace Seaq.Elasticsearch.Tests
             var _settings = TestDataService.GetClusterSettings(ScopeId, true, false);
             var cluster = new Cluster(_settings);
 
-            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person), 1, 2, false);
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName(), 1, 2, false);
 
             var store = cluster.CreateStore(storeSettings);
 
@@ -187,7 +192,7 @@ namespace Seaq.Elasticsearch.Tests
             var _settings = TestDataService.GetClusterSettings(ScopeId, true, false);
             var cluster = new Cluster(_settings);
 
-            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
 
             var store = cluster.CreateStore(storeSettings);
 
@@ -203,7 +208,7 @@ namespace Seaq.Elasticsearch.Tests
             var _settings = TestDataService.GetClusterSettings(ScopeId, true, false);
             var cluster = new Cluster(_settings);
 
-            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
 
             var store = cluster.CreateStore(storeSettings);
 
@@ -234,7 +239,7 @@ namespace Seaq.Elasticsearch.Tests
             var _settings = TestDataService.GetClusterSettings(ScopeId, true, false);
             var cluster = new Cluster(_settings);
 
-            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
 
             var store = cluster.CreateStore(storeSettings);
 
@@ -252,7 +257,7 @@ namespace Seaq.Elasticsearch.Tests
         {
             var cluster = new Cluster(settings);
 
-            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
 
             var store = cluster.CreateStore(storeSettings);
 
@@ -266,7 +271,7 @@ namespace Seaq.Elasticsearch.Tests
         {
             var cluster = new Cluster(settings);
 
-            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
 
             var store = cluster.CreateStore(storeSettings);
 
@@ -284,7 +289,7 @@ namespace Seaq.Elasticsearch.Tests
         {
             var cluster = new Cluster(settings);
 
-            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
 
             var store = cluster.CreateStore(storeSettings);
 
@@ -302,7 +307,7 @@ namespace Seaq.Elasticsearch.Tests
         {
             var cluster = new Cluster(settings);
 
-            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
 
             var store = cluster.CreateStore(storeSettings);
 
@@ -322,7 +327,7 @@ namespace Seaq.Elasticsearch.Tests
         {
             var cluster = new Cluster(settings);
 
-            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
 
             var store = cluster.CreateStore(storeSettings);
 
@@ -342,7 +347,7 @@ namespace Seaq.Elasticsearch.Tests
         {
           var cluster = new Cluster(settings);
 
-          var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+          var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
 
           var store = cluster.CreateStore(storeSettings);
 
@@ -359,7 +364,7 @@ namespace Seaq.Elasticsearch.Tests
         {
             var cluster = new Cluster(settings);
 
-            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
 
             var store = cluster.CreateStore(storeSettings);
 

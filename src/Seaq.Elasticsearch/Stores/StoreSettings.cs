@@ -11,14 +11,14 @@ namespace Seaq.Elasticsearch.Stores
         public CreateStoreSettings(
             string moniker,
             string scopeId,
-            Type type,
+            string typeFullName,
             int primaryShards = _primaryShardCountDefault,
             int replicaShards = _replicaShardCountDefault,
             bool eagerlyPersistStoreMeta = _eagerlyPersistStoreMetaDefault)
         {
             Moniker = moniker;
             ScopeId = scopeId;
-            Type = type;
+            TypeFullName = typeFullName;
             PrimaryShards = primaryShards;
             ReplicaShards = replicaShards;
             EagerlyPersistStoreMeta = eagerlyPersistStoreMeta;
@@ -26,7 +26,7 @@ namespace Seaq.Elasticsearch.Stores
 
         public string Moniker { get; }
         public string ScopeId { get; }
-        public Type Type { get; }
+        public string TypeFullName { get; }
         public int PrimaryShards { get; }
         public int ReplicaShards { get; }
         public bool EagerlyPersistStoreMeta { get; }

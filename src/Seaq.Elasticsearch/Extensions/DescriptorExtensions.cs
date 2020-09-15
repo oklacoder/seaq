@@ -8,9 +8,10 @@ namespace Seaq.Elasticsearch.Extensions
         {
             public static CreateIndexDescriptor Extend(
                 this CreateIndexDescriptor descriptor,
-                CreateStoreSettings settings)
+                CreateStoreSettings settings,
+                Type type)
             {
-                return CreateIndexDescriptorExtender.Extend(settings, descriptor);
+                return CreateIndexDescriptorExtender.Extend(settings, type, descriptor);
             }
         }
     

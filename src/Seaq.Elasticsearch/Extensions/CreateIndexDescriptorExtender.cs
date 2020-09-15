@@ -10,11 +10,12 @@ namespace Seaq.Elasticsearch.Extensions
     {
         public static CreateIndexDescriptor Extend(
             CreateStoreSettings settings,
+            Type type,
             CreateIndexDescriptor descriptor)
         {
             return
                 descriptor
-                    .Map(x => GetTypeMappingDescriptor(x, settings.Type)
+                    .Map(x => GetTypeMappingDescriptor(x, type)
                     .Meta(m => m.Add(WellKnownKeys.IndexSettings.StoreSchema, 
                         new StoreSchema(settings))))
                     .Settings(p => p

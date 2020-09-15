@@ -350,7 +350,7 @@ namespace Seaq.Elasticsearch.Tests
             {
                 var cluster = new Cluster(settings);
 
-                var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+                var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person).FullName);
 
                 var store = cluster.CreateStore(storeSettings);
 
@@ -408,7 +408,7 @@ namespace Seaq.Elasticsearch.Tests
 
             var cluster = new Cluster(settings);
 
-            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person));
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, typeof(Person).FullName);
 
             var store = cluster.CreateStore(storeSettings);
 

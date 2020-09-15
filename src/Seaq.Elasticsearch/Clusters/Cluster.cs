@@ -108,18 +108,14 @@ namespace Seaq.Elasticsearch.Clusters
 
             if (schema == null) return null;
 
-            if(!SearchTypes.ContainsKey(schema.StoreType)){
-                Log.Error("Provided schema type {0} is not present on the cluster.", schema.StoreType);
-                Log.Warning("Ensure that you have correctly imported the relevant namespace for type {0}", schema.StoreType);
-                return null;
-            }
+            
 
             var type = SearchTypes[schema.StoreType];
             var storeId = new StoreId(schema.StoreId);
             store = new Store(
                 storeId, 
                 schema, 
-                type);
+                type.FullName);
 
             return store;
         }
@@ -169,14 +165,21 @@ namespace Seaq.Elasticsearch.Clusters
             {
                 throw new ArgumentNullException($"Parameter {nameof(settings)} is null or invalid.");
             }
+            var type = _fieldNameUtilities.GetSearchableType(settings.TypeFullName);
+            if (type == null)
+            {
+                Log.Error("Provided schema type {0} is not present on the cluster.", settings.TypeFullName);
+                Log.Warning("Ensure that you have correctly imported the relevant namespace for type {0}", settings.TypeFullName);
+                return null;
+            }
 
             store = new Store(settings);
             var createResult =
                 _client.Indices.Create(
                     store.StoreId.Name,
-                    descriptor => descriptor.Extend(settings));
+                    descriptor => descriptor.Extend(settings, type));
 
-            var alias = _client.Indices.PutAlias(Indices.Index(store.StoreId.Name), settings.Type.FullName);
+            var alias = _client.Indices.PutAlias(Indices.Index(store.StoreId.Name), settings.TypeFullName);
 
             if (createResult.IsValid)
             {
@@ -437,11 +440,11 @@ namespace Seaq.Elasticsearch.Clusters
             return returnValue;
         }
 
-        private Type TryGetStoreType(
+        private string TryGetStoreTypeFullName(
             string storeIdName)
         {
             if (_stores.ContainsKey(storeIdName))
-                return _stores[storeIdName]?.Type;
+                return _stores[storeIdName]?.TypeFullName;
             else
                 return null;
         }
