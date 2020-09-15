@@ -6,68 +6,6 @@ using System.Linq;
 using Seaq.Elasticsearch.Queries;
 using Seaq.Elasticsearch.Documents;
 
-namespace Kitchenbuddy.Dialect.Model
-{
-    public class Ingredient :
-        IDocument
-    {
-        public Ingredient()
-        {
-            Tags = new Tag[] { };
-        }
-
-        public string Name { get; set; }
-        public Tag[] Tags { get; set; }
-
-
-        public string Id { get; set; }
-
-        public string DocumentId => Id;
-
-        public string ScopeId { get; set; }
-
-        public string StoreId =>
-            new Seaq.Elasticsearch.Stores.StoreId(
-                ScopeId,
-                GetType().FullName).Name;
-
-        public string Type => GetType().FullName;
-
-        public string PrimaryDisplay => Name;
-
-        public string SecondaryDisplay => null;
-
-        public string[] Suggestions =>
-            new string[]
-            {
-                Name
-            }
-            .Concat(Tags.Select(x => x.Value))
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .ToArray();
-
-        public void EnsureScopeId(
-            string scopeId)
-        {
-            if (string.IsNullOrWhiteSpace(this.ScopeId))
-            {
-                this.ScopeId = scopeId;
-            }
-        }
-
-    }
-    public class Tag
-    {
-        public string Value { get; set; }
-
-        public Tag(
-            string value)
-        {
-            Value = value;
-        }
-    }
-}
-
 namespace Seaq.Elasticsearch.Tests
 {
     public class ClusterTests
@@ -93,41 +31,6 @@ namespace Seaq.Elasticsearch.Tests
             return typeof(Person).FullName;
         }
 
-        //[Fact]
-        public void Cheater()
-        {
-            const string appScope = "kb-local-dev";
-            var ingredient = new Kitchenbuddy.Dialect.Model.Ingredient();
-            var settings = new ClusterSettings("http://localhost:9200", "", "", appScope);
-            var cluster = new Cluster(settings);
-            var storeSettings = new CreateStoreSettings(
-                typeof(Kitchenbuddy.Dialect.Model.Ingredient).FullName, 
-                "kb-local-dev", 
-                typeof(Kitchenbuddy.Dialect.Model.Ingredient).FullName);
-            var store = cluster.CreateStore(storeSettings);
-
-            ingredient.Id = Guid.NewGuid().ToString("N");
-            ingredient.Name = "Test Ingredient";
-            ingredient.Tags = new Kitchenbuddy.Dialect.Model.Tag[] 
-            { 
-                new Kitchenbuddy.Dialect.Model.Tag("Tag1"),
-                new Kitchenbuddy.Dialect.Model.Tag("Tag2"),
-                new Kitchenbuddy.Dialect.Model.Tag("Tag3"),
-                new Kitchenbuddy.Dialect.Model.Tag("Tag4")
-            };
-            ingredient.EnsureScopeId(appScope);
-            cluster.Commit(new[] { ingredient });
-
-
-            var criteria = new FieldValuesQueryCriteria(
-                new[] { "Kitchenbuddy.Dialect.Model.Ingredient" },
-                $"{nameof(Kitchenbuddy.Dialect.Model.Ingredient.Tags)}.{nameof(Kitchenbuddy.Dialect.Model.Tag.Value)}",
-                "tag1");
-            var query = new FieldValuesQuery(criteria);
-            var result = cluster.Query(query);
-
-            Assert.NotNull(cluster);
-        }
 
         
         [Fact]

@@ -108,14 +108,11 @@ namespace Seaq.Elasticsearch.Clusters
 
             if (schema == null) return null;
 
-            
-
-            var type = SearchTypes[schema.StoreType];
             var storeId = new StoreId(schema.StoreId);
             store = new Store(
                 storeId, 
                 schema, 
-                type.FullName);
+                schema.Type);
 
             return store;
         }
