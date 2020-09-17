@@ -25,6 +25,7 @@ namespace Seaq.Elasticsearch.Queries
 
         public string[] AggregatableFields { get; set; }
         public string[] BoostableFields { get; set; }
+        public string[] FieldsToInclude { get; set; }
 
         public string Text { get; }
 
@@ -48,6 +49,7 @@ namespace Seaq.Elasticsearch.Queries
 
             return new SearchDescriptor<TDocument>()
                 .Index(Indices.Index(StoreIdNames))
+                .Source(s => BuildSourceFilter<TDocument>())
                 .Query(q => q
                     .Bool(b => b
                         .Should(
@@ -64,12 +66,29 @@ namespace Seaq.Elasticsearch.Queries
                                     .Lenient()
                                     .Fields(fieldString)))));
         }
-        
+        private SourceFilterDescriptor<TDocument> BuildSourceFilter<TDocument>()
+            where TDocument : class
+        {
+            var filter = new SourceFilterDescriptor<TDocument>();
+
+            if (FieldsToInclude.Any(x => !WellKnownKeys.Fields.ConstantReturnedFields.Contains(x)))
+            {
+                filter.Includes(x => x.Fields(FieldsToInclude));
+            }
+            else
+            {
+                filter.IncludeAll();
+            }
+
+            return filter;
+        }
+
         public void CollectMetadataForQuery(Cluster cluster)
         {
             var schemas = cluster?.GetStoreSchemas(StoreIdNames.ToArray());
 
             BoostableFields = schemas?.SelectMany(x => x?.GetAllBoostedFieldNames())?.ToArray();
+            FieldsToInclude = schemas?.SelectMany(x => x.GetFieldsToInclude())?.ToArray() ?? new string[] { };
         }
     }
 }

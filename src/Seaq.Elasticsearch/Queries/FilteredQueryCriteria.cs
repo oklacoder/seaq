@@ -113,9 +113,6 @@ namespace Seaq.Elasticsearch.Queries
             
             if (FieldsToInclude.Any(x => !WellKnownKeys.Fields.ConstantReturnedFields.Contains(x)))
             {
-                //var toInclude = new List<string>();
-                //toInclude.AddRange(FieldsToInclude);
-                //toInclude.AddRange(WellKnownKeys.Fields.ConstantReturnedFields);
                 filter.Includes(x => x.Fields(FieldsToInclude));
             }
             else
