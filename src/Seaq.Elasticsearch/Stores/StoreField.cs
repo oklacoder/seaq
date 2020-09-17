@@ -23,6 +23,9 @@ namespace Seaq.Elasticsearch.Stores
         [DataMember(Name = nameof(IncludeInResults))]
         public bool? IncludeInResults { get; }
 
+        [DataMember(Name = nameof(IsIncludedByDefault))]
+        public bool? IsIncludedByDefault => WellKnownKeys.Fields.ConstantReturnedFields.Any(x => x.Equals(Name, System.StringComparison.OrdinalIgnoreCase));
+
         [DataMember(Name = nameof(Label))]
         public string Label { get; }
 
@@ -44,7 +47,7 @@ namespace Seaq.Elasticsearch.Stores
         public bool? HasSortField => Fields?.Any(p => p.IsSortField == true);
 
         [DataMember(Name = nameof(IsIncludedInSearchResults))]
-        public bool? IsIncludedInSearchResults => IncludeInResults == true || WellKnownKeys.Fields.ConstantReturnedFields.Any(x => x.Equals(Name, System.StringComparison.OrdinalIgnoreCase));
+        public bool? IsIncludedInSearchResults => IncludeInResults == true || IsIncludedByDefault == true;
 
         [DataMember(Name = nameof(IsKeywordField))]
         public bool? IsKeywordField => Name.EndsWith(WellKnownKeys.Fields.KeywordField, System.StringComparison.OrdinalIgnoreCase);
