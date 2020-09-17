@@ -150,7 +150,7 @@ namespace Seaq.Elasticsearch.Stores
         public string[] GetFieldsToInclude()
         {
             return Fields?
-                .Where(x => x.HasIncludedField == true || x.IncludeInResults == true)
+                .Where(x => x.HasIncludedField == true || x.IsIncludedInSearchResults == true)
                 .SelectMany(x => x.GetIncludedFieldNames)
                 .ToArray() ??
                 new string[] { };

@@ -111,12 +111,12 @@ namespace Seaq.Elasticsearch.Queries
         {
             var filter = new SourceFilterDescriptor<T>();
             
-            if (FieldsToInclude.Any())
+            if (FieldsToInclude.Any(x => !WellKnownKeys.Fields.ConstantReturnedFields.Contains(x)))
             {
-                var toInclude = new List<string>();
-                toInclude.AddRange(FieldsToInclude);
-                toInclude.AddRange(WellKnownKeys.Fields.ConstantReturnedFields);
-                filter.Includes(x => x.Fields(toInclude.ToArray()));
+                //var toInclude = new List<string>();
+                //toInclude.AddRange(FieldsToInclude);
+                //toInclude.AddRange(WellKnownKeys.Fields.ConstantReturnedFields);
+                filter.Includes(x => x.Fields(FieldsToInclude));
             }
             else
             {

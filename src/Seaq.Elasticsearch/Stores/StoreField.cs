@@ -38,10 +38,13 @@ namespace Seaq.Elasticsearch.Stores
         public bool? HasKeywordField => Fields?.Any(p => p.IsKeywordField == true);
 
         [DataMember(Name = nameof(HasIncludedField))]
-        public bool? HasIncludedField => Fields?.Any(p => p.IncludeInResults == true || p.HasIncludedField == true);
+        public bool? HasIncludedField => Fields?.Any(p => p.IsIncludedInSearchResults == true || p.HasIncludedField == true);
 
         [DataMember(Name = nameof(HasSortField))]
         public bool? HasSortField => Fields?.Any(p => p.IsSortField == true);
+
+        [DataMember(Name = nameof(IsIncludedInSearchResults))]
+        public bool? IsIncludedInSearchResults => IncludeInResults == true || WellKnownKeys.Fields.ConstantReturnedFields.Any(x => x.Equals(Name, System.StringComparison.OrdinalIgnoreCase));
 
         [DataMember(Name = nameof(IsKeywordField))]
         public bool? IsKeywordField => Name.EndsWith(WellKnownKeys.Fields.KeywordField, System.StringComparison.OrdinalIgnoreCase);
@@ -63,7 +66,7 @@ namespace Seaq.Elasticsearch.Stores
 
         [DataMember(Name = nameof(GetIncludedFieldNames))]
         public string[] GetIncludedFieldNames =>
-            IncludeInResults == true ?
+            IsIncludedInSearchResults == true ?
                 new[] { Name } :
                 Fields?.SelectMany(x => x?.GetIncludedFieldNames)?.ToArray() ?? new string[] { };
 
