@@ -110,8 +110,10 @@ namespace Seaq.Elasticsearch.Queries
             where T : class
         {
             var filter = new SourceFilterDescriptor<T>();
-            
-            if (FieldsToInclude.Any(x => !WellKnownKeys.Fields.ConstantReturnedFields.Contains(x)))
+
+            if (FieldsToInclude.Any(x => 
+                !WellKnownKeys.Fields.ConstantReturnedFields.Any(y => 
+                    y.Equals(x, StringComparison.OrdinalIgnoreCase))))
             {
                 filter.Includes(x => x.Fields(FieldsToInclude));
             }

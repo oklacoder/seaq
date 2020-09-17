@@ -171,10 +171,17 @@ namespace Seaq.Elasticsearch.Clusters
             }
 
             store = new Store(settings);
+
+            if (_stores.ContainsKey(store.StoreId.Name))
+            {
+                Log.Warning($"Creation of store {store.StoreId.Name} failed - a store with that name already exists.");
+                return _stores[store.StoreId.Name];
+            }
+
             var createResult =
-                _client.Indices.Create(
-                    store.StoreId.Name,
-                    descriptor => descriptor.Extend(settings, type));
+            _client.Indices.Create(
+                store.StoreId.Name,
+                descriptor => descriptor.Extend(settings, type));
 
             var alias = _client.Indices.PutAlias(Indices.Index(store.StoreId.Name), settings.TypeFullName);
 

@@ -10,6 +10,7 @@ namespace Seaq.Elasticsearch.Tests
 {
     public class ClusterTests
     {
+
         private readonly string ScopeId;
         private ClusterSettings settings { get; }
 
@@ -135,7 +136,7 @@ namespace Seaq.Elasticsearch.Tests
         }
 
         [Fact]
-        public void Schema_Field_Source_Filter_Correctly_Filters_Returned_Fields()
+        public void Schema_Field_Source_Filter_Correctly_Filters_Returned_Fields_For_Filtered_Query()
         {
             var _settings = TestDataService.GetClusterSettings(ScopeId, true, false);
             var cluster = new Cluster(_settings);
@@ -157,6 +158,37 @@ namespace Seaq.Elasticsearch.Tests
 
             var criteria = new FilteredQueryCriteria(new string[] { store.StoreId.Name }, null);
             var query = new FilteredQuery(criteria);
+            var results = cluster.Query(query);
+
+            cluster.DeleteStore(store.StoreId.Name);
+
+            Assert.NotNull((results.Results.FirstOrDefault() as Person)?.Birthday);
+            Assert.Null((results.Results.FirstOrDefault() as Person)?.FirstName);
+        }
+
+        [Fact]
+        public void Schema_Field_Source_Filter_Correctly_Filters_Returned_Fields_For_Simple_Query()
+        {
+            var _settings = TestDataService.GetClusterSettings(ScopeId, true, false);
+            var cluster = new Cluster(_settings);
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
+            var store = cluster.CreateStore(storeSettings);
+            var documents = TestDataService.GetFakes(store.StoreId.Name, 100);
+
+            _ = cluster.Commit(documents);
+
+            var schema = store.StoreSchema;
+            var fields = schema.Fields;
+
+            const int fieldToUse = 1;
+            fields[fieldToUse] = new StoreField(fields[fieldToUse].Name, fields[fieldToUse].Type, fields[fieldToUse].Fields, null, null, null, true);
+
+            var newSchema = new StoreSchema(schema.StoreId, schema.Type, fields);
+
+            cluster.SaveStoreSchema(store.StoreId.Name, newSchema);
+
+            var criteria = new SimpleQueryCriteria(new string[] { store.StoreId.Name }, null);
+            var query = new SimpleQuery(criteria);
             var results = cluster.Query(query);
 
             cluster.DeleteStore(store.StoreId.Name);

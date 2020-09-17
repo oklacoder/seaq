@@ -13,7 +13,7 @@ namespace Seaq.Elasticsearch.Queries
     {
         public SimpleQueryCriteria(
             IEnumerable<string> storeIdNames,
-            string text,
+            string text = null,
             Paging paging = null)
         {
             StoreIdNames = ImmutableList<string>.Empty.AddRange(storeIdNames);
@@ -71,7 +71,9 @@ namespace Seaq.Elasticsearch.Queries
         {
             var filter = new SourceFilterDescriptor<TDocument>();
 
-            if (FieldsToInclude.Any(x => !WellKnownKeys.Fields.ConstantReturnedFields.Contains(x)))
+            if (FieldsToInclude.Any(x =>
+                !WellKnownKeys.Fields.ConstantReturnedFields.Any(y =>
+                    y.Equals(x, StringComparison.OrdinalIgnoreCase))))
             {
                 filter.Includes(x => x.Fields(FieldsToInclude));
             }
