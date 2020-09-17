@@ -146,5 +146,16 @@ namespace Seaq.Elasticsearch.Stores
                 .ToArray() ??
                 new string[] { };
         }
+
+        public string[] GetFieldsToInclude()
+        {
+            return Fields?
+                .Where(x => x.HasIncludedField == true || x.IncludeInResults == true)
+                .SelectMany(x => x.GetIncludedFieldNames)
+                .ToArray() ??
+                new string[] { };
+        }
+
+
     }
 }

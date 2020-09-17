@@ -31,8 +31,6 @@ namespace Seaq.Elasticsearch.Tests
             return typeof(Person).FullName;
         }
 
-
-        
         [Fact]
         public void Can_Create_Cluster()
         {
@@ -134,6 +132,37 @@ namespace Seaq.Elasticsearch.Tests
 
             Assert.NotNull(store);
             Assert.True(updateTook);
+        }
+
+        [Fact]
+        public void Schema_Field_Source_Filter_Correctly_Filters_Returned_Fields()
+        {
+            var _settings = TestDataService.GetClusterSettings(ScopeId, true, false);
+            var cluster = new Cluster(_settings);
+            var storeSettings = new CreateStoreSettings(Guid.NewGuid().ToString("N"), settings.ScopeId, GetPersonTypeFullName());
+            var store = cluster.CreateStore(storeSettings);
+            var documents = TestDataService.GetFakes(store.StoreId.Name, 100);
+
+            _ = cluster.Commit(documents);
+
+            var schema = store.StoreSchema;
+            var fields = schema.Fields;
+
+            const int fieldToUse = 1;
+            fields[fieldToUse] = new StoreField(fields[fieldToUse].Name, fields[fieldToUse].Type, fields[fieldToUse].Fields, null, null, null, true);
+
+            var newSchema = new StoreSchema(schema.StoreId, schema.Type, fields);
+
+            cluster.SaveStoreSchema(store.StoreId.Name, newSchema);
+
+            var criteria = new FilteredQueryCriteria(new string[] { store.StoreId.Name }, null);
+            var query = new FilteredQuery(criteria);
+            var results = cluster.Query(query);
+
+            cluster.DeleteStore(store.StoreId.Name);
+
+            Assert.NotNull((results.Results.FirstOrDefault() as Person)?.Birthday);
+            Assert.Null((results.Results.FirstOrDefault() as Person)?.FirstName);
         }
 
         [Fact]

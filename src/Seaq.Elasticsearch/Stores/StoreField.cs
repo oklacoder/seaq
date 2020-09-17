@@ -20,6 +20,9 @@ namespace Seaq.Elasticsearch.Stores
         [DataMember(Name = nameof(IsFilterable))]
         public bool? IsFilterable { get; }
 
+        [DataMember(Name = nameof(IncludeInResults))]
+        public bool? IncludeInResults { get; }
+
         [DataMember(Name = nameof(Label))]
         public string Label { get; }
 
@@ -34,14 +37,17 @@ namespace Seaq.Elasticsearch.Stores
         [DataMember(Name = nameof(HasKeywordField))]
         public bool? HasKeywordField => Fields?.Any(p => p.IsKeywordField == true);
 
+        [DataMember(Name = nameof(HasIncludedField))]
+        public bool? HasIncludedField => Fields?.Any(p => p.IncludeInResults == true || p.HasIncludedField == true);
+
         [DataMember(Name = nameof(HasSortField))]
         public bool? HasSortField => Fields?.Any(p => p.IsSortField == true);
 
         [DataMember(Name = nameof(IsKeywordField))]
-        public bool? IsKeywordField => Name.Contains(WellKnownKeys.Fields.KeywordField, System.StringComparison.OrdinalIgnoreCase);
+        public bool? IsKeywordField => Name.EndsWith(WellKnownKeys.Fields.KeywordField, System.StringComparison.OrdinalIgnoreCase);
 
         [DataMember(Name = nameof(IsSortField))]
-        public bool? IsSortField => Name.Contains(WellKnownKeys.Fields.LowerField, System.StringComparison.OrdinalIgnoreCase);
+        public bool? IsSortField => Name.EndsWith(WellKnownKeys.Fields.LowerField, System.StringComparison.OrdinalIgnoreCase);
 
         [DataMember(Name = nameof(GetKeywordFieldNames))]
         public string[] GetKeywordFieldNames => 
@@ -54,6 +60,12 @@ namespace Seaq.Elasticsearch.Stores
             IsSortField == true ?
                 new[] { Name } :
                 Fields?.SelectMany(x => x?.GetSortFieldNames)?.ToArray() ?? new string[] { };
+
+        [DataMember(Name = nameof(GetIncludedFieldNames))]
+        public string[] GetIncludedFieldNames =>
+            IncludeInResults == true ?
+                new[] { Name } :
+                Fields?.SelectMany(x => x?.GetIncludedFieldNames)?.ToArray() ?? new string[] { };
 
         [DataMember(Name = nameof(GetBoostedFieldName))]
         public string GetBoostedFieldName => Boost.HasValue ? $"{Name}^{Boost}" : Name;
@@ -68,12 +80,14 @@ namespace Seaq.Elasticsearch.Stores
             StoreField[] fields,
             string label,
             double? boost,
-            bool? isFilterable)
+            bool? isFilterable,
+            bool? includeInResults)
         {
             Name = name;
             Type = type;
             Boost = boost;
             IsFilterable = isFilterable;
+            IncludeInResults = includeInResults;
             Label = label;
             Fields = fields;
         }
@@ -84,12 +98,14 @@ namespace Seaq.Elasticsearch.Stores
             IEnumerable<StoreField> fields,
             string label = null,
             double? boost = null,
-            bool? isFilterable = true)
+            bool? isFilterable = true,
+            bool? includeInResults = null)
         {
             Name = name;
             Type = type;
             Boost = boost;
             IsFilterable = isFilterable;
+            IncludeInResults = includeInResults;
             Label = label;
             Fields = fields?.ToArray();
         }

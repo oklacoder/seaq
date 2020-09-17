@@ -21,6 +21,7 @@ namespace Seaq.Elasticsearch.Queries
 
         public string[] AggregatableFields { get; set; }
         public string[] BoostableFields { get; set; }
+        public string[] FieldsToInclude { get; set; }
 
 
         public FilteredQueryCriteria(
@@ -34,7 +35,8 @@ namespace Seaq.Elasticsearch.Queries
         {
             StoreIdNames = ImmutableList<string>.Empty.AddRange(storeIdNames);
 
-            Filters = ImmutableList<QueryFilter>.Empty.AddRange(filters);
+            if (filters?.Any() == true)
+                Filters = ImmutableList<QueryFilter>.Empty.AddRange(filters);
             
             _paging = paging ?? new Paging();
             
@@ -67,6 +69,7 @@ namespace Seaq.Elasticsearch.Queries
                 schemas?.SelectMany(x => x.GetAggregatableFieldNames(_fieldNameUtilities, Filters.Select(x => x.Field).ToArray()))?.ToArray() ?? new string[] { } :
                 schemas?.SelectMany(x => x.GetAggregatableFieldNames())?.ToArray() ?? new string[] { };
             BoostableFields = schemas?.SelectMany(x => x.GetAllBoostedFieldNames())?.ToArray() ?? new string[] { };
+            FieldsToInclude = schemas?.SelectMany(x => x.GetFieldsToInclude())?.ToArray() ?? new string[] { };
         }
 
         private SearchDescriptor<T> BuildFilteredSearch<T>()
@@ -90,8 +93,10 @@ namespace Seaq.Elasticsearch.Queries
         {
             var search = new SearchDescriptor<T>();
             var indices = StoreIdNames;
+
             search
                 .Index(Indices.Index(indices))
+                .Source(s => BuildSourceFilter<T>())
                 .Query(q => BuildQuery<T>())
                 .Aggregations(agg => GetFilterAggregations<T>(aggs))
                 .Sort(s => GetSortDescriptorForFilters<T>())
@@ -101,13 +106,34 @@ namespace Seaq.Elasticsearch.Queries
             return search;
         }
 
-        private QueryContainerDescriptor<T> BuildQuery<T>() where T : class
+        private SourceFilterDescriptor<T> BuildSourceFilter<T>() 
+            where T : class
+        {
+            var filter = new SourceFilterDescriptor<T>();
+            
+            if (FieldsToInclude.Any())
+            {
+                var toInclude = new List<string>();
+                toInclude.AddRange(FieldsToInclude);
+                toInclude.AddRange(WellKnownKeys.Fields.ConstantReturnedFields);
+                filter.Includes(x => x.Fields(toInclude.ToArray()));
+            }
+            else
+            {
+                filter.IncludeAll();
+            }
+
+            return filter;
+        }
+
+        private QueryContainerDescriptor<T> BuildQuery<T>() 
+            where T : class
         {
             var search = new QueryContainerDescriptor<T>();
 
-            var toQuery = Filters.Where(p => !string.IsNullOrWhiteSpace(p.Field) && !string.IsNullOrWhiteSpace(p.Value));
+            var toQuery = Filters?.Where(p => !string.IsNullOrWhiteSpace(p.Field) && !string.IsNullOrWhiteSpace(p.Value));
 
-            if (toQuery.Any())
+            if (toQuery?.Any() == true)
             {
                 search.Bool(b =>b
                     .Should(sh => sh
@@ -182,6 +208,7 @@ namespace Seaq.Elasticsearch.Queries
         {
             var sort = new SortDescriptor<T>();
 
+            if (Filters?.Any() == true)
             foreach (var filter in Filters)
             {
                 if (filter.Sort?.IsSorted == true)

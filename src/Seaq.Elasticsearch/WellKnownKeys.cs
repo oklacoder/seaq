@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Seaq.Elasticsearch.Documents;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -22,6 +23,7 @@ namespace Seaq.Elasticsearch
         {
             public const string LowerField = "sort";
             public const string KeywordField = "keyword";
+            public static string[] ConstantReturnedFields => new string[] { nameof(ISkinnyDocument.DocumentId), nameof(ISkinnyDocument.StoreId), nameof(ISkinnyDocument.Type)};
         }
 
         public static class Queries
