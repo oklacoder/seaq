@@ -67,7 +67,8 @@ namespace Seaq.Elasticsearch.Documents
         {
             // Converting the property name to lowercase
             // so that property names become case-insensitive.
-            string name = binder.Name.ToLower();
+            //string name = binder.Name.ToLower();
+            string name = binder.Name;
 
             // If the property name is found in a dictionary,
             // set the result parameter to the property value and return true.
@@ -82,7 +83,8 @@ namespace Seaq.Elasticsearch.Documents
         {
             // Converting the property name to lowercase
             // so that property names become case-insensitive.
-            dictionary[binder.Name.ToLower()] = value;
+            //dictionary[binder.Name.ToLower()] = value;
+            dictionary[binder.Name] = value;
 
             // You can always add a value to a dictionary,
             // so this method always returns true.
