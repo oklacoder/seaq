@@ -108,7 +108,7 @@ namespace Seaq.Elasticsearch.Queries
                     .Field(key)
                     .Size(10)
                     .MinimumDocumentCount(1)
-                    .Include($".*{QueryText.ToLowerInvariant()}.*")//need this to be case insensitive
+                    .Include(string.IsNullOrWhiteSpace(QueryText) ? "*" : $".*{QueryText.ToLowerInvariant()}.*")//need this to be case insensitive
                     .Order(o => o.KeyAscending().CountDescending()));
             }
 
