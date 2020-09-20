@@ -91,6 +91,16 @@ namespace Seaq.Elasticsearch.Stores
                 new string[] { };
         }
 
+
+        public string[] GetAggregatableFieldNames(params string[] fieldNames)
+        {
+            return Fields?
+                .Where(x => x.IsFilterable == true && fieldNames.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)))?
+                .SelectMany(x => x?.GetKeywordFieldNames)?
+                .ToArray() ??
+                new string[] { };
+        }
+
         public string[] GetAggregatableFieldNames(IFieldNameUtilities fieldNameUtilities, params string[] fieldNames)
         {
             var type = fieldNameUtilities.GetSearchableType(this.StoreType);
@@ -109,6 +119,15 @@ namespace Seaq.Elasticsearch.Stores
         {
             return Fields?
                 .Where(x => x.IsFilterable == true)?
+                .SelectMany(x => x?.GetSortFieldNames)?
+                .ToArray() ??
+                new string[] { };
+        }
+
+        public string[] GetSortableFieldNames(params string[] fieldNames)
+        {
+            return Fields?
+                .Where(x => x.IsFilterable == true && fieldNames.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)))?
                 .SelectMany(x => x?.GetSortFieldNames)?
                 .ToArray() ??
                 new string[] { };

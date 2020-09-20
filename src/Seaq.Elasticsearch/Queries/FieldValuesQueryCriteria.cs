@@ -40,7 +40,7 @@ namespace Seaq.Elasticsearch.Queries
         {
             var schemas = cluster.GetStoreSchemas(StoreIdNames.ToArray());
 
-            AggregatableFields = schemas?.SelectMany(x => x.GetSortableFieldNames(_fieldNameUtilities, FieldName))?.ToArray() ?? new string[] { };
+            AggregatableFields = schemas?.SelectMany(x => x.GetSortableFieldNames(FieldName))?.ToArray() ?? new string[] { };
                 
         }
 
