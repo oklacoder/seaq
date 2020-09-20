@@ -91,26 +91,6 @@ namespace Seaq.Elasticsearch.Tests
         }
         
         [Fact]
-        public void Can_Field_Values_Query_With_Exact_Fieldname()
-        {
-            var (cluster, store, documents) = SpinUp();
-
-            var tester = documents[5];
-
-            var criteria = new FieldValuesQueryCriteria(new[] { store.StoreId.Name }, "lastName", null, true);
-            var query = new FieldValuesQuery(criteria);
-
-            var result = cluster.Query(query) as FieldValuesQueryResult;
-
-            var buckets = result.Buckets;
-
-            Decommission(cluster);
-            Assert.NotEmpty(buckets);
-        }
-
-
-
-        [Fact]
         public void Filter_Query_Only_Returns_Suggestion_Bucket_For_Specified_Filter_Fields()
         {
             var (cluster, store, documents) = SpinUp();

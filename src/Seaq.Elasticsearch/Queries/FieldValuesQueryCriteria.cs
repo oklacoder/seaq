@@ -19,7 +19,6 @@ namespace Seaq.Elasticsearch.Queries
             IEnumerable<string> storeIdNames,
             string fieldName,
             string queryText,
-            bool? useExactFieldName = null,
             Paging paging = null,
             IFieldNameUtilities fieldNameUtilities = null)
         {
@@ -33,7 +32,6 @@ namespace Seaq.Elasticsearch.Queries
         public IPaging Paging => _paging;
         public ImmutableList<string> StoreIdNames { get; }
         public string FieldName { get; }
-        public bool? UseExactFieldName { get; }
         public string QueryText { get; }
 
         public string[] AggregatableFields { get; set; }
@@ -43,8 +41,6 @@ namespace Seaq.Elasticsearch.Queries
             var schemas = cluster.GetStoreSchemas(StoreIdNames.ToArray());
 
             AggregatableFields = 
-                UseExactFieldName == true ?
-                schemas?.SelectMany(x => x.GetSortableFieldNames().Where(z => z.Equals(FieldName, StringComparison.OrdinalIgnoreCase)))?.ToArray() :
                 schemas?.SelectMany(x => x.GetSortableFieldNames(FieldName))?.ToArray() ?? new string[] { };
             //next step is to swap this to allow for hitting exact field names, eg "name.sort" or "name.keyword"
                 
