@@ -128,7 +128,15 @@ namespace Seaq.Elasticsearch.Queries
             foreach (var a in criteria.AggregatableFields)
             {
                 var aggregations =
-                    searchResults.Aggregations?.Terms(a)?.Buckets?.Where(x => x.Values.Any() || x.DocCount > 0).Select(x => x.BuildSuggestionBucket()).ToArray();
+                    searchResults.Aggregations?
+                        .Terms(a)?
+                        .Buckets?
+                        .Where(x => 
+                            x.Values.Any() || 
+                            x.DocCount > 0)
+                        .Select(x => x.BuildSuggestionBucket())
+                        .OrderByDescending(x => x.Count)
+                        .ToArray();
 
                 if (aggregations != null)
                 {
