@@ -21,7 +21,7 @@ namespace Seaq.Elasticsearch
 
         public static class Fields
         {
-            public const string LowerField = "sort";
+            public const string SortField = "sort";
             public const string KeywordField = "keyword";
             public static string[] ConstantReturnedFields => new string[] { nameof(ISkinnyDocument.DocumentId), nameof(ISkinnyDocument.StoreId), nameof(ISkinnyDocument.Type)};
         }

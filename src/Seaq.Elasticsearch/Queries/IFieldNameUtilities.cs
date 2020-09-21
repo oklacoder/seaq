@@ -16,5 +16,8 @@ namespace Seaq.Elasticsearch.Queries
 
         public Type GetSearchableType(
             string typeFullName);
+
+        public string RemoveKnownPropertySuffixesFromPropertyName(
+            string propertyName);
     }
 }

@@ -41,9 +41,10 @@ namespace Seaq.Elasticsearch.Queries
             var schemas = cluster.GetStoreSchemas(StoreIdNames.ToArray());
 
             AggregatableFields = 
-                schemas?.SelectMany(x => x.GetSortableFieldNames(FieldName))?.ToArray() ?? new string[] { };
-            //next step is to swap this to allow for hitting exact field names, eg "name.sort" or "name.keyword"
-                
+                schemas?.SelectMany(x => 
+                    x.GetSortableFieldNames(
+                        _fieldNameUtilities.RemoveKnownPropertySuffixesFromPropertyName(FieldName)))?.ToArray() ?? new string[] { };
+            //next step is to swap this to allow for hitting exact field names, eg "name.sort" or "name.keyword"                
         }
 
         public Func<SearchDescriptor<IDocument>, ISearchRequest> GetDescriptor()

@@ -16,10 +16,10 @@ namespace Seaq.Elasticsearch.Clusters
         {
             var sort =
                 new KeywordPropertyDescriptor<string>()
-                    .Name(WellKnownKeys.Fields.LowerField)
+                    .Name(WellKnownKeys.Fields.SortField)
                     .Normalizer(WellKnownKeys.Normalizers.Lowercase);
 
-            type.Fields.Add(WellKnownKeys.Fields.LowerField, sort);
+            type.Fields.Add(WellKnownKeys.Fields.SortField, sort);
 
             base.Visit(type, propertyInfo, attribute);
         }

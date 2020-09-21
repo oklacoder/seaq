@@ -89,6 +89,23 @@ namespace Seaq.Elasticsearch.Tests
             Decommission(cluster);
             Assert.NotEmpty(buckets);
         }
+        [Fact]
+        public void Can_Field_Values_Query_For_Aggregate_Fields()
+        {
+            var (cluster, store, documents) = SpinUp();
+
+            var tester = documents[5];
+
+            var criteria = new FieldValuesQueryCriteria(new[] { store.StoreId.Name }, $"lastName.{WellKnownKeys.Fields.KeywordField}", null);
+            var query = new FieldValuesQuery(criteria);
+
+            var result = cluster.Query(query) as FieldValuesQueryResult;
+
+            var buckets = result.Buckets;
+
+            Decommission(cluster);
+            Assert.NotEmpty(buckets);
+        }
         
         [Fact]
         public void Filter_Query_Only_Returns_Suggestion_Bucket_For_Specified_Filter_Fields()

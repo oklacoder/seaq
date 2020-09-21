@@ -26,7 +26,7 @@ namespace Seaq.Elasticsearch.Queries
             return GetElasticPropertyName(
                 type,
                 propertyName,
-                WellKnownKeys.Fields.LowerField);
+                WellKnownKeys.Fields.SortField);
         }
 
         public string GetElasticPropertyNameWithoutSuffix(
@@ -34,6 +34,20 @@ namespace Seaq.Elasticsearch.Queries
             string propertyName)
         {
             return GetElasticPropertyName(type, propertyName, null);
+        }
+
+        public string RemoveKnownPropertySuffixesFromPropertyName(
+            string propertyName)
+        {
+            if (propertyName.EndsWith(WellKnownKeys.Fields.KeywordField))
+            {
+                return propertyName.Substring(0, propertyName.Length - (WellKnownKeys.Fields.KeywordField.Length + 1));
+            }
+            if (propertyName.EndsWith(WellKnownKeys.Fields.SortField))
+            {
+                return propertyName.Substring(0, propertyName.Length - (WellKnownKeys.Fields.SortField.Length + 1));
+            }
+            return propertyName;
         }
 
         public IEnumerable<Type> GetAllSearchableTypes()

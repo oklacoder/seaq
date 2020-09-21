@@ -53,7 +53,7 @@ namespace Seaq.Elasticsearch.Stores
         public bool? IsKeywordField => Name.EndsWith(WellKnownKeys.Fields.KeywordField, System.StringComparison.OrdinalIgnoreCase);
 
         [DataMember(Name = nameof(IsSortField))]
-        public bool? IsSortField => Name.EndsWith(WellKnownKeys.Fields.LowerField, System.StringComparison.OrdinalIgnoreCase);
+        public bool? IsSortField => Name.EndsWith(WellKnownKeys.Fields.SortField, System.StringComparison.OrdinalIgnoreCase);
 
         [DataMember(Name = nameof(GetKeywordFieldNames))]
         public string[] GetKeywordFieldNames => 
