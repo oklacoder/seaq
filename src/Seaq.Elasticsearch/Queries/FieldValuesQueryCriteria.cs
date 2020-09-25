@@ -44,7 +44,7 @@ namespace Seaq.Elasticsearch.Queries
                 schemas?.SelectMany(x => 
                     x.GetSortableFieldNames(
                         _fieldNameUtilities.RemoveKnownPropertySuffixesFromPropertyName(FieldName)))?.ToArray() ?? new string[] { };
-            //next step is to swap this to allow for hitting exact field names, eg "name.sort" or "name.keyword"                
+            //next step is to swap this to allow for hitting nested fields
         }
 
         public Func<SearchDescriptor<IDocument>, ISearchRequest> GetDescriptor()

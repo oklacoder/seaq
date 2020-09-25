@@ -126,11 +126,16 @@ namespace Seaq.Elasticsearch.Stores
 
         public string[] GetSortableFieldNames(params string[] fieldNames)
         {
-            return Fields?
-                .Where(x => x.IsFilterable == true && fieldNames.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)))?
-                .SelectMany(x => x?.GetSortFieldNames)?
-                .ToArray() ??
-                new string[] { };
+            //return Fields?
+            //    .Where(x => x.IsFilterable == true && fieldNames.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)))?
+            //    .SelectMany(x => x?.GetSortFieldNames)?
+            //    .ToArray() ??
+            //    new string[] { };
+
+            return fieldNames?
+                .SelectMany(x => GetNDepthFieldByName(x)?.GetSortFieldNames ?? new string[] { })?
+                .Where(x => !string.IsNullOrWhiteSpace(x))?
+                .ToArray();
         }
 
         public string[] GetSortableFieldNames(IFieldNameUtilities fieldNameUtilities, params string[] fieldNames)
@@ -175,6 +180,24 @@ namespace Seaq.Elasticsearch.Stores
                 new string[] { };
         }
 
+        private StoreField GetNDepthFieldByName(string fieldName)
+        {
+            var field = Fields.FirstOrDefault(x => x.FieldTree.Any(z => z.Equals(fieldName, StringComparison.OrdinalIgnoreCase)));
 
+            if (field == null)
+                return default;
+
+            return GetChildFieldByName(fieldName, field);
+
+            StoreField GetChildFieldByName(string fieldName, StoreField field)
+            {
+                if (field.Name.Equals(fieldName, StringComparison.OrdinalIgnoreCase))
+                    return field;
+
+                var f = field.Fields.FirstOrDefault(x => x.FieldTree.Any(z => z.Equals(fieldName, StringComparison.OrdinalIgnoreCase)));
+
+                return GetChildFieldByName(fieldName, f);
+            }
+        }
     }
 }

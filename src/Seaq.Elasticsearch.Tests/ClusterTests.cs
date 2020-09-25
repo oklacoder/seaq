@@ -6,11 +6,11 @@ using System.Linq;
 using Seaq.Elasticsearch.Queries;
 using Seaq.Elasticsearch.Documents;
 
-
 namespace Seaq.Elasticsearch.Tests
 {
     public class ClusterTests
     {
+
         private readonly string ScopeId;
         private ClusterSettings settings { get; }
 

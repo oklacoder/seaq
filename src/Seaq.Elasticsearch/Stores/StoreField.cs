@@ -35,7 +35,7 @@ namespace Seaq.Elasticsearch.Stores
         [DataMember(Name = nameof(FieldTree))]
         public string[] FieldTree => Fields == null ?
             new[] { this.Name } :
-            new[] { this.Name }.Concat(Fields?.Select(x => $"{x.Name}")).ToArray();
+            new[] { this.Name }.Concat(Fields?.SelectMany(x => x.FieldTree)).ToArray();
 
         [DataMember(Name = nameof(HasKeywordField))]
         public bool? HasKeywordField => Fields?.Any(p => p.IsKeywordField == true);
