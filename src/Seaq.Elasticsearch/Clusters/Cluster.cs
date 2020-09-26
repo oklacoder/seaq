@@ -35,9 +35,13 @@ namespace Seaq.Elasticsearch.Clusters
             IDocumentPropertyBuilder documentPropertyBuilder = null,
             IResultsBuilder resultsBuilder = null)
         {
+            Log.Debug("Building Cluster for scope {0} at url {1}", settings.ScopeId, settings.Url);
+
             _serializer = settings.Serializer ??
                         new NewtonsoftElasticsearchSerializer((x) => TryGetSearchType(x));
-                        //new MessagePackElasticsearchSerializer((x) => TryGetStoreType(x));
+            //new MessagePackElasticsearchSerializer((x) => TryGetStoreType(x));
+
+            Log.Debug("Building client for {0}@{1}", settings.Username, settings.Url);
 
             _client = GetClient(
                 GetConnectionSettings(
@@ -86,6 +90,7 @@ namespace Seaq.Elasticsearch.Clusters
                 ///it bypasses certificate validation entirely, which is necessary for local self-signed certs,
                 ///but is a GIANT security risk otherwise.  Only used for debugging for a reason.
 #if DEBUG
+                Log.Debug("DEBUG mode enabled.  Ignoring server certificate validation and enabling additional Elasticsearch debug messages.");
                 connectionSettings.ServerCertificateValidationCallback((a, b, c, d) => true);
                 connectionSettings.EnableDebugMode();
 #endif
@@ -157,6 +162,10 @@ namespace Seaq.Elasticsearch.Clusters
         public Store CreateStore(
             CreateStoreSettings settings)
         {
+
+            Log.Information("Creating store {0}", StoreId.FormatAsIndexId(settings.ScopeId, settings.Moniker));
+            Log.Debug("Additional settings: TypeName: {0}, Primary Shards: {1}, Replica Shards: {2}", settings.TypeFullName, settings.PrimaryShards, settings.ReplicaShards);
+
             Store store = null;
             if (settings == null)
             {
@@ -187,16 +196,19 @@ namespace Seaq.Elasticsearch.Clusters
 
             if (createResult.IsValid)
             {
+                Log.Debug("Store successfully created.");
                 var schema = new StoreSchema(settings);
                 store = new Store(store, schema);
                 _stores.Add(store.StoreId.Name, store);
 
                 if (Props.EagerlyPersistStoreMetaDefault || settings.EagerlyPersistStoreMeta)
                 {
+                    Log.Debug("Persisting store metadata...");
                     schema = BuildStoreSchema(createResult.Index);
                     var saveSchemaResult = SaveStoreSchema(createResult.Index, schema);
                     if (saveSchemaResult)
                     {
+                        Log.Debug("Metadata persist successful.");
                         store = new Store(store, schema);
                     }
                 }
@@ -213,6 +225,9 @@ namespace Seaq.Elasticsearch.Clusters
         public bool DeleteStore(
             string storeIdName)
         {
+            Log.Debug("Executing method DeleteStore");
+            Log.Information("Attempting to delete store {0}", storeIdName);
+
             bool success = false;
             if (string.IsNullOrWhiteSpace(storeIdName))
             {
@@ -222,6 +237,7 @@ namespace Seaq.Elasticsearch.Clusters
 
             if (!DoesDataStoreExist(storeIdName))
             {
+                Log.Information("Store with name {0} not found.", storeIdName);
                 return success;
             }
 
@@ -229,6 +245,7 @@ namespace Seaq.Elasticsearch.Clusters
 
             if (deleteResult.IsValid)
             {
+                Log.Information("Store {0} successfully deleted.", storeIdName);
                 //_client.Index.
                 _stores.Remove(storeIdName);
                     
@@ -245,21 +262,33 @@ namespace Seaq.Elasticsearch.Clusters
         public string[] Commit(
             IDocument[] documents)
         {
+            Log.Debug("Attempting to persist {0} documents.", documents.Length);
+
             if (!documents.Any())
             {
                 throw new ArgumentNullException($"Parameter {nameof(documents)} is null or empty.");
             }
-            return Commit(documents, Props.ForceRefreshOnCommit);
+
+            return _Commit(documents, Props.ForceRefreshOnCommit);
         }
 
         public string[] Commit(
             IDocument[] documents,
             bool overrideForceRefreshOnCommitSetting)
         {
+            Log.Debug("Attempting to persist {0} documents with forceRefreshOverride of {1}", documents.Length, overrideForceRefreshOnCommitSetting);
             if (!documents.Any())
             {
                 throw new ArgumentNullException($"Parameter {nameof(documents)} is null or empty.");
             }
+
+            return _Commit(documents, overrideForceRefreshOnCommitSetting);
+        }
+
+        private string[] _Commit(
+            IDocument[] documents,
+            bool overrideForceRefreshOnCommitSetting)
+        {
 
             var bulkDescriptor = new BulkDescriptor();
 
@@ -275,25 +304,37 @@ namespace Seaq.Elasticsearch.Clusters
 
             var bulkResult = _client.Bulk(bulkDescriptor);
 
+            Log.Debug("Document persist complete with {0} errors.", bulkResult.ItemsWithErrors.Count());
+
             return bulkResult.ItemsWithErrors.Select(x => $"{x.Id} - {x.Error?.Reason}").ToArray();
         }
+
         public string[] DeleteDocuments(
             IDocument[] documents)
         {
+            Log.Debug("Attempting to delete {0} documents.", documents.Length);
             if (!documents.Any())
             {
                 throw new ArgumentNullException($"Parameter {nameof(documents)} is null or empty.");
             }
-            return DeleteDocuments(documents, Props.ForceRefreshOnCommit);
+            return _DeleteDocuments(documents, Props.ForceRefreshOnCommit);
         }
         public string[] DeleteDocuments(
             IDocument[] documents,
             bool overrideForceRefreshOnCommitSetting)
         {
+            Log.Debug("Attempting to delete {0} documents with forceRefreshOverride of {1}", documents.Length, overrideForceRefreshOnCommitSetting);
             if (!documents.Any())
             {
                 throw new ArgumentNullException($"Parameter {nameof(documents)} is null or empty.");
             }
+            return _DeleteDocuments(documents, overrideForceRefreshOnCommitSetting);
+        }
+
+        private string[] _DeleteDocuments(
+            IDocument[] documents,
+            bool overrideForceRefreshOnCommitSetting)
+        {
 
             var bulkDescriptor = new BulkDescriptor();
 
@@ -309,7 +350,9 @@ namespace Seaq.Elasticsearch.Clusters
 
             var bulkResult = _client.Bulk(bulkDescriptor);
 
-            return bulkResult.ItemsWithErrors.Select(x => x.Id).ToArray();
+            Log.Debug("Document delete complete with {0} errors.", bulkResult.ItemsWithErrors.Count());
+
+            return bulkResult.ItemsWithErrors.Select(x => $"{x.Id} - {x.Error?.Reason}").ToArray();
         }
 
         public IQueryResult Query<TDocument>(
@@ -317,6 +360,7 @@ namespace Seaq.Elasticsearch.Clusters
             where TDocument : class, IDocument
         {
             Log.Debug("Executing method Query.");
+            Log.Debug("Query type: {0}", query.GetType()?.FullName);
             Log.Debug("Parameters: {0}:{1}", nameof(query), query);
             if (query == null)
             {
@@ -333,6 +377,7 @@ namespace Seaq.Elasticsearch.Clusters
         public bool DoesDataStoreExist(
             string storeIdName)
         {
+            Log.Debug("Checking if store {0} exists.", storeIdName);
             if (string.IsNullOrWhiteSpace(storeIdName))
             {
                 throw new ArgumentNullException($"Parameter {nameof(storeIdName)} is null or invalid.");
@@ -417,6 +462,7 @@ namespace Seaq.Elasticsearch.Clusters
         private StoreSchema BuildStoreSchema(
             string storeIdName)
         {
+            Log.Debug("Generating schema for store {0}", storeIdName);
             var indices = _client.Indices.Get(Indices.Index(storeIdName));
             var index = indices.Indices.FirstOrDefault();
 
@@ -427,11 +473,8 @@ namespace Seaq.Elasticsearch.Clusters
         private StoreSchema[] BuildStoreSchemas(
             params string[] storeIdNames)
         {
-
-            var indices = _client.Indices.Get(Indices.Index(storeIdNames));
-            var schemas = indices.Indices.Select(p => new StoreSchema(p));
-
-            return schemas.ToArray();
+            Log.Debug("Generating schema for {0} stores.", storeIdNames.Length);
+            return storeIdNames.Select(x => BuildStoreSchema(x)).ToArray();
         }
         
         private StoreSchema BuildSchemaFromMeta(
@@ -466,6 +509,7 @@ namespace Seaq.Elasticsearch.Clusters
             string storeIdName, 
             StoreSchema schema)
         {
+            Log.Information("Attempting to save schema for store {0}", storeIdName);
             if (!_stores.ContainsKey(storeIdName))
             {
                 throw new ArgumentNullException($"Parameter {nameof(storeIdName)} is null or invalid.");
@@ -486,6 +530,7 @@ namespace Seaq.Elasticsearch.Clusters
 
             if (putResult.IsValid)
             {
+                Log.Information("Schema saved succesfully.");
                 if (_stores.ContainsKey(storeIdName))
                     _stores[storeIdName] = new Store(_stores[storeIdName], schema);
             }
