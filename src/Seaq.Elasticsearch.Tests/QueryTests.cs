@@ -1,4 +1,5 @@
-﻿using Seaq.Elasticsearch.Clusters;
+﻿using Nest;
+using Seaq.Elasticsearch.Clusters;
 using Seaq.Elasticsearch.Documents;
 using Seaq.Elasticsearch.Queries;
 using Seaq.Elasticsearch.Queries.Comparators;
@@ -26,6 +27,28 @@ namespace Seaq.Elasticsearch.Tests
             this.output = output;
         }
 
+        [Fact]
+        public void Can_Direct_Query()
+        {
+            var (cluster, store, documents) = SpinUp();
+
+            var tester = documents[5];
+
+            var query = new SearchDescriptor<IDocument>(store.StoreId.Name)
+                .Query(q => q.Ids(x => x.Values(tester.DocumentId)));
+
+            var criteria = new DirectQueryCriteria(query);
+            var dq = new DirectQuery(criteria);
+
+            var res = cluster.Query(dq);
+
+            var contains = res.Results.Any(x => x.DocumentId == tester.DocumentId);
+
+            Decommission(cluster);
+
+            Assert.NotEmpty(res.Results);
+            Assert.True(contains);
+        }
 
         [Fact]
         public void Can_Filter_Query()

@@ -30,13 +30,31 @@ namespace Seaq.Elasticsearch.Queries
         {
             return criteria switch
             {
-                SimpleQueryCriteria simpleQuery => GetSimpleQueryResult(simpleQuery, searchResults),
-                SuggestionQueryCriteria suggestionQuery => GetSuggestionQueryResult(suggestionQuery, searchResults),
+                DirectQueryCriteria directQueryCriteria => GetDirectQueryResult(directQueryCriteria, searchResults),
+                FieldValuesQueryCriteria fieldValuesCriteria => GetFieldValuesQueryResult(fieldValuesCriteria, searchResults),
                 FilteredQueryCriteria filteredQuery => GetFilteredQueryResult(filteredQuery, searchResults),
                 GetByIdsQueryCriteria idQueryCriteria => GetByIdQueryResult(idQueryCriteria, searchResults),
-                FieldValuesQueryCriteria fieldValuesCriteria => GetFieldValuesQueryResult(fieldValuesCriteria, searchResults),
+                SimpleQueryCriteria simpleQuery => GetSimpleQueryResult(simpleQuery, searchResults),
+                SuggestionQueryCriteria suggestionQuery => GetSuggestionQueryResult(suggestionQuery, searchResults),
                 _ => GetBaseQueryResult(criteria, searchResults)
             };
+        }
+
+        private DirectQueryResult GetDirectQueryResult(
+            DirectQueryCriteria criteria,
+            ISearchResponse<IDocument> searchResults)
+        {
+            var newPaging = new Paging(
+                criteria.Paging.CurrentPage,
+                criteria.Paging.PageSize,
+                searchResults.Total);
+            var newResultMeta = new DefaultResultMeta(searchResults);
+
+            return new DirectQueryResult(
+                newPaging,
+                searchResults.Documents.ToArray(),
+                newResultMeta
+            );
         }
 
         private SimpleQueryResult GetSimpleQueryResult(
