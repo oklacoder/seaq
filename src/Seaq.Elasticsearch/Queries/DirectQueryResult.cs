@@ -16,7 +16,7 @@ namespace Seaq.Elasticsearch.Queries
 
         public IResultMeta ResultMeta { get; }
 
-        ISearchResponse<IDocument> SearchResponse { get; }
+        public ISearchResponse<IDocument> SearchResponse { get; }
 
         public DirectQueryResult(
             Paging paging,
