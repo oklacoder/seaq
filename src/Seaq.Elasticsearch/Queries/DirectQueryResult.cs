@@ -1,4 +1,5 @@
-﻿using Seaq.Elasticsearch.Documents;
+﻿using Nest;
+using Seaq.Elasticsearch.Documents;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -15,14 +16,18 @@ namespace Seaq.Elasticsearch.Queries
 
         public IResultMeta ResultMeta { get; }
 
+        ISearchResponse<IDocument> SearchResponse { get; }
+
         public DirectQueryResult(
             Paging paging,
             IDocument[] results,
-            IResultMeta resultMeta)
+            IResultMeta resultMeta, 
+            ISearchResponse<IDocument> searchResponse)
         {
             Paging = paging;
             ResultMeta = resultMeta;
             Results = ImmutableList<IDocument>.Empty.AddRange(results);
+            SearchResponse = searchResponse;
         }
     }
 }

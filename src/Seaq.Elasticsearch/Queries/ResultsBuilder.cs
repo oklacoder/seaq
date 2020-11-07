@@ -53,7 +53,8 @@ namespace Seaq.Elasticsearch.Queries
             return new DirectQueryResult(
                 newPaging,
                 searchResults.Documents.ToArray(),
-                newResultMeta
+                newResultMeta,
+                searchResults
             );
         }
 
