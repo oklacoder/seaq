@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Simple Query Enhancer for Elasticsearch - Cluster Management</Title>
+    <Description>Seaq.Clusters, a cluster management framework for Elasticsearch that compliments the Seaq querying library</Description>
+    <TargetFrameworks>netstandard2.1;netcoreapp3.1;net5.0;</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <PackageIcon></PackageIcon>
+    <PackageIconUrl />
+    <Authors>oklacoder</Authors>
+    <Company></Company>
+    <RepositoryUrl>https://github.com/oklacoder/sqee</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/oklacoder/sqee</PackageProjectUrl>
+    <PackageTags>sqee elasticsearch</PackageTags>
+    <PackageLicenseFile>LICENSE.TXT</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="Utf8Json" Version="1.3.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Seaq\Seaq.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE.TXT">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

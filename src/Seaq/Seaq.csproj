@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Simple Query Enhancer for Elasticsearch</Title>
+    <Description>sqee, a query framework for Elasticsearch</Description>
+    <TargetFrameworks>netstandard2.1;netcoreapp3.1;net5.0;</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <PackageIcon></PackageIcon>
+    <PackageIconUrl />
+    <Authors>oklacoder</Authors>
+    <Company></Company>
+    <RepositoryUrl>https://github.com/oklacoder/sqee</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/oklacoder/sqee</PackageProjectUrl>
+    <PackageTags>sqee elasticsearch</PackageTags>
+    <PackageLicenseFile>LICENSE.TXT</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="nest" Version="7.11.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE.TXT">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
