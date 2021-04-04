@@ -14,6 +14,7 @@ env:
   BRANCH: ''
   FEATURE: ''
   VERSION: ''
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 jobs:
   build:
@@ -50,14 +51,14 @@ jobs:
       - name: setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: 5.0.201
 
       - name: build
         run: dotnet build src/$PROJECT_NAME.sln --configuration $ENV -p:Version=$VERSION
         shell: bash
 
       - name: publish
-        run: dotnet publish src/$PROJECT_NAME.sln --no-build --configuration $ENV --self-contained --framework netcoreapp3.1 -p:Version=$VERSION --output staging/artifact
+        run: dotnet publish src/$PROJECT_NAME.sln --no-build --configuration $ENV --self-contained --framework net5.0 -p:Version=$VERSION --output staging/artifact
         shell: bash
 
       - name: pack
