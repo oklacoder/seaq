@@ -70,14 +70,15 @@ jobs:
         run: |
           ls -la staging/bin
           ls -la staging/nupkg
-          ls -laR staging/artifact
-        shell: bash
-
-      - name: push
-        run: dotnet nuget push staging/nupkg/**/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate --source https://api.nuget.org/v3/index.json
+          ls -la staging/artifact
         shell: bash
 
       - uses: actions/upload-artifact@v1
         with:
           name: ${{ env.PROJECT_NAME }}-${{ env.VERSION }}
           path: staging/artifact
+
+      - name: push
+        run: dotnet nuget push staging/nupkg/**/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate --source https://api.nuget.org/v3/index.json
+        shell: bash
+
