@@ -70,7 +70,7 @@ jobs:
         run: |
           ls -la staging/bin
           ls -la staging/nupkg
-          ls -la staging/artifact
+          ls -laR staging/artifact
         shell: bash
 
       - name: push
