@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seaq", "Seaq\Seaq.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seaq.Tests", "Seaq.Tests\Seaq.Tests.csproj", "{F97F4576-BAA5-4983-AC96-63C050C176B7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seaq.Server", "Seaq.Server\Seaq.Server.csproj", "{694A7B27-9900-4238-B9BF-1054C4908E0B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +107,18 @@ Global
 		{F97F4576-BAA5-4983-AC96-63C050C176B7}.Release|x64.Build.0 = Release|Any CPU
 		{F97F4576-BAA5-4983-AC96-63C050C176B7}.Release|x86.ActiveCfg = Release|Any CPU
 		{F97F4576-BAA5-4983-AC96-63C050C176B7}.Release|x86.Build.0 = Release|Any CPU
+		{694A7B27-9900-4238-B9BF-1054C4908E0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{694A7B27-9900-4238-B9BF-1054C4908E0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{694A7B27-9900-4238-B9BF-1054C4908E0B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{694A7B27-9900-4238-B9BF-1054C4908E0B}.Debug|x64.Build.0 = Debug|Any CPU
+		{694A7B27-9900-4238-B9BF-1054C4908E0B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{694A7B27-9900-4238-B9BF-1054C4908E0B}.Debug|x86.Build.0 = Debug|Any CPU
+		{694A7B27-9900-4238-B9BF-1054C4908E0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{694A7B27-9900-4238-B9BF-1054C4908E0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{694A7B27-9900-4238-B9BF-1054C4908E0B}.Release|x64.ActiveCfg = Release|Any CPU
+		{694A7B27-9900-4238-B9BF-1054C4908E0B}.Release|x64.Build.0 = Release|Any CPU
+		{694A7B27-9900-4238-B9BF-1054C4908E0B}.Release|x86.ActiveCfg = Release|Any CPU
+		{694A7B27-9900-4238-B9BF-1054C4908E0B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
