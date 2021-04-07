@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Seaq.Clusters;
+using Seaq.Server.Model;
 
 namespace Seaq.Server.Controllers
 {
@@ -12,5 +14,21 @@ namespace Seaq.Server.Controllers
     public class CollectionController : ControllerBase
     {
 
+        private readonly Cluster _cluster;
+
+        public CollectionController(
+            Cluster cluster)
+        {
+            _cluster = cluster;
+        }
+
+
+        [HttpGet("{collectionName}")]
+        public async Task<SingleResponse<ICollection>> GetCollection(
+            [FromRoute] string collectionName)
+        {
+            return (await SingleResponse<ICollection>.Start(this.Request))
+                .Complete(_cluster.Collections.FirstOrDefault(x => x.CollectionName.Equals(collectionName, StringComparison.OrdinalIgnoreCase)));
+        }
     }
 }

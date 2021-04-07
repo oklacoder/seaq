@@ -20,7 +20,7 @@
     "Seaq.Server": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
@@ -28,7 +28,8 @@
         "Seaq_ClusterUrl": "http://localhost:9200",
         "Seaq_ClusterUsername": "",
         "Seaq_ClusterPassword": "",
-        "Seaq_ScopeId": "seaq_server_test"
+        "Seaq_ScopeId": "a61b4e9a28b342869668b29dba69f7e6"
+        //"Seaq_ScopeId": "seaq_server_test"
       }
     }
   }

@@ -55,7 +55,10 @@ namespace Seaq.Clusters{
 
         public IEnumerable<string> AllSortFields => new[] { this }.Concat(Fields).Where(x => x.IsSortField == true).Select(x => x.Name);
 
+        public CollectionField()
+        {
 
+        }
         public CollectionField(
             string name,
             string type,

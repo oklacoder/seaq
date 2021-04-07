@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Seaq.Clusters;
+using Seaq.Server.Model;
 
 namespace Seaq.Server.Controllers
 {
@@ -22,9 +23,19 @@ namespace Seaq.Server.Controllers
 
 
         [HttpGet]
-        public bool CanPingCluster()
+        public async Task<SingleResponse<bool>> Ping()
         {
-            return _cluster.CanPing();
+            return (await SingleResponse<bool>
+                .Start(this.Request))
+                ?.Complete(_cluster.CanPing());
+        }
+
+        [HttpGet]
+        public async Task<ListResponse<string>> GetCollections()
+        {
+            return (await ListResponse<string>
+                .Start(this.Request))
+                ?.Complete(_cluster.Collections.Select(x => x.CollectionName));
         }
     }
 }

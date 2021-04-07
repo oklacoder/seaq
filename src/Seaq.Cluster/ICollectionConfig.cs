@@ -29,7 +29,7 @@ namespace Seaq.Clusters{
         public bool ForceRefreshOnDocumentCommit { get; }
         public bool EagerlyPersistSchema { get; }
 
-        public CollectionSchema _schema;
+        internal CollectionSchema _schema;
         public ICollectionSchema Schema => _schema;
 
         public CollectionConfig(
