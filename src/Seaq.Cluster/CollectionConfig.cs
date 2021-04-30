@@ -1,21 +1,8 @@
 ﻿using System;
 
 namespace Seaq.Clusters{
-    public interface ICollectionConfig
-    {
-        string Name { get; }
-        Type DocumentType { get; }
-        int PrimaryShards { get; }
-        int ReplicaShards { get; }
-        bool ForceRefreshOnDocumentCommit { get; }
-        bool EagerlyPersistSchema { get; }
-        ICollectionSchema Schema { get; }
 
-        void AddScopeToName(string scopeId);
-    }
-
-    public class CollectionConfig :
-        ICollectionConfig
+    public class CollectionConfig 
     {
         const int _primaryShardDefault = 1;
         const int _replicaShardDefault = 2;
@@ -29,8 +16,7 @@ namespace Seaq.Clusters{
         public bool ForceRefreshOnDocumentCommit { get; }
         public bool EagerlyPersistSchema { get; }
 
-        internal CollectionSchema _schema;
-        public ICollectionSchema Schema => _schema;
+        internal CollectionSchema Schema;
 
         public CollectionConfig(
             string name,
@@ -47,7 +33,7 @@ namespace Seaq.Clusters{
             ReplicaShards = replicaShards;
             ForceRefreshOnDocumentCommit = forceRefreshOnDocumentCommit;
             EagerlyPersistSchema = eagerlyPersistSchema;
-            _schema = schema;
+            Schema = schema;
         }
 
         public void AddScopeToName(string scopeId)

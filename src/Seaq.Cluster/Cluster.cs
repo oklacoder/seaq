@@ -14,28 +14,16 @@ using Utf8Json;
 
 namespace Seaq.Clusters
 {
-    public interface ICluster
-    {
-        string ScopeId { get; }
-        IEnumerable<ICollection> Collections { get; }
-
-        IQueryResults<T> Query<T>(IQuery<T> criteria) 
-            where T : class, IDocument;
-        Task<IQueryResults<T>> QueryAsync<T>(IQuery<T> criteria) 
-            where T : class, IDocument;
-    }
-
-    public class Cluster :
-        ICluster
+    public class Cluster 
     {
         public string ScopeId { get; }
-        public IEnumerable<ICollection> Collections => _collections?.Values;
+        public IEnumerable<Collection> Collections => _collections?.Values;
 
         private const bool _deleteOnServerDefault = false;
         private const bool _createCollectionForNewDocumentType = true;
         
-        private Dictionary<string, ICollection> _collections;
-        private ILookup<string, ICollection> _collectionsByType => _collections.Values.ToLookup(x => x.DocumentType.FullName, x => x);
+        private Dictionary<string, Collection> _collections;
+        private ILookup<string, Collection> _collectionsByType => _collections.Values.ToLookup(x => x.DocumentType.FullName, x => x);
         private ElasticClient _client = null;
         private ISqeeElasticsearchSerializer _serializer;
         private Dictionary<string, Type> _searchableTypes;
@@ -64,7 +52,7 @@ namespace Seaq.Clusters
             return _client.Ping().IsValid;
         }
 
-        public bool? TryAddCollection(ICollectionConfig config, out ICollection collection)
+        public bool? TryAddCollection(CollectionConfig config, out Collection collection)
         {
             collection = default;
 
@@ -102,13 +90,29 @@ namespace Seaq.Clusters
 
             if (createResult.IsValid)
             {
+                _collections.Add(c.CollectionName, c);
                 var alias = _client.Indices.PutAlias(Indices.Index(c.CollectionName), config.DocumentType.FullName);
 
                 Log.Debug("Collection {0} successfully created.", c.CollectionName);
 
-                c.SetSchema(new CollectionSchema(config));
+                if (c.EagerlyPersistSchema)
+                {
+                    CollectionSchema schema;
 
-                _collections.Add(c.CollectionName, c);
+                    var index = _client.Indices.Get(Indices.Index(c.CollectionName))?.Indices?.FirstOrDefault();
+
+                    if (index.HasValue)
+                    {
+                        schema = new CollectionSchema(index.Value, config);
+                        TryUpdateCollectionSchema(c.CollectionName, schema, out _);
+                    }
+                    else
+                    {
+                        schema = new CollectionSchema(config);
+                    }
+                    c.SetSchema(schema);
+                    _collections[c.CollectionName] = c;
+                }
             }
 
 
@@ -119,7 +123,7 @@ namespace Seaq.Clusters
 
         public bool? TryDeleteCollection(string collectionName, bool deleteOnServer = _deleteOnServerDefault)
         {
-            if (!_collections.ContainsKey(collectionName))
+            if (!_collections.ContainsKey(collectionName) && deleteOnServer != true)
             {
                 Log.Error("Collection {0} not found on cluster {1}", collectionName, this.ScopeId);
                 throw new KeyNotFoundException($"Collection {collectionName} not found on cluster {this.ScopeId}.");
@@ -145,7 +149,7 @@ namespace Seaq.Clusters
         public bool? TryCommit<T>(T document)
             where T : class, IDocument
         {
-            ICollection collection;
+            Collection collection;
             if (!_collections.ContainsKey(document.CollectionId))
             {
                 Log.Error("Collection not found for id {0} and call not instructed to create it.", document.CollectionId);
@@ -169,7 +173,7 @@ namespace Seaq.Clusters
         public bool? TryCommit<T>(ICollection<T> documents, out IEnumerable<DocumentOperationError> itemsWithErrors)
             where T : class, IDocument
         {
-            ICollection collection;
+            Collection collection;
             var bulk = new BulkDescriptor();
             bool forceRefresh = false;
 
@@ -242,7 +246,7 @@ namespace Seaq.Clusters
 
             return result.IsValid;
         }
-        public bool? TryUpdateCollectionSchema(string collectionName, ICollectionSchema schema, out IEnumerable<string> messages)
+        public bool? TryUpdateCollectionSchema(string collectionName, CollectionSchema schema, out IEnumerable<string> messages)
         {
             messages = Array.Empty<string>();
             if (!_collections.ContainsKey(collectionName))
@@ -302,14 +306,14 @@ namespace Seaq.Clusters
             return collections;
         }
 
-        private Dictionary<string, ICollection> BuildCollectionCache(string scopeId, ElasticClient client, bool forceRefresh = false)
+        private Dictionary<string, Collection> BuildCollectionCache(string scopeId, ElasticClient client, bool forceRefresh = false)
         {
             Log.Debug("Building collection cache for scope {0}", scopeId);
-            var res = new Dictionary<string, ICollection>();
+            var res = new Dictionary<string, Collection>();
 
             var collectionNames = GetScopedCollectionList();
 
-            var cached = Collections?.Where(x => collectionNames.Any(z => z.Equals(x.CollectionName, StringComparison.OrdinalIgnoreCase))) ?? Array.Empty<ICollection>();
+            var cached = Collections?.Where(x => collectionNames.Any(z => z.Equals(x.CollectionName, StringComparison.OrdinalIgnoreCase))) ?? Array.Empty<Collection>();
             var toFetch = Collections == null ?
                 collectionNames :
                 Collections.Where(x => !collectionNames.Any(z => z.Equals(x.CollectionName, StringComparison.OrdinalIgnoreCase))).Select(x => x.CollectionName);

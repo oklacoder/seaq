@@ -1,19 +1,18 @@
-﻿using Serilog;
+﻿using Nest;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Seaq.Clusters{
-    public class CollectionSchema :
-        ICollectionSchema
+    public class CollectionSchema 
     {
         public string CollectionName { get; set; }
 
         public string CollectionDocumentType { get; set; }
 
-        private List<CollectionField> _fields { get; set; } = new List<CollectionField>();
-
-        public IEnumerable<ICollectionField> Fields => _fields;
+        public List<CollectionField> Fields { get; set; } = new List<CollectionField>();
 
         public CollectionSchema()
         {
@@ -21,9 +20,34 @@ namespace Seaq.Clusters{
         }
 
         public CollectionSchema(
-            ICollectionConfig config)
+            string collectionName,
+            string collectionDocumentType,
+            IEnumerable<CollectionField> fields = null)
+        {
+            CollectionName = collectionName;
+            CollectionDocumentType = collectionDocumentType;
+            Fields = fields?.ToList() ?? new List<CollectionField>();
+        }
+
+        public CollectionSchema(
+            CollectionConfig config)
         {
             CollectionName = config.Name;
+            CollectionDocumentType = config.DocumentType.FullName;
+        }
+
+        public CollectionSchema(
+             KeyValuePair<IndexName, IndexState> index,
+             CollectionConfig config)
+        {
+            var properties = index.Value?.Mappings?.Properties;
+
+            foreach(var key in properties.Keys)
+            {
+                Fields.Add(properties[key].ToCollectionField());
+            }
+
+            CollectionName = index.Key.Name;
             CollectionDocumentType = config.DocumentType.FullName;
         }
 
@@ -92,7 +116,7 @@ namespace Seaq.Clusters{
 
             return GetChildFieldByName(fieldName, field) as CollectionField;
 
-            ICollectionField GetChildFieldByName(string fieldName, ICollectionField field)
+            CollectionField GetChildFieldByName(string fieldName, CollectionField field)
             {
                 if (field.Name.Equals(fieldName, StringComparison.OrdinalIgnoreCase))
                     return field;
@@ -105,12 +129,12 @@ namespace Seaq.Clusters{
 
         public void AddField(CollectionField field)
         {
-            if (_fields.Any(x => x.Name.Equals(field.Name, StringComparison.OrdinalIgnoreCase)))
+            if (Fields.Any(x => x.Name.Equals(field.Name, StringComparison.OrdinalIgnoreCase)))
             {
                 Log.Error("Cannot add field {0} to schema for collection {1} - it already exists.", field.Name, this.CollectionName);
                 throw new Exception($"Cannot add field {field.Name} to schema for collection {this.CollectionName} - it already exists.");
             }
-            this._fields.Add(field);
+            this.Fields.Add(field);
         }
     }
 

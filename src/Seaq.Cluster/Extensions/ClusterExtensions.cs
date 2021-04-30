@@ -7,7 +7,7 @@ namespace Seaq.Clusters
 {
     public static class ClusterExtensions
     {
-        public static ConnectionSettings GetConnectionSettings(this Cluster cluster, IClusterConnection connection)
+        public static ConnectionSettings GetConnectionSettings(this Cluster cluster, ClusterConnection connection)
         {
             var url = connection.ClusterUrl;
             var username = connection.Username;

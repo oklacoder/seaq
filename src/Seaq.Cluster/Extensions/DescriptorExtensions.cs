@@ -6,7 +6,7 @@ namespace Seaq.Clusters{
     {
         public static CreateIndexDescriptor Extend(
             this CreateIndexDescriptor descriptor,
-            ICollectionConfig config,
+            CollectionConfig config,
             Type type)
         {
             return CreateIndexDescriptorExtender.Extend(config, type, descriptor);

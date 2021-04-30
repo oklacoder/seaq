@@ -1,6 +1,5 @@
 ﻿namespace Seaq.Clusters{
-    public class ClusterConnection :
-        IClusterConnection
+    public class ClusterConnection 
     {
         public ClusterConnection(
             string clusterUrl,

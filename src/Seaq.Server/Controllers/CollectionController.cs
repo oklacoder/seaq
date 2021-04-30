@@ -24,10 +24,10 @@ namespace Seaq.Server.Controllers
 
 
         [HttpGet("{collectionName}")]
-        public async Task<SingleResponse<ICollection>> GetCollection(
+        public async Task<SingleResponse<Collection>> GetCollection(
             [FromRoute] string collectionName)
         {
-            return (await SingleResponse<ICollection>.Start(this.Request))
+            return (await SingleResponse<Collection>.Start(this.Request))
                 .Complete(_cluster.Collections.FirstOrDefault(x => x.CollectionName.Equals(collectionName, StringComparison.OrdinalIgnoreCase)));
         }
     }

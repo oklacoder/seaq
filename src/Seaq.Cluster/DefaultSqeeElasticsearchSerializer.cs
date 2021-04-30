@@ -30,6 +30,8 @@ namespace Seaq.Clusters
 
         public T Deserialize<T>(object data)
         {
+            var t = typeof(T);
+            var r = JsonSerializer.NonGeneric.Serialize(data);
             return JsonSerializer.Deserialize<T>(JsonSerializer.NonGeneric.Serialize(data), Utf8Json.Resolvers.StandardResolver.CamelCase);
         }
 

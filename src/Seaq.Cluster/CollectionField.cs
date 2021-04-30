@@ -1,30 +1,29 @@
-﻿using System;
+﻿using Nest;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Seaq.Clusters{
-    public class CollectionField :
-        ICollectionField
+    public class CollectionField 
     {
-        public string Name { get; }
+        public string Name { get; set; }
 
-        public string Type { get; }
+        public string Type { get; set; }
 
-        public double? Boost { get; }
+        public double? Boost { get; set; }
 
         public string BoostedFieldName => $"{Name}^{Boost}";
 
-        public bool? IsFilterable { get; }
+        public bool? IsFilterable { get; set; }
 
-        public bool? IncludeInResults { get; }
+        public bool? IncludeInResults { get; set; }
 
         public bool? IsIncludedByDefault => Constants.Fields.AlwaysReturnedFields.Any(x => x.Equals(Name, StringComparison.OrdinalIgnoreCase)) == true;
 
-        public string Label { get; }
+        public string Label { get; set; }
 
 
-        private List<CollectionField> _fields { get; set; }
-        public IEnumerable<ICollectionField> Fields => _fields;
+        public List<CollectionField> Fields { get; set; }
 
         public IEnumerable<string> FieldTree =>
             Fields == null ?
@@ -35,9 +34,9 @@ namespace Seaq.Clusters{
 
         public bool? IsIncludedField => IncludeInResults == true || IsIncludedByDefault == true;
 
-        public bool? IsKeywordField => Name.EndsWith(Constants.Fields.KeywordField, StringComparison.OrdinalIgnoreCase);
+        public bool? IsKeywordField => Name?.EndsWith(Constants.Fields.KeywordField, StringComparison.OrdinalIgnoreCase);
 
-        public bool? IsSortField => Name.EndsWith(Constants.Fields.SortField, StringComparison.OrdinalIgnoreCase);
+        public bool? IsSortField => Name?.EndsWith(Constants.Fields.SortField, StringComparison.OrdinalIgnoreCase);
 
         public bool? HasBoostedField => Fields?.Any(x => x.IsBoostedField == true) == true;
 
@@ -62,11 +61,11 @@ namespace Seaq.Clusters{
         public CollectionField(
             string name,
             string type,
-            double? boost,
-            bool? isFilterable,
-            bool? includeInResults,
-            string label,
-            List<CollectionField> fields = null)
+            double? boost = null,
+            bool? isFilterable = null,
+            bool? includeInResults = null,
+            string label = null,
+            IEnumerable<CollectionField> fields = null)
         {
             Name = name;
             Type = type;
@@ -74,9 +73,97 @@ namespace Seaq.Clusters{
             IsFilterable = isFilterable;
             IncludeInResults = includeInResults;
             Label = label;
-            _fields = fields ?? new List<CollectionField>();
+            Fields = fields?.ToList() ?? new List<CollectionField>();
         }
 
+    }
+
+    public static class CollectionFieldExtensions
+    {
+        public static CollectionField ToCollectionField(
+            this IProperty property,
+            string parentFieldName = null)
+        {
+            var fieldName = 
+                string.IsNullOrWhiteSpace(parentFieldName) ? 
+                property.Name.Name : 
+                string.Join(".", parentFieldName, property.Name.Name).Trim('.');
+
+            return property switch
+            {
+                ObjectProperty prop => BuildField(prop, fieldName),
+                TextProperty prop => BuildField(prop, fieldName),
+                BooleanProperty prop => BuildField(prop, fieldName),
+                NumberProperty prop => BuildField(prop, fieldName),
+                DateProperty prop => BuildField(prop, fieldName),
+                _ => BuildField(property, fieldName)
+            };
+
+        }
+
+        private static CollectionField BuildField(
+            IProperty property, 
+            string fieldName)
+        {
+            return new CollectionField(
+                fieldName,
+                property.Type);
+        }
+
+        private static CollectionField BuildField(
+            ObjectProperty property,
+            string fieldName)
+        {
+            return new CollectionField(
+                fieldName,
+                (property as IProperty).Type,
+                fields: property?.Properties?.Select(x => ToCollectionField(x.Value, fieldName))
+            );
+        }
+
+        private static CollectionField BuildField(
+            TextProperty property,
+            string fieldName)
+        {
+            return new CollectionField(
+                fieldName,
+                (property as IProperty).Type,
+                fields: property?.Fields?.Select(x => ToCollectionField(x.Value, fieldName))
+            );
+        }
+
+        private static CollectionField BuildField(
+            BooleanProperty property,
+            string fieldName)
+        {
+            return new CollectionField(
+                fieldName,
+                (property as IProperty).Type,
+                fields: property?.Fields?.Select(x => ToCollectionField(x.Value, fieldName))
+            );
+        }
+
+        private static CollectionField BuildField(
+            NumberProperty property,
+            string fieldName)
+        {
+            return new CollectionField(
+                fieldName,
+                (property as IProperty).Type,
+                fields: property?.Fields?.Select(x => ToCollectionField(x.Value, fieldName))
+            );
+        }
+
+        private static CollectionField BuildField(
+            DateProperty property,
+            string fieldName)
+        {
+            return new CollectionField(
+                fieldName,
+                (property as IProperty).Type,
+                fields: property?.Fields?.Select(x => ToCollectionField(x.Value, fieldName))
+            );
+        }
     }
 
 }

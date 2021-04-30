@@ -1,9 +1,7 @@
 ﻿namespace Seaq.Clusters{
-    public class ClusterConfig :
-        IClusterConfig
+    public class ClusterConfig 
     {
-        private ClusterConnection _connection;
-        public IClusterConnection Connection => _connection;
+        public ClusterConnection Connection;
 
         public string ScopeId { get; }
 
@@ -12,7 +10,7 @@
             ClusterConnection connection)
         {
             ScopeId = scopeId;
-            _connection = connection;
+            Connection = connection;
         }
     }
 

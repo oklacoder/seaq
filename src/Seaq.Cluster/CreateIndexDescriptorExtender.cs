@@ -5,7 +5,7 @@ namespace Seaq.Clusters{
     internal static class CreateIndexDescriptorExtender
     {
         public static CreateIndexDescriptor Extend(
-            ICollectionConfig config,
+            CollectionConfig config,
             Type type,
             CreateIndexDescriptor descriptor)
         {
@@ -21,7 +21,7 @@ namespace Seaq.Clusters{
 
         private static IndexSettingsDescriptor GetShardSettingsDescriptor(
             this IndexSettingsDescriptor indexSettingsDescriptor,
-            ICollectionConfig config)
+            CollectionConfig config)
         {
             return
                 indexSettingsDescriptor

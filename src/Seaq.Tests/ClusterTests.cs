@@ -45,7 +45,8 @@ namespace Seaq.Tests
             var config = TestUtil.CollectionConfig;
 
             cluster.TryAddCollection(config, out var collection);
-            
+
+            cluster.TryDeleteCollection(collection.CollectionName, true);
             Assert.NotEmpty(cluster.Collections);
         }
 
@@ -64,8 +65,10 @@ namespace Seaq.Tests
 
             var canUpdate = cluster.TryUpdateCollectionSchema(collection.CollectionName, schema, out var msgs);
 
+
+            cluster.TryDeleteCollection(collection.CollectionName, true);
             Assert.True(canUpdate);
-            Assert.Equal(cluster.Collections.FirstOrDefault().Schema.Fields.FirstOrDefault().Name, f.Name);
+            Assert.True(cluster.Collections.FirstOrDefault().Schema.Fields.Any(x => x.Name.Equals(f.Name, StringComparison.OrdinalIgnoreCase)));
 
             Assert.NotNull(schema);
         }
@@ -85,8 +88,10 @@ namespace Seaq.Tests
 
             var canUpdate = cluster.TryUpdateCollectionSchema(collection.CollectionName, schema, out var msgs);
 
+
+            cluster.TryDeleteCollection(collection.CollectionName, true);
             Assert.True(canUpdate);
-            Assert.Equal(cluster.Collections.FirstOrDefault().Schema.Fields.FirstOrDefault().Name, f.Name);
+            Assert.True(cluster.Collections.FirstOrDefault().Schema.Fields.Any(x => x.Name.Equals(f.Name, StringComparison.OrdinalIgnoreCase)));
 
             Assert.NotNull(schema);
         }
@@ -102,6 +107,7 @@ namespace Seaq.Tests
 
             cluster.TryDeleteCollection(collection.CollectionName);
 
+            cluster.TryDeleteCollection(collection.CollectionName, true);
             Assert.Empty(cluster.Collections);
         }
 
@@ -121,6 +127,7 @@ namespace Seaq.Tests
             cluster = TestUtil.BuildCluster(cluster.ScopeId);
 
             Assert.NotEmpty(cluster.Collections);
+            cluster.TryDeleteCollection(collection.CollectionName, true);
         }
 
         [Fact]
@@ -148,10 +155,11 @@ namespace Seaq.Tests
 
             cluster.TryAddCollection(config, out var collection);
 
-            Assert.NotEmpty(cluster.Collections);
 
             cluster = TestUtil.BuildCluster(scope);
+            cluster.TryDeleteCollection(collection.CollectionName, true);
 
+            Assert.NotEmpty(cluster.Collections);
             Assert.NotEmpty(cluster.Collections);
         }
 
@@ -181,13 +189,12 @@ namespace Seaq.Tests
 
             var result = cluster.TryCommit(doc);
 
-            Assert.True(result);
-
             var q = new SimpleQuery<SampleResult>(new SimpleQueryCriteria<SampleResult>("matt", new[] { collection.CollectionName }));
             var res = cluster.Query(q);
-            Assert.NotEmpty(res.Documents);
 
             cluster.TryDeleteCollection(collection.CollectionName, true);
+            Assert.True(result);
+            Assert.NotEmpty(res.Documents);
         }
 
         [Fact]
@@ -255,10 +262,10 @@ namespace Seaq.Tests
 
             var q = new SimpleQuery<SampleResult>(new SimpleQueryCriteria<SampleResult>("matt", new[] { collection.CollectionName }));
             var res = cluster.Query(q);
-            Assert.NotEmpty(res.Documents);
-            Assert.Equal(3, res.Documents.Count());
 
             cluster.TryDeleteCollection(collection.CollectionName, true);
+            Assert.NotEmpty(res.Documents);
+            Assert.Equal(3, res.Documents.Count());
         }
 
         [Fact]
@@ -291,17 +298,18 @@ namespace Seaq.Tests
 
             var q = new SimpleQuery<SampleResult>(new SimpleQueryCriteria<SampleResult>("matt", new[] { collection.CollectionName }));
             var res = cluster.Query(q);
+
             Assert.NotEmpty(res.Documents);
 
             var deleteRes = cluster.TryDelete<SampleResult>(collection.CollectionName, out var deleteErrors, doc.Id);
 
-            Assert.Empty(deleteErrors);
-            Assert.True(deleteRes);
             
             res = cluster.Query(q);
-            Assert.Empty(res.Documents);
 
             cluster.TryDeleteCollection(collection.CollectionName, true);
+            Assert.Empty(deleteErrors);
+            Assert.True(deleteRes);
+            Assert.Empty(res.Documents);
         }
 
 
