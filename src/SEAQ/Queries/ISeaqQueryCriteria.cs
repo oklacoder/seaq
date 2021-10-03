@@ -4,7 +4,7 @@ using System.Linq;
 namespace seaq
 {
     public interface ISeaqQueryCriteria<T>
-        where T : class, IDocument
+        where T : BaseDocument
     {
         Nest.SearchDescriptor<T> GetSearchDescriptor();
         void ApplyClusterIndices(ILookup<string, Index> indices);

@@ -3,7 +3,7 @@
 namespace seaq
 {
     public interface ISeaqQueryResults<T>
-        where T : class, IDocument
+        where T : IDocument
     {
         public IEnumerable<T> Documents { get; }
         long Took { get; }

@@ -2,31 +2,91 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace seaq
 {
+    public class AdvancedQueryCriteria :
+        AdvancedQueryCriteria<BaseDocument>
+    {
+        [DataMember(Name = "type")]
+        [JsonPropertyName("type")]
+        public string Type { get; init; }
+
+        public override void ApplyClusterIndices(ILookup<string, Index> indices)
+        {
+            var idx = indices[Type];
+            var resp = Indices.ToList();
+            resp.AddRange(
+                idx
+                    .Where(x =>
+                        !resp.Any(z => z
+                            .Equals(x.Name, StringComparison.OrdinalIgnoreCase)))
+                    .Select(x => x.Name));
+            Indices = resp.ToArray();
+        }
+
+        public AdvancedQueryCriteria(
+            string type,
+            string[] indices,
+            IEnumerable<DefaultSortField> sortFields = null,
+            IEnumerable<DefaultReturnField> returnFields = null,
+            IEnumerable<DefaultFilterField> filterFields = null,
+            IEnumerable<DefaultBucketField> bucketFields = null,
+            int? skip = null,
+            int? take = null) :
+            base(indices, sortFields, returnFields, filterFields, bucketFields, skip, take)
+        {
+            Type = type;
+        }
+    }
+
     public class AdvancedQueryCriteria<T> :
         ISeaqQueryCriteria<T>
-    where T : class, IDocument
+    where T : BaseDocument
     {
-        public string[] Indices { get; private set; }
+        [DataMember(Name = "indices")]
+        [JsonPropertyName("indices")]
+        public string[] Indices { get; protected set; }
 
-        public int? Skip { get; }
-        public int? Take { get; }
 
-        public IEnumerable<ISortField> SortFields { get; }
-        public IEnumerable<IReturnField> ReturnFields { get; }
-        public IEnumerable<IFilterField> FilterFields { get; }
-        public IEnumerable<IBucketField> BucketFields { get; }
+        [DataMember(Name = "skip")]
+        [JsonPropertyName("skip")]
+        public int? Skip { get; init; }
 
-        public void ApplyClusterIndices(ILookup<string, Index> indices)
+        [DataMember(Name = "take")]
+        [JsonPropertyName("take")]
+        public int? Take { get; init; }
+
+        [DataMember(Name = "filterFields")]
+        [JsonPropertyName("filterFields")]
+        private IEnumerable<DefaultFilterField> _filterFields { get; init; }
+        public IEnumerable<IFilterField> FilterFields => _filterFields;
+
+        [DataMember(Name = "sortFields")]
+        [JsonPropertyName("sortFields")]
+        private IEnumerable<DefaultSortField> _sortFields { get; init; }
+        public IEnumerable<ISortField> SortFields => _sortFields;
+
+        [DataMember(Name = "returnFields")]
+        [JsonPropertyName("returnFields")]
+        public IEnumerable<DefaultReturnField> _returnFields { get; init; }
+        public IEnumerable<IReturnField> ReturnFields => _returnFields;
+
+        [DataMember(Name = "bucketFields")]
+        [JsonPropertyName("bucketFields")]
+        public IEnumerable<DefaultBucketField> _bucketFields { get; init; }
+        public IEnumerable<IBucketField> BucketFields => _bucketFields;
+
+        public virtual void ApplyClusterIndices(ILookup<string, Index> indices)
         {
             var idx = indices[typeof(T).FullName];
             var resp = Indices.ToList();
             resp.AddRange(
                 idx
                     .Where(x =>
-                        resp.Any(z => z
+                        !resp.Any(z => z
                             .Equals(x.Name, StringComparison.OrdinalIgnoreCase)))
                     .Select(x => x.Name));
             Indices = resp.ToArray();
@@ -34,18 +94,18 @@ namespace seaq
 
         public AdvancedQueryCriteria(
             string[] indices,
-            IEnumerable<ISortField> sortFields = null,
-            IEnumerable<IReturnField> returnFields = null,
-            IEnumerable<IFilterField> filterFields = null,
-            IEnumerable<IBucketField> bucketFields = null,
+            IEnumerable<DefaultSortField> sortFields = null,
+            IEnumerable<DefaultReturnField> returnFields = null,
+            IEnumerable<DefaultFilterField> filterFields = null,
+            IEnumerable<DefaultBucketField> bucketFields = null,
             int? skip = null,
             int? take = null)
         {
             Indices = indices;
-            SortFields = sortFields;
-            ReturnFields = returnFields;
-            FilterFields = filterFields;
-            BucketFields = bucketFields;
+            _filterFields = filterFields;
+            _sortFields = sortFields;
+            _returnFields = returnFields;
+            _bucketFields = bucketFields;
             Skip = skip;
             Take = take;
         }
@@ -58,7 +118,7 @@ namespace seaq
                 .Take(Take ?? 10)
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<T>())
                 .Query(q => FilterFields.GetQueryDesctiptor<T>())
-                .Source(t => ReturnFields.GetSourceFilterDescriptor<T>())
+                .Source(t => ReturnFields.GetSourceFilterDescriptor<T>())                
                 .Sort(s => SortFields.GetSortDescriptor<T>());
 
             return s;

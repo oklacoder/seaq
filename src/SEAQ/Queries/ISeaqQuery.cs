@@ -3,7 +3,7 @@
 namespace seaq
 {
     public interface ISeaqQuery<T>
-        where T : class, IDocument
+        where T : BaseDocument
     {
         public ISeaqQueryCriteria<T> Criteria { get; }
 

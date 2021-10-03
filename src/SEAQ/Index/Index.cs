@@ -5,10 +5,15 @@ using System.Linq;
 
 namespace seaq
 {
-    public class Index
+    public class Index : 
+        BaseDocument
     {
+        public override string Id => Name;
+        public override string IndexName => Constants.Indices.InternalIndexStoreName;
+        public override string Type => GetType().FullName;
+
         public string Name { get; set; }
-        public string Type { get; set; }
+        public string DocumentType { get; set; }
         public int PrimaryShards { get; set; }
         public int ReplicaShards { get; set; }
         public bool ForceRefreshOnDocumentCommit { get; set; }
@@ -18,7 +23,7 @@ namespace seaq
 
         private Index(
             string name,
-            string type,
+            string documentType,
             IEnumerable<Field> fields,
             int? primaryShards = null,
             int? replicaShards = null,
@@ -26,7 +31,7 @@ namespace seaq
             bool? eagerlyPersistSchema = null)
         {
             Name = name;
-            Type = type;
+            DocumentType = documentType;
             Fields = fields;
             PrimaryShards = primaryShards ?? Constants.Indices.Defaults.PrimaryShardsDefault;
             ReplicaShards = replicaShards ?? Constants.Indices.Defaults.ReplicaShardsDefault;
@@ -43,7 +48,7 @@ namespace seaq
             IndexConfig config)
         {
             Name = config.Name;
-            Type = config.Type;
+            DocumentType = config.DocumentType;
             PrimaryShards = config.PrimaryShards;
             ReplicaShards = config.ReplicaShards;
             ForceRefreshOnDocumentCommit = config.ForceRefreshOnDocumentCommit;
@@ -73,7 +78,7 @@ namespace seaq
             {
                 return new Index(
                     name, 
-                    nameof(IDocument),
+                    nameof(BaseDocument),
                     index.Value?.Mappings?.Properties
                         .Select(x => x.Value.FromNestProperty()));
             }

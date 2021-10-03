@@ -12,7 +12,7 @@ namespace seaq
         {
             return
                 descriptor
-                    .Aliases(x => x.Alias(config.Type))
+                    .Aliases(x => x.Alias(config.DocumentType))
                     .Map(x => GetTypeMappingDescriptor(x, type)
                     .Meta(m => m.Add(Constants.Indices.Meta.SchemaKey,
                         new Index(config))))

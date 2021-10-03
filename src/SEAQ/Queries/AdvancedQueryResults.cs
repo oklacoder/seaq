@@ -2,6 +2,25 @@
 
 namespace seaq
 {
+    public class AdvancedQueryResults :
+     AdvancedQueryResults<IDocument>
+    {
+        
+        public AdvancedQueryResults() { }
+        public AdvancedQueryResults(
+            IEnumerable<BaseDocument> documents,
+            long took,
+            long total)
+            : base(documents, took, total)
+        {
+        }
+        public AdvancedQueryResults(
+            Nest.ISearchResponse<BaseDocument> searchResponse)
+            : base(searchResponse)
+        {
+        }
+    }
+
     public class AdvancedQueryResults<T> :
         ISeaqQueryResults<T>
     where T : class, IDocument

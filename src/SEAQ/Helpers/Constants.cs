@@ -22,6 +22,7 @@ namespace seaq
         }
         public class Indices
         {
+            public const string InternalIndexStoreName = ".seaq_internal_index_store";
             public const string NamePartSeparator = "_";
             public class Meta
             {
@@ -43,7 +44,7 @@ namespace seaq
         {
             public const string SortField = "sort";
             public const string KeywordField = "keyword";
-            public static IEnumerable<string> AlwaysReturnedFields => new string[] { nameof(IDocument.Id), nameof(IDocument.IndexName), nameof(IDocument.Type) };
+            public static IEnumerable<string> AlwaysReturnedFields => new string[] { nameof(BaseDocument.Id), nameof(BaseDocument.IndexName), nameof(BaseDocument.Type) };
         }
 
     }

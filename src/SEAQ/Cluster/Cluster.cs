@@ -30,9 +30,9 @@ namespace seaq
         /// <summary>
         /// Lookup of cluster indices, grouped by dotnet type
         /// </summary>
-        public ILookup<string, Index> IndicesByType => _indices.Values.ToLookup(x => x.Type, x => x);
+        public ILookup<string, Index> IndicesByType => _indices.Values.ToLookup(x => x.DocumentType, x => x);
         /// <summary>
-        /// List of loaded types that implement the IDocument interface
+        /// List of loaded types that implement the BaseDocument interface
         /// </summary>
         public IEnumerable<Type> SearchableTypes => _searchableTypes.Values;
 
@@ -70,7 +70,7 @@ namespace seaq
             ClusterArgs args)
         {
             ClusterScope = args.ClusterScope;
-            _serializer = args.Serializer ?? new DefaultSeaqElasticsearchSerializer((x, y) => TryGetSearchType(x, out y));
+            _serializer = args.Serializer ?? new DefaultSeaqElasticsearchSerializer((x) => TryGetSearchType(x));
 
             _client = BuildClient(args, _serializer);
 
@@ -102,6 +102,14 @@ namespace seaq
             var vals = resp.Indices.Select(Index.Create);
             _indices = vals.ToDictionary(x => x.Name, x => x);
 
+            if (!_indices.ContainsKey(Constants.Indices.InternalIndexStoreName))
+            {
+                var indexConfig = new IndexConfig(
+                    Constants.Indices.InternalIndexStoreName, typeof(Index).FullName);
+                await CreateIndexAsync(indexConfig);
+                await HydrateInternalStore();
+            }
+
             IndexCacheInitialized?.Invoke(this, null);
         }
 
@@ -116,6 +124,8 @@ namespace seaq
 
             var vals = resp.Indices.Select(Index.Create);
             _indices = vals.ToDictionary(x => x.Name, x => x);
+
+            await HydrateInternalStore();
 
             IndexCacheRefreshed?.Invoke(this, null);
         }
@@ -159,9 +169,9 @@ namespace seaq
                 return _indices[config.Name];
             }
 
-            if (!_searchableTypes.TryGetValue(config.Type, out var type))
+            if (!_searchableTypes.TryGetValue(config.DocumentType, out var type))
             {
-                Log.Error("Attempted to create an index for type {0}, which is not present in the cluster's type cache.  Reference the type prior to attempting index creation to ensure that its assembly is forced to load.", config.Type);
+                Log.Error("Attempted to create an index for type {0}, which is not present in the cluster's type cache.  Reference the type prior to attempting index creation to ensure that its assembly is forced to load.", config.DocumentType);
                 await Task.CompletedTask;
                 return null;
             }
@@ -190,6 +200,8 @@ namespace seaq
             var index = Index.Create(server_index.Value);
 
             _indices.Add(index.Name, index);
+
+            await SaveToInternalStore(index);
 
             return index;
         }
@@ -230,12 +242,18 @@ namespace seaq
                 return false;
             }
 
-            if (!_indices.Remove(indexName))
+            var idx = _indices[indexName];
+            if (_indices.Remove(indexName))
+            {
+                await DeleteFromInternalStore(idx);
+            }
+            else
             {
                 const string msg = "Index {0} deletion reported success, but could not remove index from local cache.  This cannot be automatically resolved - suggest handling with index cache refresh.";
                 Log.Error(msg, indexName);
                 throw new InvalidOperationException(string.Format(msg, indexName));
             }
+
 
             return true;
         }
@@ -283,12 +301,12 @@ namespace seaq
 
         //commit docs
         public bool Commit<T>(T document)
-            where T : class, IDocument  
+            where T : BaseDocument  
         {
             return CommitAsync(document).Result;
         }
         public async Task<bool> CommitAsync<T>(T document)
-            where T : class, IDocument
+            where T : BaseDocument
         {
             if (!TryGetIndexForDocument(document, out var idx))
             {
@@ -321,12 +339,12 @@ namespace seaq
             return res.IsValid;
         }
         public bool Commit<T>(IEnumerable<T> documents)
-            where T : class, IDocument
+            where T : BaseDocument
         {
             return CommitAsync(documents).Result;
         }
         public async Task<bool> CommitAsync<T>(IEnumerable<T> documents)
-            where T : IDocument
+            where T : BaseDocument
         {
 
             var bulk = new BulkDescriptor();
@@ -340,7 +358,7 @@ namespace seaq
                     return false;
                 }
 
-                bulk.Index<IDocument>(x => x
+                bulk.Index<BaseDocument>(x => x
                     .Index(idx.Name)
                     .Id(document.Id)
                     .Document(document))
@@ -469,12 +487,12 @@ namespace seaq
 
         //delete docs
         public bool Delete<T>(T document)
-            where T : class, IDocument
+            where T : BaseDocument
         {
             return DeleteAsync(document).Result;
         }
         public async Task<bool> DeleteAsync<T>(T document)
-            where T : class, IDocument
+            where T : BaseDocument
         {
             if (!TryGetIndexForDocument(document, out var idx))
             {
@@ -519,12 +537,12 @@ namespace seaq
             return resp.IsValid;
         }
         public bool Delete<T>(IEnumerable<T> documents)
-            where T : class, IDocument
+            where T : BaseDocument
         {
             return DeleteAsync(documents).Result;
         }
         public async Task<bool> DeleteAsync<T>(IEnumerable<T> documents)
-            where T : class, IDocument
+            where T : BaseDocument
         {
             var bulk = new BulkDescriptor();
 
@@ -537,7 +555,7 @@ namespace seaq
                     return false;
                 }
 
-                bulk.Delete<IDocument>(x => x
+                bulk.Delete<BaseDocument>(x => x
                     .Index(idx.Name)
                     .Id(document.Id)
                     .Document(document))
@@ -591,23 +609,36 @@ namespace seaq
 
         //query
         public ISeaqQueryResults<T> Query<T>(ISeaqQuery<T> query)
-            where T : class, IDocument
+            where T : BaseDocument
         {
+            if (query.Criteria is null)
+            {
+                const string msg = @"Can not process query - criteria object is null.";
+                Log.Error(msg);
+                throw new ArgumentNullException(string.Format(msg));
+            }
             Log.Verbose("Executing sync query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices));
             query.Criteria.ApplyClusterIndices(IndicesByType);
             return query.Execute(_client);
         }
 
         public async Task<ISeaqQueryResults<T>> QueryAsync<T>(ISeaqQuery<T> query)
-            where T : class, IDocument
+            where T : BaseDocument
         {
+            if (query.Criteria is null)
+            {
+                const string msg = @"Can not process query - criteria object is null.";
+                Log.Error(msg);
+                throw new ArgumentNullException(string.Format(msg));
+            }
             Log.Verbose("Executing async query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices));
             query.Criteria.ApplyClusterIndices(IndicesByType);
             return await query.ExecuteAsync(_client);
         }
 
+
         private bool TryGetIndexForDocument<T>(T document, out Index index)
-            where T : IDocument
+            where T : BaseDocument
         {
             var resp = _indices.TryGetValue(document.IndexName ?? "", out index);
 
@@ -668,11 +699,17 @@ namespace seaq
             Log.Verbose("Event handlers configured.");
         }
 
-        private bool TryGetSearchType(
-            string typeFullName,
-            out Type type)
+        private Type TryGetSearchType(
+            string typeFullName)
         {
-            return _searchableTypes.TryGetValue(typeFullName, out type);
+            if (_searchableTypes.TryGetValue(typeFullName, out var type))
+            {
+                return type;
+            }
+            else
+            {
+                return typeof(BaseDocument);
+            }
         }
         private static ElasticClient BuildClient(
             ClusterArgs args,
@@ -705,5 +742,30 @@ namespace seaq
 
             return new ElasticClient(settings);
         }
+    
+    
+        //fully hydrate internal store
+
+        private async Task HydrateInternalStore()
+        {
+            await CommitAsync(_indices.Values);
+        }
+        private async Task DeleteInternalStore()
+        {
+            await DeleteIndexAsync(Constants.Indices.InternalIndexStoreName);
+        }
+        private async Task SaveToInternalStore(Index idx)
+        {
+            await CommitAsync(idx);
+        }
+        private async Task DeleteFromInternalStore(Index idx)
+        {
+            await DeleteAsync(idx);
+        }
+
+        //delete internal store
+        //refresh internal store
+        //add/update single index
+        //delete single index
     }
 }

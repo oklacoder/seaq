@@ -3,7 +3,7 @@
     public class IndexConfig
     {
         public string Name { get; set; }
-        public string Type { get; set; }
+        public string DocumentType { get; set; }
         public int PrimaryShards { get; set; }
         public int ReplicaShards { get; set; }
         public bool ForceRefreshOnDocumentCommit { get; set; }
@@ -11,7 +11,7 @@
 
         public IndexConfig(
             string name,
-            string type,
+            string documentType,
             int? primaryShards = null,
             int? replicaShards = null,
             bool? forceRefreshOnDocumentCommit = null,
@@ -19,7 +19,7 @@
         {
 
             Name = name;
-            Type = type;
+            DocumentType = documentType;
             PrimaryShards = primaryShards ?? Constants.Indices.Defaults.PrimaryShardsDefault;
             ReplicaShards = replicaShards ?? Constants.Indices.Defaults.ReplicaShardsDefault;
             ForceRefreshOnDocumentCommit = forceRefreshOnDocumentCommit ?? Constants.Indices.Defaults.ForceRefreshOnDocumentCommitDefault;
@@ -30,7 +30,7 @@
             Index index)
         {
             Name = index.Name;
-            Type = index.Type;
+            DocumentType = index.DocumentType;
             PrimaryShards = index.PrimaryShards;
             ReplicaShards = index.ReplicaShards;
             ForceRefreshOnDocumentCommit = index.ForceRefreshOnDocumentCommit;

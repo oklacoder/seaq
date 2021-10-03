@@ -75,18 +75,31 @@ namespace seaq
                             return e.Types.Where(x => x != null);
                         }
                     })
-                    .Where(p => typeof(IDocument).IsAssignableFrom(p))
+                    .Where(p => typeof(BaseDocument).IsAssignableFrom(p))
                     .Select(p => p.Assembly);
 
             var types =
                 implements
                     .SelectMany(x => x.GetTypes())
-                    .Where(x => typeof(IDocument).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
+                    .Where(x => typeof(BaseDocument).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
                     .Distinct()
                     .ToList();
 
             return types;
         }
+        
+        public static string ToCamelCase(this string input)
+        {
+
+            if (string.IsNullOrEmpty(input) || !char.IsUpper(input[0]))
+            {
+                return input;
+            }
+            char[] chars = input.ToCharArray();
+            FixCasing(chars);
+            return new string(chars);
+        }
+
         private static string GetElasticPropertyName(
             Type type,
             string propertyName,
@@ -94,11 +107,14 @@ namespace seaq
         {
             var property = GetPropertyForType(type, propertyName);
 
+            if (property is null)
+                return propertyName;
+
             var chunks = propertyName.Split('.');
             var fieldName = "";
             foreach (var chunk in chunks)
             {
-                fieldName = String.Join(".", fieldName, chunk);
+                fieldName = String.Join(".", fieldName, chunk.ToCamelCase());
             }
 
             if ((property.PropertyType == typeof(string) || property.PropertyType.GetGenericArguments()?.FirstOrDefault() == typeof(string)) && !String.IsNullOrWhiteSpace(suffix))
@@ -106,7 +122,9 @@ namespace seaq
                 fieldName = $"{fieldName}.{suffix}";
             }
 
-            return fieldName.Trim('.');
+            fieldName = fieldName.Trim('.');
+
+            return fieldName;
         }
         private static PropertyInfo GetPropertyForType(
             Type type,
@@ -132,6 +150,33 @@ namespace seaq
                 }
 
             return property;
+        }
+
+        private static void FixCasing(Span<char> chars)
+        {
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (i == 1 && !char.IsUpper(chars[i]))
+                {
+                    break;
+                }
+
+                bool hasNext = (i + 1 < chars.Length);
+
+                // Stop when next char is already lowercase.
+                if (i > 0 && hasNext && !char.IsUpper(chars[i + 1]))
+                {
+                    // If the next char is a space, lowercase current char before exiting.
+                    if (chars[i + 1] == ' ')
+                    {
+                        chars[i] = char.ToLowerInvariant(chars[i]);
+                    }
+
+                    break;
+                }
+
+                chars[i] = char.ToLowerInvariant(chars[i]);
+            }
         }
     }
 }

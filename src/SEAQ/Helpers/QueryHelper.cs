@@ -8,7 +8,7 @@ namespace seaq
     {
         public static SortDescriptor<T> GetSortDescriptor<T>(
             this IEnumerable<ISortField> sortFields)
-            where T : class, IDocument
+            where T : BaseDocument
         {
             var desc = new SortDescriptor<T>();
 
@@ -28,7 +28,7 @@ namespace seaq
 
         public static QueryContainerDescriptor<T> GetQueryDesctiptor<T>(
             this IEnumerable<IFilterField> filters)
-            where T : class, IDocument
+            where T : BaseDocument
         {
             var desc = new QueryContainerDescriptor<T>();
 
@@ -52,14 +52,23 @@ namespace seaq
 
         public static SourceFilterDescriptor<T> GetSourceFilterDescriptor<T>(
             this IEnumerable<IReturnField> fields)
-            where T : class, IDocument
+            where T : BaseDocument
         {
             var sf = new SourceFilterDescriptor<T>();
+            
             if (fields == null)
                 sf.IncludeAll();
             else if (fields?.Any() == true)
-                sf.Includes(i =>
-                    i.Fields(fields.Select(x => x.FieldName).ToArray()));
+            {
+                var f = new List<string>();
+                f.AddRange(Constants.Fields.AlwaysReturnedFields);
+                f.AddRange(fields.Select(x => x.FieldName));
+                sf.Includes(i => 
+                    i.Fields(
+                        f.Select(x => 
+                            FieldNameUtilities.ToCamelCase(x))
+                        .ToArray()));
+            }
             else
                 sf.ExcludeAll();
             return sf;
@@ -67,7 +76,7 @@ namespace seaq
 
         public static AggregationContainerDescriptor<T> GetBucketAggreagationDescriptor<T>(
             this IEnumerable<IBucketField> fields)
-            where T : class, IDocument
+            where T : BaseDocument
         {
             var res = new AggregationContainerDescriptor<T>();
 

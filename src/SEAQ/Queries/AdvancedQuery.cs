@@ -1,13 +1,42 @@
 ﻿using System.Threading.Tasks;
+using Elasticsearch.Net;
 
 namespace seaq
 {
+
+    public class AdvancedQuery :
+        AdvancedQuery<BaseDocument>
+    {
+        private AdvancedQueryCriteria<BaseDocument> _criteria;
+        public new ISeaqQueryCriteria<BaseDocument> Criteria => _criteria;
+
+        public AdvancedQuery(
+            AdvancedQueryCriteria criteria) 
+            : base(criteria)
+        {
+            _criteria = criteria;
+        }
+
+        public new ISeaqQueryResults<BaseDocument> Execute(Nest.ElasticClient client)
+        {
+            var results = client.Search<BaseDocument>(_criteria.GetSearchDescriptor());
+
+            return new AdvancedQueryResults<BaseDocument>(results);
+        }
+
+        public new async Task<ISeaqQueryResults<BaseDocument>> ExecuteAsync(Nest.ElasticClient client)
+        {
+            var results = await client.SearchAsync<BaseDocument>(_criteria.GetSearchDescriptor());
+
+            return new AdvancedQueryResults<BaseDocument>(results);
+        }
+    }
     public class AdvancedQuery<T> :
         ISeaqQuery<T>
-    where T : class, IDocument
+    where T : BaseDocument
     {
         private AdvancedQueryCriteria<T> _criteria;
-        public ISeaqQueryCriteria<T> Criteria => _criteria;
+        public virtual ISeaqQueryCriteria<T> Criteria => _criteria;
 
         public AdvancedQuery(
             AdvancedQueryCriteria<T> criteria)
@@ -17,7 +46,11 @@ namespace seaq
 
         public ISeaqQueryResults<T> Execute(Nest.ElasticClient client)
         {
-            var results = client.Search<T>(_criteria.GetSearchDescriptor());
+            var query = _criteria.GetSearchDescriptor();
+
+            var json = client.RequestResponseSerializer.SerializeToString(query, SerializationFormatting.Indented);
+
+            var results = client.Search<T>(query);
 
             return new AdvancedQueryResults<T>(results);
         }

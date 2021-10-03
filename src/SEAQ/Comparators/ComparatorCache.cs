@@ -49,7 +49,7 @@ namespace seaq
         }
         private static QueryContainer GetQuery(AnyWordComparator c, IFilterField filter)
         {
-            return new QueryContainerDescriptor<IDocument>().Match(m => m.Field(filter.FieldName).Query(filter.Value));
+            return new QueryContainerDescriptor<BaseDocument>().Match(m => m.Field(filter.FieldName).Query(filter.Value));
         }
         private static QueryContainer GetQuery(BetweenComparator c, IFilterField filter)
         {
@@ -67,11 +67,11 @@ namespace seaq
 
             if (startIsNum && endIsNum)
             {
-                return new QueryContainerDescriptor<IDocument>().Range(rng => rng.Field(filter.FieldName).GreaterThanOrEquals(startNum).LessThanOrEquals(endNum));
+                return new QueryContainerDescriptor<BaseDocument>().Range(rng => rng.Field(filter.FieldName).GreaterThanOrEquals(startNum).LessThanOrEquals(endNum));
             }
             else if (startIsDate && endIsDate)
             {
-                return new QueryContainerDescriptor<IDocument>().DateRange(rng => rng.Field(filter.FieldName).GreaterThanOrEquals(startDate).LessThanOrEquals(endDate));
+                return new QueryContainerDescriptor<BaseDocument>().DateRange(rng => rng.Field(filter.FieldName).GreaterThanOrEquals(startDate).LessThanOrEquals(endDate));
             }
             else
             {
@@ -80,11 +80,11 @@ namespace seaq
         }
         private static QueryContainer GetQuery(EqualComparator c, IFilterField filter)
         {
-            return new QueryContainerDescriptor<IDocument>().Bool(b => b.Must(m => m.Match(ma => ma.Field(filter.FieldName).Query(filter.Value))));
+            return new QueryContainerDescriptor<BaseDocument>().Bool(b => b.Must(m => m.Match(ma => ma.Field(filter.FieldName).Query(filter.Value))));
         }
         private static QueryContainer GetQuery(FullPhraseComparator c, IFilterField filter)
         {
-            return new QueryContainerDescriptor<IDocument>().Bool(b => b.Must(mu => mu.Match(m => m.Field(filter.FieldName).Query(filter.Value))));
+            return new QueryContainerDescriptor<BaseDocument>().Bool(b => b.Must(mu => mu.Match(m => m.Field(filter.FieldName).Query(filter.Value))));
         }
         private static QueryContainer GetQuery(GreaterThanComparator c, IFilterField filter)
         {
@@ -148,15 +148,15 @@ namespace seaq
         }
         private static QueryContainer GetQuery(NotAnyWordComparator c, IFilterField filter)
         {
-            return new QueryContainerDescriptor<IDocument>().Bool(b => b.MustNot(mn => mn.Match(m => m.Field(filter.FieldName).Query(filter.Value))));
+            return new QueryContainerDescriptor<BaseDocument>().Bool(b => b.MustNot(mn => mn.Match(m => m.Field(filter.FieldName).Query(filter.Value))));
         }
         private static QueryContainer GetQuery(NotEqualComparator c, IFilterField filter)
         {
-            return new QueryContainerDescriptor<IDocument>().Bool(b => b.MustNot(mn => mn.Match(m => m.Field(filter.FieldName).Query(filter.Value))));
+            return new QueryContainerDescriptor<BaseDocument>().Bool(b => b.MustNot(mn => mn.Match(m => m.Field(filter.FieldName).Query(filter.Value))));
         }
         private static QueryContainer GetQuery(PartialPhraseComparator c, IFilterField filter)
         {
-            return new QueryContainerDescriptor<IDocument>().Bool(b => b.Must(m => m.MatchPhrasePrefix(ma => ma.Field(filter.FieldName).Query(filter.Value))));
+            return new QueryContainerDescriptor<BaseDocument>().Bool(b => b.Must(m => m.MatchPhrasePrefix(ma => ma.Field(filter.FieldName).Query(filter.Value))));
         }
     }
 }
