@@ -5,30 +5,36 @@ namespace seaq
 {
 
     public class AdvancedQuery :
-        AdvancedQuery<BaseDocument>
+        ISeaqQuery
     {
-        private AdvancedQueryCriteria<BaseDocument> _criteria;
-        public new ISeaqQueryCriteria<BaseDocument> Criteria => _criteria;
+        private AdvancedQueryCriteria _criteria;
+        public new ISeaqQueryCriteria Criteria => _criteria;
 
         public AdvancedQuery(
             AdvancedQueryCriteria criteria) 
-            : base(criteria)
         {
             _criteria = criteria;
         }
 
-        public new ISeaqQueryResults<BaseDocument> Execute(Nest.ElasticClient client)
+        ISeaqQueryResults ISeaqQuery.Execute(Nest.ElasticClient client)
+        {
+            return Execute(client);
+        }
+        public AdvancedQueryResults Execute(Nest.ElasticClient client)
         {
             var results = client.Search<BaseDocument>(_criteria.GetSearchDescriptor());
 
-            return new AdvancedQueryResults<BaseDocument>(results);
+            return new AdvancedQueryResults(results);
         }
-
-        public new async Task<ISeaqQueryResults<BaseDocument>> ExecuteAsync(Nest.ElasticClient client)
+        async Task<ISeaqQueryResults> ISeaqQuery.ExecuteAsync(Nest.ElasticClient client)
+        {
+            return await ExecuteAsync(client);
+        }
+        public async Task<AdvancedQueryResults> ExecuteAsync(Nest.ElasticClient client)
         {
             var results = await client.SearchAsync<BaseDocument>(_criteria.GetSearchDescriptor());
 
-            return new AdvancedQueryResults<BaseDocument>(results);
+            return new AdvancedQueryResults(results);
         }
     }
     public class AdvancedQuery<T> :
@@ -44,7 +50,11 @@ namespace seaq
             _criteria = criteria;
         }
 
-        public ISeaqQueryResults<T> Execute(Nest.ElasticClient client)
+        ISeaqQueryResults<T> ISeaqQuery<T>.Execute(Nest.ElasticClient client)
+        {
+            return Execute(client);
+        }
+        public AdvancedQueryResults<T> Execute(Nest.ElasticClient client)
         {
             var query = _criteria.GetSearchDescriptor();
 
@@ -55,7 +65,12 @@ namespace seaq
             return new AdvancedQueryResults<T>(results);
         }
 
-        public async Task<ISeaqQueryResults<T>> ExecuteAsync(Nest.ElasticClient client)
+        async Task<ISeaqQueryResults<T>> ISeaqQuery<T>.ExecuteAsync(Nest.ElasticClient client)
+        {
+            return await ExecuteAsync(client);
+        }
+
+        public async Task<AdvancedQueryResults<T>> ExecuteAsync(Nest.ElasticClient client)
         {
             var results = await client.SearchAsync<T>(_criteria.GetSearchDescriptor());
 

@@ -70,7 +70,15 @@ namespace seaq
                         .ToArray()));
             }
             else
-                sf.ExcludeAll();
+            {
+                //sf.ExcludeAll();
+                sf.Includes(i =>
+                    i.Fields(
+                        Constants.Fields.AlwaysReturnedFields
+                        .Select(x =>
+                            FieldNameUtilities.ToCamelCase(x))
+                        .ToArray()));
+            }
             return sf;
         }
 

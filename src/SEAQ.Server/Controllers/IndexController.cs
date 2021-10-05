@@ -20,14 +20,10 @@ namespace seaq.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<SimpleQueryResults<Index>> QueryIndices(
-            [FromBody] SimpleQueryCriteria criteria)
+        public async Task<SimpleQueryResults> QueryIndices(
+            [FromBody] SimpleQuery query)
         {
-            return Query<Index, SimpleQueryResults<Index>>(criteria);
-
-            //var query = new SimpleQuery<Index>(criteria.GetAsTyped<Index>());
-            //var resp = _cluster.Query(query);
-            //return resp as SimpleQueryResults<Index>;
+            return await _cluster.QueryAsync<SimpleQueryResults>(query);            
         }
 
         [HttpGet("{name}")]
@@ -35,13 +31,6 @@ namespace seaq.Server.Controllers
             [FromRoute] string name)
         {
             return _cluster.Indices.FirstOrDefault(x => x.Name == name);
-        }
-
-        private TResp Query<T, TResp>(SimpleQueryCriteria criteria)
-            where T : BaseDocument
-            where TResp : class, ISeaqQueryResults<T>
-        {
-            return _cluster.Query(new SimpleQuery<T>(criteria.GetAsTyped<T>())) as TResp;
         }
     }
 }

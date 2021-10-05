@@ -3,27 +3,36 @@
 namespace seaq
 {
     public class AdvancedQueryResults :
-     AdvancedQueryResults<IDocument>
+        ISeaqQueryResults
     {
-        
+
+        public IEnumerable<BaseDocument> Documents { get; }
+        public IEnumerable<IBucketResult> Buckets { get; }
+        public long Total { get; }
+        public long Took { get; }
         public AdvancedQueryResults() { }
         public AdvancedQueryResults(
             IEnumerable<BaseDocument> documents,
             long took,
             long total)
-            : base(documents, took, total)
         {
+            Documents = documents;
+            Took = took;
+            Total = total;
         }
         public AdvancedQueryResults(
             Nest.ISearchResponse<BaseDocument> searchResponse)
-            : base(searchResponse)
         {
+            Documents = searchResponse.Documents;
+            Total = searchResponse.Total;
+            Took = searchResponse.Took;
+            Buckets = searchResponse.Aggregations?.BuildBucketResult();
         }
     }
 
     public class AdvancedQueryResults<T> :
         ISeaqQueryResults<T>
-    where T : class, IDocument
+    where T : BaseDocument
     {
         public IEnumerable<T> Documents { get; }
         public IEnumerable<IBucketResult> Buckets { get; }

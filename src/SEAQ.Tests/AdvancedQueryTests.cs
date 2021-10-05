@@ -416,7 +416,7 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
             Assert.True(results != null);
             Assert.NotEmpty(results.Documents);
-            Assert.NotEmpty((results as AdvancedQueryResults<SampleResult>)?.Buckets);
+            Assert.NotEmpty(results.Buckets);
         }
         [Fact]
         public void ReturnsBucketsForSpecifiedFields_Untyped()
@@ -433,7 +433,7 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
             Assert.True(results != null);
             Assert.NotEmpty(results.Documents);
-            Assert.NotEmpty((results as AdvancedQueryResults<BaseDocument>)?.Buckets);
+            Assert.NotEmpty(results.Buckets);
         }
         [Fact]
         public void ReturnsBucketsForSpecifiedFieldsButNoDocumentsWhenZeroPageSize()
@@ -450,7 +450,7 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
             Assert.True(results != null);
             Assert.Empty(results.Documents);
-            Assert.NotEmpty((results as AdvancedQueryResults<SampleResult>)?.Buckets);
+            Assert.NotEmpty(results.Buckets);
         }
         [Fact]
         public void ReturnsBucketsForSpecifiedFieldsButNoDocumentsWhenZeroPageSize_Untyped()
@@ -468,7 +468,7 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
             Assert.True(results != null);
             Assert.Empty(results.Documents);
-            Assert.NotEmpty((results as AdvancedQueryResults<BaseDocument>)?.Buckets);
+            Assert.NotEmpty(results.Buckets);
         }
         [Fact]
         public void ReturnsNoBucketsWhenNoFieldsSpecified()
@@ -481,7 +481,7 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
             Assert.True(results != null);
             Assert.NotEmpty(results.Documents);
-            Assert.Empty((results as AdvancedQueryResults<SampleResult>)?.Buckets);
+            Assert.Empty(results.Buckets);
         }
         [Fact]
         public void ReturnsNoBucketsWhenNoFieldsSpecified_Untyped()
@@ -495,7 +495,7 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
             Assert.True(results != null);
             Assert.NotEmpty(results.Documents);
-            Assert.Empty((results as AdvancedQueryResults<BaseDocument>)?.Buckets);
+            Assert.Empty(results.Buckets);
         }
     }
 }

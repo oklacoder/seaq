@@ -3,20 +3,30 @@
 namespace seaq
 {
     public class SimpleQueryResults :
-        SimpleQueryResults<BaseDocument>
+        ISeaqQueryResults
     {
+        public IEnumerable<BaseDocument> Documents { get; }
+
+        public long Took { get; }
+
+        public long Total { get; }
+
         public SimpleQueryResults() { }
         public SimpleQueryResults(
             IEnumerable<BaseDocument> documents,
             long took,
             long total)
-            : base(documents, took, total)
         {
+            Documents = documents;
+            Took = took;
+            Total = total;
         }
         public SimpleQueryResults(
             Nest.ISearchResponse<BaseDocument> searchResponse)
-            : base(searchResponse)
         {
+            Documents = searchResponse.Documents;
+            Took = searchResponse.Took;
+            Total = searchResponse.Total;
         }
     }
     public class SimpleQueryResults<T> :

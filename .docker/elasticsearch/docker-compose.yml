@@ -9,6 +9,7 @@ services:
       - discovery.type=single-node
       - ELASTIC_PASSWORD=elastic
       - xpack.security.enabled=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
     networks:
       - seaq_local_network
   kibana:

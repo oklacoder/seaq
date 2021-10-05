@@ -621,6 +621,19 @@ namespace seaq
             query.Criteria.ApplyClusterIndices(IndicesByType);
             return query.Execute(_client);
         }
+        public TResp Query<TResp>(ISeaqQuery query)
+            where TResp : class, ISeaqQueryResults
+        {
+            if (query.Criteria is null)
+            {
+                const string msg = @"Can not process query - criteria object is null.";
+                Log.Error(msg);
+                throw new ArgumentNullException(string.Format(msg));
+            }
+            Log.Verbose("Executing sync query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices));
+            query.Criteria.ApplyClusterIndices(IndicesByType);
+            return query.Execute(_client) as TResp;
+        }
 
         public async Task<ISeaqQueryResults<T>> QueryAsync<T>(ISeaqQuery<T> query)
             where T : BaseDocument
@@ -634,6 +647,19 @@ namespace seaq
             Log.Verbose("Executing async query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices));
             query.Criteria.ApplyClusterIndices(IndicesByType);
             return await query.ExecuteAsync(_client);
+        }
+        public async Task<TResp> QueryAsync<TResp>(ISeaqQuery query)
+            where TResp : class, ISeaqQueryResults
+        {
+            if (query.Criteria is null)
+            {
+                const string msg = @"Can not process query - criteria object is null.";
+                Log.Error(msg);
+                throw new ArgumentNullException(string.Format(msg));
+            }
+            Log.Verbose("Executing sync query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices));
+            query.Criteria.ApplyClusterIndices(IndicesByType);
+            return await query.ExecuteAsync(_client) as TResp;
         }
 
 
