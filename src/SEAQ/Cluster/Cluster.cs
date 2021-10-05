@@ -618,7 +618,9 @@ namespace seaq
                 throw new ArgumentNullException(string.Format(msg));
             }
             Log.Verbose("Executing sync query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices));
-            query.Criteria.ApplyClusterIndices(IndicesByType);
+
+            query.Criteria.ApplyClusterSettings(this);
+
             return query.Execute(_client);
         }
         public TResp Query<TResp>(ISeaqQuery query)
@@ -631,7 +633,9 @@ namespace seaq
                 throw new ArgumentNullException(string.Format(msg));
             }
             Log.Verbose("Executing sync query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices));
-            query.Criteria.ApplyClusterIndices(IndicesByType);
+
+            query.Criteria.ApplyClusterSettings(this);
+
             return query.Execute(_client) as TResp;
         }
 
@@ -645,7 +649,9 @@ namespace seaq
                 throw new ArgumentNullException(string.Format(msg));
             }
             Log.Verbose("Executing async query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices));
-            query.Criteria.ApplyClusterIndices(IndicesByType);
+
+            query.Criteria.ApplyClusterSettings(this);
+
             return await query.ExecuteAsync(_client);
         }
         public async Task<TResp> QueryAsync<TResp>(ISeaqQuery query)
@@ -657,8 +663,11 @@ namespace seaq
                 Log.Error(msg);
                 throw new ArgumentNullException(string.Format(msg));
             }
+            
             Log.Verbose("Executing sync query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices));
-            query.Criteria.ApplyClusterIndices(IndicesByType);
+
+            query.Criteria.ApplyClusterSettings(this);
+            
             return await query.ExecuteAsync(_client) as TResp;
         }
 

@@ -46,6 +46,15 @@ namespace seaq
         public IEnumerable<DefaultBucketField> _bucketFields { get; init; }
         public IEnumerable<IBucketField> BucketFields => _bucketFields;
 
+        [DataMember(Name = "boostedFields")]
+        [JsonPropertyName("boostedFields")]
+        public IEnumerable<string> BoostedFields { get; protected set; } = new string[] { "*" };
+
+        public void ApplyClusterSettings(Cluster cluster)
+        {
+            ApplyClusterIndices(cluster.IndicesByType);
+            ApplyQueryBoosts(cluster.Indices);
+        }
 
         public void ApplyClusterIndices(ILookup<string, Index> indices)
         {
@@ -58,6 +67,21 @@ namespace seaq
                             .Equals(x.Name, StringComparison.OrdinalIgnoreCase)))
                     .Select(x => x.Name));
             Indices = resp.ToArray();
+        }
+
+        public void ApplyQueryBoosts(IEnumerable<Index> indices)
+        {
+            List<string> fields = new List<string>() { "*" };
+
+            foreach(var idx in indices)
+            {
+                if (Indices.Contains(idx.Name))
+                {
+                    fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields));
+                }
+            }
+
+            BoostedFields = fields.Distinct();
         }
 
         public AdvancedQueryCriteria(
@@ -79,6 +103,7 @@ namespace seaq
             Skip = skip;
             Take = take;
         }
+
         public SearchDescriptor<BaseDocument> GetSearchDescriptor()
         {
             var s = new SearchDescriptor<BaseDocument>()
@@ -131,6 +156,16 @@ namespace seaq
         public IEnumerable<DefaultBucketField> _bucketFields { get; init; }
         public IEnumerable<IBucketField> BucketFields => _bucketFields;
 
+        [DataMember(Name = "boostedFields")]
+        [JsonPropertyName("boostedFields")]
+        public IEnumerable<string> BoostedFields { get; protected set; } = new string[] { "*" };
+
+        public void ApplyClusterSettings(Cluster cluster)
+        {
+            ApplyClusterIndices(cluster.IndicesByType);
+            ApplyQueryBoosts(cluster.Indices);
+        }
+
         public virtual void ApplyClusterIndices(ILookup<string, Index> indices)
         {
             var idx = indices[typeof(T).FullName];
@@ -142,6 +177,21 @@ namespace seaq
                             .Equals(x.Name, StringComparison.OrdinalIgnoreCase)))
                     .Select(x => x.Name));
             Indices = resp.ToArray();
+        }
+
+        public void ApplyQueryBoosts(IEnumerable<Index> indices)
+        {
+            List<string> fields = new List<string>() { "*" };
+
+            foreach (var idx in indices)
+            {
+                if (Indices.Contains(idx.Name))
+                {
+                    fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields));
+                }
+            }
+
+            BoostedFields = fields.Distinct();
         }
 
         public AdvancedQueryCriteria(
