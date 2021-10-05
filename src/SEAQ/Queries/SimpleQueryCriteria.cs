@@ -74,6 +74,7 @@ namespace seaq
 
             foreach (var idx in indices)
             {
+                if (idx?.Fields is null) continue;
                 if (Indices.Contains(idx.Name))
                 {
                     fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields));
@@ -189,6 +190,7 @@ namespace seaq
 
             foreach (var idx in indices)
             {
+                if (idx?.Fields is null) continue;
                 if (Indices.Contains(idx.Name))
                 {
                     fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields));

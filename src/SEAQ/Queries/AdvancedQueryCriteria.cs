@@ -77,6 +77,7 @@ namespace seaq
             {
                 if (Indices.Contains(idx.Name))
                 {
+                    if (idx?.Fields is null) continue;
                     fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields));
                 }
             }
@@ -187,6 +188,7 @@ namespace seaq
             {
                 if (Indices.Contains(idx.Name))
                 {
+                    if (idx?.Fields is null) continue;
                     fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields));
                 }
             }
