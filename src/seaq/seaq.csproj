@@ -18,12 +18,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="LICENSE.TXT">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="readme.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+  	<None Include="..\..\LICENSE.TXT">
+  	  <Pack>True</Pack>
+  	  <PackagePath></PackagePath>
+  	</None>
+	  <None Include="..\..\readme.md">
+		  <Pack>True</Pack>
+		  <PackagePath></PackagePath>
+	  </None>
   </ItemGroup>
-
+	
 </Project>
