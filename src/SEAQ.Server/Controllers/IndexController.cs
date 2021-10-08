@@ -30,7 +30,7 @@ namespace seaq.Server.Controllers
         public async Task<Index> Details(
             [FromRoute] string name)
         {
-            return _cluster.Indices.FirstOrDefault(x => x.Name == name);
+            return _cluster.Indices.FirstOrDefault(x => x.Name == name);            
         }
     }
 }

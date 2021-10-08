@@ -1,10 +1,36 @@
 ﻿using Nest;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace seaq
 {
     public static class FieldExtensions
     {
+        public static void Merge(
+            this IEnumerable<Field> target,
+            IEnumerable<Field> source)
+        {
+            foreach(var tgt in target)
+            {
+                var src = source.FirstOrDefault(x => x.Name.Equals(tgt.Name));
+                if (src is not null)
+                {
+                    if (tgt.Boost.HasValue)
+                        src.Boost = tgt.Boost;
+                    if (tgt.IsFilterable.HasValue)
+                        src.IsFilterable = tgt.IsFilterable;
+                    if (tgt.IncludeInResults.HasValue)
+                        src.IncludeInResults = tgt.IncludeInResults;
+                    if (!string.IsNullOrWhiteSpace(tgt.Label))
+                        src.Label = tgt.Label;
+
+
+                    if (tgt.Fields?.Any() == src.Fields?.Any() == true)
+                        tgt.Fields.Merge(src.Fields);
+                }
+            }
+        }
+
         public static Field FromNestProperty(
             this IProperty property,
             string parentFieldName = null)

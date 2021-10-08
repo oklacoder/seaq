@@ -779,8 +779,6 @@ namespace seaq
         }
     
     
-        //fully hydrate internal store
-
         private async Task HydrateInternalStore()
         {
             await CommitAsync(_indices.Values);
@@ -798,9 +796,5 @@ namespace seaq
             await DeleteAsync(idx);
         }
 
-        //delete internal store
-        //refresh internal store
-        //add/update single index
-        //delete single index
     }
 }

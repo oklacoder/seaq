@@ -1,5 +1,6 @@
 ﻿using Nest;
 using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,7 +19,7 @@ namespace seaq
         public int ReplicaShards { get; set; }
         public bool ForceRefreshOnDocumentCommit { get; set; }
         public bool EagerlyPersistSchema { get; set; }
-        public IEnumerable<Field> Fields { get; set; }
+        public IEnumerable<Field> Fields { get; set; } = Array.Empty<Field>();
 
 
         private Index(
@@ -61,6 +62,7 @@ namespace seaq
             var name = index.Key.Name;
             Log.Verbose("Bulding index definition for {0}", name);
 
+            Index resp;
             var schema = index.Value?.Mappings?.Meta?.ContainsKey(Constants.Indices.Meta.SchemaKey) == true 
                 ? index.Value.Mappings.Meta[Constants.Indices.Meta.SchemaKey] 
                 : null;
@@ -68,7 +70,7 @@ namespace seaq
 
             if (schema is not null)
             {
-                return System.Text.Json.JsonSerializer.Deserialize<Index>(
+                resp = System.Text.Json.JsonSerializer.Deserialize<Index>(
                     System.Text.Json.JsonSerializer.Serialize(schema), 
                     new System.Text.Json.JsonSerializerOptions() { 
                         PropertyNameCaseInsensitive = true
@@ -76,12 +78,25 @@ namespace seaq
             }
             else
             {
-                return new Index(
+                resp = new Index(
                     name, 
                     nameof(BaseDocument),
                     index.Value?.Mappings?.Properties
                         .Select(x => x.Value.FromNestProperty()));
             }
+
+            
+            var fieldList = index.Value?.Mappings?.Properties?.Select(x => x.Value.FromNestProperty());
+            if (fieldList?.Any() is not true)
+            {
+                resp.Fields.Merge(fieldList);
+            }
+            else
+            {
+                resp.Fields = fieldList;
+            }
+
+            return resp;
         }
     }
 }

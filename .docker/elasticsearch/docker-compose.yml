@@ -23,17 +23,16 @@ services:
       - ELASTICSEARCH_PASSWORD=elastic
     networks:
       - seaq_local_network
-  # apm:
-  #   container_name: kb_apm
-  #   image: docker.elastic.co/apm/apm-server:7.14.0
-  #   ports:
-  #     - 8200:8200
-  #   environment:
-  #     - output.elasticsearch.hosts=["seaq_local:9200"]
-  #     - apm-server.secret_token=thisisasecret
-  #     - monitoring.enabled=true
-  #   networks:
-  #     - seaq_local_network
+  apm:
+    container_name: seaq_apm
+    image: docker.elastic.co/apm/apm-server:7.15.0
+    ports:
+      - 8200:8200
+    environment:
+      - output.elasticsearch.hosts=["seaq_local:9200"]
+      - apm-server.secret_token=thisisasecret
+    networks:
+      - seaq_local_network
 
 networks:
   seaq_local_network:
