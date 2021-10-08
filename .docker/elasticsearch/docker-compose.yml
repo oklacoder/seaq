@@ -28,9 +28,31 @@ services:
     image: docker.elastic.co/apm/apm-server:7.15.0
     ports:
       - 8200:8200
-    environment:
-      - output.elasticsearch.hosts=["seaq_local:9200"]
-      - apm-server.secret_token=thisisasecret
+    command: >
+      apm-server -e
+      -E output.elasticsearch.hosts=["seaq_local:9200"]
+      -E output.elasticsearch.protocol=http
+      -E output.elasticsearch.username=elastic
+      -E output.elasticsearch.password=elastic
+      -E apm-server.secret_token=thisisasecret
+      -E setup.kibana.host=kb_kibana:5601
+      -E apm-server.kibana.enabled=true
+      -E apm-server.kibana.host=kibana:5601
+      -E apm-server.kibana.protocol=http
+      -E apm-server.kibana.username=elastic
+      -E apm-server.kibana.password=elastic
+    # environment:
+    #   - output.elasticsearch.hosts=["seaq_local:9200"]
+    #   - output.elasticsearch.protocol=http
+    #   - output.elasticsearch.username=elastic
+    #   - output.elasticsearch.password=elastic
+    #   - apm-server.secret_token=thisisasecret
+    #   - setup.kibana.host=kb_kibana:5601
+    #   - apm-server.kibana.enabled=true
+    #   - apm-server.kibana.host=kibana:5601
+    #   - apm-server.kibana.protocol=http
+    #   - apm-server.kibana.username=elastic
+    #   - apm-server.kibana.password=elastic
     networks:
       - seaq_local_network
 

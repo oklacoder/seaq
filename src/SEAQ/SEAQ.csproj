@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+	  <LangVersion>latest</LangVersion>
+	  <Authors>oklacoder</Authors>
+	  <RepositoryUrl>https://github.com/oklacoder/seaq</RepositoryUrl>
+	  <PackageProjectUrl>https://github.com/oklacoder/seaq</PackageProjectUrl>
+	  <PackageTags>seaq elasticsearch</PackageTags>
+	  <PackageLicenseFile>LICENSE.TXT</PackageLicenseFile>
+	  <Description>Seaq, an application search solution based on Elasticsearch.</Description>
   </PropertyGroup>
 
   <ItemGroup>
