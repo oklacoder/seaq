@@ -9,7 +9,7 @@ env:
   ENV: Debug
   PROJECT_ROOT: 'seaq'
   PROJECT_NAME: 'seaq'
-  SEMVER: '0.1.0'
+  SEMVER: '0.2.0'
   SUFFIX: 'beta'
   BRANCH: ''
   VERSION: ''
