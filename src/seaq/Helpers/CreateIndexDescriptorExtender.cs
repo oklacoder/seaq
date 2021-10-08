@@ -1,5 +1,7 @@
 ﻿using Nest;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace seaq
 {
@@ -14,13 +16,16 @@ namespace seaq
                 descriptor
                     .Aliases(x => 
                     {
-                        x.Alias(config.DocumentType);
+                        Dictionary<string, object> cache = new Dictionary<string, object>();
+                        cache.Add(config.DocumentType, null);
 
                         if (config?.Aliases is not null)
                         foreach(var a in config.Aliases)
                         {
-                            x.Alias(a);
+                            if (!cache.ContainsKey(a)) cache.Add(a, null);                                                            
                         }
+
+                        cache.Keys.ToList().ForEach(a => x.Alias(a));
 
                         return x;
                     })

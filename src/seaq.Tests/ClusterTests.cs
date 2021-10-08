@@ -41,7 +41,7 @@ namespace SEAQ.Tests
 
             var type = typeof(TestDoc).FullName;
 
-            var config = new IndexConfig(type, type, new[] { test_alias });
+            var config = new IndexConfig(type, type, new[] { test_alias, test_alias });
             var resp = await cluster.CreateIndexAsync(config);
 
             var exists = cluster.Indices.Any(x => x.Name == config.Name);
