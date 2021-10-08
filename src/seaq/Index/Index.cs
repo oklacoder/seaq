@@ -15,6 +15,7 @@ namespace seaq
 
         public string Name { get; set; }
         public string DocumentType { get; set; }
+        public IEnumerable<string> Aliases { get; set; }
         public int PrimaryShards { get; set; }
         public int ReplicaShards { get; set; }
         public bool ForceRefreshOnDocumentCommit { get; set; }
@@ -26,6 +27,7 @@ namespace seaq
             string name,
             string documentType,
             IEnumerable<Field> fields,
+            IEnumerable<string> aliases = null,
             int? primaryShards = null,
             int? replicaShards = null,
             bool? forceRefreshOnDocumentCommit = null,
@@ -34,6 +36,7 @@ namespace seaq
             Name = name;
             DocumentType = documentType;
             Fields = fields;
+            Aliases = aliases;
             PrimaryShards = primaryShards ?? Constants.Indices.Defaults.PrimaryShardsDefault;
             ReplicaShards = replicaShards ?? Constants.Indices.Defaults.ReplicaShardsDefault;
             ForceRefreshOnDocumentCommit = forceRefreshOnDocumentCommit ?? Constants.Indices.Defaults.ForceRefreshOnDocumentCommitDefault;
@@ -50,6 +53,7 @@ namespace seaq
         {
             Name = config.Name;
             DocumentType = config.DocumentType;
+            Aliases = config.Aliases;
             PrimaryShards = config.PrimaryShards;
             ReplicaShards = config.ReplicaShards;
             ForceRefreshOnDocumentCommit = config.ForceRefreshOnDocumentCommit;
@@ -79,12 +83,16 @@ namespace seaq
             else
             {
                 resp = new Index(
-                    name, 
+                    name,
                     nameof(BaseDocument),
                     index.Value?.Mappings?.Properties
                         .Select(x => x.Value.FromNestProperty()));
             }
 
+            if (resp.Aliases?.Any() is not true)
+            {
+                resp.Aliases = index.Value.Aliases.Select(x => x.Key.Name);
+            }
             
             var fieldList = index.Value?.Mappings?.Properties?.Select(x => x.Value.FromNestProperty());
             if (fieldList?.Any() is not true)

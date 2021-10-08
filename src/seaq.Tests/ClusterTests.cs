@@ -36,21 +36,26 @@ namespace SEAQ.Tests
         public async void CanCreateIndex()
         {
             const string method = "CanCreateIndex";
+            const string test_alias = "test_alias";
             var cluster = await Cluster.CreateAsync(GetArgs(method));
 
             var type = typeof(TestDoc).FullName;
 
-            var config = new IndexConfig(type, type);
+            var config = new IndexConfig(type, type, new[] { test_alias });
             var resp = await cluster.CreateIndexAsync(config);
 
             var exists = cluster.Indices.Any(x => x.Name == config.Name);
             var existsByType = cluster.IndicesByType[type]?.Any();
+
+            var hasAlias = _client.Cat.Aliases(x => x.Name(test_alias));
 
             var delResp = await cluster.DeleteIndexAsync(config.Name);
 
             Assert.NotNull(resp);
             Assert.True(exists);
             Assert.True(existsByType);
+            Assert.True(hasAlias.IsValid);
+            Assert.NotEmpty(hasAlias.Records);
         }
 
         [Fact]
