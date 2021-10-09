@@ -23,6 +23,7 @@ namespace seaq
         public AdvancedQueryResults(
             Nest.ISearchResponse<BaseDocument> searchResponse)
         {
+            //want to capture the scores, so need to pull from hits rather than docs directly.  probably with a poco here that contains a "document" prop
             Documents = searchResponse.Documents;
             Total = searchResponse.Total;
             Took = searchResponse.Took;

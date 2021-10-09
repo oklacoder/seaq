@@ -14,6 +14,7 @@ namespace seaq
         {
             return
                 descriptor
+                    .IncludeTypeName(false)
                     .Aliases(x => 
                     {
                         Dictionary<string, object> cache = new Dictionary<string, object>();

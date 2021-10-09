@@ -10,6 +10,8 @@ namespace seaq
             this IEnumerable<Field> target,
             IEnumerable<Field> source)
         {
+            if (target is null) return;
+
             foreach(var tgt in target)
             {
                 var src = source.FirstOrDefault(x => x.Name.Equals(tgt.Name));

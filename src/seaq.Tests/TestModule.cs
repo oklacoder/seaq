@@ -9,9 +9,11 @@ namespace SEAQ.Tests
 {
     public class TestModule
     {
-        protected const string Url = "http://localhost:9200/";
+        protected const string Url_7x = "http://localhost:9200/";
+        protected const string Url_6x = "http://localhost:19200/";
         protected const string Username = "elastic";
         protected const string Password = "elastic";
+        protected string Url => Url_7x;
         
         protected ConnectionSettings _connection => new ConnectionSettings(
                 new Elasticsearch.Net.SingleNodeConnectionPool(

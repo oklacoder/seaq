@@ -85,8 +85,8 @@ namespace seaq
                 resp = new Index(
                     name,
                     nameof(BaseDocument),
-                    index.Value?.Mappings?.Properties
-                        .Select(x => x.Value.FromNestProperty()));
+                    index.Value?.Mappings?.Properties?
+                        .Select(x => x.Value?.FromNestProperty()));
             }
 
             if (resp.Aliases?.Any() is not true)
@@ -95,13 +95,14 @@ namespace seaq
             }
             
             var fieldList = index.Value?.Mappings?.Properties?.Select(x => x.Value.FromNestProperty());
-            if (fieldList?.Any() is not true)
-            {
-                resp.Fields.Merge(fieldList);
-            }
-            else
+            
+            if (resp.Fields?.Any() is not true)
             {
                 resp.Fields = fieldList;
+            }
+            else if (!fieldList.All(x => resp.Fields.Any(z => x.Name.Equals(z.Name, StringComparison.OrdinalIgnoreCase))))
+            {
+                resp.Fields.Merge(fieldList);
             }
 
             return resp;

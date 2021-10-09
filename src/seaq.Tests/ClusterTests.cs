@@ -241,19 +241,22 @@ namespace SEAQ.Tests
             var config = new IndexConfig(type, type);
             var createResp = await cluster.CreateIndexAsync(config);
 
-            var f = new seaq.Field("Test Update Field");
-            var fields = createResp.Fields?.ToList() ?? new List<seaq.Field>();
-            fields.Add(f);
-            createResp.Fields = fields;
+            const string testLabel = "TestLabel";
+            var fields = createResp.Fields.ToList();
+            var f = fields.FirstOrDefault();
+            var idx = fields.ToList().FindIndex(x => x.Name.Equals(f.Name));
+            fields[idx].Label = testLabel;
+
+            createResp.Fields = fields;            
 
             var resp = await cluster.UpdateIndexDefinitionAsync(createResp);
 
-            var newFieldExists = resp.Fields.Any(x => x.Name.Equals(f.Name, StringComparison.OrdinalIgnoreCase));
+            var actual = resp.Fields.FirstOrDefault(x => x.Name.Equals(f.Name))?.Label;
 
             await cluster.DeleteIndexAsync(config.Name);
 
             Assert.NotNull(resp);
-            Assert.True(newFieldExists);
+            Assert.Equal(testLabel, actual);
         }
 
 
