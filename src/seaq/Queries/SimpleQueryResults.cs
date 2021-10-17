@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace seaq
 {
     public class SimpleQueryResults :
         ISeaqQueryResults
     {
-        public IEnumerable<BaseDocument> Documents { get; }
+        public IEnumerable<DefaultQueryResult> Results { get; }
+        IEnumerable<ISeaqQueryResult> ISeaqQueryResults.Results => Results;
 
         public long Took { get; }
 
@@ -13,18 +15,19 @@ namespace seaq
 
         public SimpleQueryResults() { }
         public SimpleQueryResults(
-            IEnumerable<BaseDocument> documents,
+            IEnumerable<DefaultQueryResult> results,
             long took,
             long total)
         {
-            Documents = documents;
+            Results = results;
             Took = took;
             Total = total;
         }
         public SimpleQueryResults(
             Nest.ISearchResponse<BaseDocument> searchResponse)
         {
-            Documents = searchResponse.Documents;
+            Results = searchResponse.Hits.Select(x => new DefaultQueryResult(x));
+
             Took = searchResponse.Took;
             Total = searchResponse.Total;
         }
@@ -33,7 +36,8 @@ namespace seaq
         ISeaqQueryResults<T>
         where T : BaseDocument
     {
-        public IEnumerable<T> Documents { get; }
+        public IEnumerable<DefaultQueryResult<T>> Results { get; }
+        IEnumerable<ISeaqQueryResult<T>> ISeaqQueryResults<T>.Results => Results;
 
         public long Took { get; }
 
@@ -41,18 +45,19 @@ namespace seaq
 
         public SimpleQueryResults() { }
         public SimpleQueryResults(
-            IEnumerable<T> documents,
+            IEnumerable<DefaultQueryResult<T>> results,
             long took,
             long total)
         {
-            Documents = documents;
+            Results = results;
             Took = took;
             Total = total;
         }
         public SimpleQueryResults(
             Nest.ISearchResponse<T> searchResponse)
         {
-            Documents = searchResponse.Documents;
+            Results = searchResponse.Hits.Select(x => new DefaultQueryResult<T>(x));
+
             Took = searchResponse.Took;
             Total = searchResponse.Total;
         }

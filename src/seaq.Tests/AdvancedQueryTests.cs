@@ -20,7 +20,7 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
             Assert.True(results != null);
-            Assert.NotEmpty(results.Documents);
+            Assert.NotEmpty(results.Results);
         }
         [Fact]
         public void CanExecute_Untyped()
@@ -34,7 +34,7 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
             Assert.True(results != null);
-            Assert.NotEmpty(results.Documents);
+            Assert.NotEmpty(results.Results);
         }
         [Fact]
         public async void CanExecuteAsync()
@@ -71,7 +71,7 @@ namespace SEAQ.Tests
                 criteria);
 
             var results = query.Execute(_client);
-            Assert.Equal(25, results.Documents.Count());
+            Assert.Equal(25, results.Results.Count());
         }
         [Fact]
         public void CriteriaWorksCorrectly_Take_Untyped()
@@ -86,7 +86,7 @@ namespace SEAQ.Tests
                 criteria);
 
             var results = query.Execute(_client);
-            Assert.Equal(25, results.Documents.Count());
+            Assert.Equal(25, results.Results.Count());
         }
         [Fact]
         public void CriteriaWorksCorrectly_Skip()
@@ -105,8 +105,8 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
             var results2 = query2.Execute(_client);
 
-            var r = results.Documents.ElementAt(1) as SampleResult;
-            var r2 = results2.Documents.ElementAt(0) as SampleResult;
+            var r = results.Results.ElementAt(1)?.Document;
+            var r2 = results2.Results.ElementAt(0)?.Document;
 
             Assert.Equal(r.OrderId, r2.OrderId);
 
@@ -130,8 +130,8 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
             var results2 = query2.Execute(_client);
 
-            var r = results.Documents.Select(x => x as SampleResult).ElementAt(1);
-            var r2 = results2.Documents.Select(x => x as SampleResult).ElementAt(0);
+            var r = results.Results.Select(x => x?.Document as SampleResult).ElementAt(1);
+            var r2 = results2.Results.Select(x => x?.Document as SampleResult).ElementAt(0);
 
             Assert.Equal(r.OrderId, r2.OrderId);
 
@@ -149,8 +149,8 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
 
-            var actualFirst = results.Documents.FirstOrDefault() as SampleResult;
-            var intendedFirst = results.Documents.OrderBy(x => (x as SampleResult)?.OrderId).FirstOrDefault() as SampleResult;
+            var actualFirst = results.Results.FirstOrDefault()?.Document as SampleResult;
+            var intendedFirst = results.Results.OrderBy(x => (x?.Document as SampleResult)?.OrderId).FirstOrDefault()?.Document as SampleResult;
 
             Assert.Equal(actualFirst.OrderId, intendedFirst.OrderId);
         }
@@ -168,8 +168,8 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
 
-            var actualFirst = results.Documents.FirstOrDefault() as SampleResult;
-            var intendedFirst = results.Documents.OrderBy(x => (x as SampleResult)?.OrderId).FirstOrDefault() as SampleResult;
+            var actualFirst = results.Results.FirstOrDefault()?.Document as SampleResult;
+            var intendedFirst = results.Results.OrderBy(x => (x?.Document as SampleResult)?.OrderId).FirstOrDefault()?.Document as SampleResult;
 
             Assert.Equal(actualFirst.OrderId, intendedFirst.OrderId);
         }
@@ -184,8 +184,8 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
 
             var hasValues = DoAllTheseFieldsHaveValues(
-                results.Documents.FirstOrDefault(),
-                GetObjectFields(results.Documents.FirstOrDefault()).ToArray());
+                results.Results.FirstOrDefault()?.Document,
+                GetObjectFields(results.Results.FirstOrDefault()?.Document).ToArray());
 
             Assert.True(hasValues);
         }
@@ -201,8 +201,8 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
 
             var hasValues = DoAllTheseFieldsHaveValues(
-                results.Documents.FirstOrDefault(),
-                GetObjectFields(results.Documents.FirstOrDefault()).ToArray());
+                results.Results.FirstOrDefault()?.Document,
+                GetObjectFields(results.Results.FirstOrDefault()?.Document).ToArray());
 
             Assert.True(hasValues);
         }
@@ -221,7 +221,7 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
 
             var hasValues = DoOnlyTheseFieldsHaveValues(
-                results.Documents.FirstOrDefault(),
+                results.Results.FirstOrDefault()?.Document,
                 nameof(SampleResult.CustomerFullName));
 
             Assert.True(hasValues);
@@ -241,7 +241,7 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
 
             var hasValues = DoOnlyTheseFieldsHaveValues(
-                results.Documents.FirstOrDefault(),
+                results.Results.FirstOrDefault()?.Document,
                 nameof(SampleResult.CustomerFullName));
 
             Assert.True(hasValues);
@@ -257,8 +257,8 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
 
             var hasValues = DoAllTheseFieldsHaveValues(
-                results.Documents.FirstOrDefault(),
-                GetObjectFields(results.Documents.FirstOrDefault()).ToArray());
+                results.Results.FirstOrDefault()?.Document,
+                GetObjectFields(results.Results.FirstOrDefault()?.Document).ToArray());
 
             Assert.True(hasValues);
         }
@@ -274,8 +274,8 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
 
             var hasValues = DoAllTheseFieldsHaveValues(
-                results.Documents.FirstOrDefault(),
-                GetObjectFields(results.Documents.FirstOrDefault()).ToArray());
+                results.Results.FirstOrDefault()?.Document,
+                GetObjectFields(results.Results.FirstOrDefault()?.Document).ToArray());
 
             Assert.True(hasValues);
         }
@@ -330,10 +330,10 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
 
-            var all = results.Documents.All(
-                x => x.Products.Any(
+            var all = results.Results.All(
+                x => x.Document.Products.Any(
                     z => z.ProductName.Contains(valToMatch, StringComparison.OrdinalIgnoreCase)));
-            Assert.NotEmpty(results.Documents);
+            Assert.NotEmpty(results.Results);
             Assert.True(all);
         }
         [Fact]
@@ -353,10 +353,10 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
 
-            var all = results.Documents.Select(x => x as SampleResult).All(
+            var all = results.Results.Select(x => x?.Document as SampleResult).All(
                 x => x.Products.Any(
                     z => z.ProductName.Contains(valToMatch, StringComparison.OrdinalIgnoreCase)));
-            Assert.NotEmpty(results.Documents);
+            Assert.NotEmpty(results.Results);
             Assert.True(all);
         }
         [Fact]
@@ -375,9 +375,9 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
 
-            var all = results.Documents.All(x => x.CustomerFirstName == valToMatch);
+            var all = results.Results.All(x => x?.Document?.CustomerFirstName == valToMatch);
 
-            Assert.NotEmpty(results.Documents);
+            Assert.NotEmpty(results.Results);
             Assert.True(all);
         }
         [Fact]
@@ -397,9 +397,9 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
 
-            var all = results.Documents.Select(x => x as SampleResult).All(x => x.CustomerFirstName == valToMatch);
+            var all = results.Results.Select(x => x?.Document as SampleResult).All(x => x?.CustomerFirstName == valToMatch);
 
-            Assert.NotEmpty(results.Documents);
+            Assert.NotEmpty(results.Results);
             Assert.True(all);
         }
         [Fact]
@@ -415,7 +415,7 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
             Assert.True(results != null);
-            Assert.NotEmpty(results.Documents);
+            Assert.NotEmpty(results.Results);
             Assert.NotEmpty(results.Buckets);
         }
         [Fact]
@@ -432,7 +432,7 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
             Assert.True(results != null);
-            Assert.NotEmpty(results.Documents);
+            Assert.NotEmpty(results.Results);
             Assert.NotEmpty(results.Buckets);
         }
         [Fact]
@@ -449,7 +449,7 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
             Assert.True(results != null);
-            Assert.Empty(results.Documents);
+            Assert.Empty(results.Results);
             Assert.NotEmpty(results.Buckets);
         }
         [Fact]
@@ -467,7 +467,7 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
             Assert.True(results != null);
-            Assert.Empty(results.Documents);
+            Assert.Empty(results.Results);
             Assert.NotEmpty(results.Buckets);
         }
         [Fact]
@@ -480,7 +480,7 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
             Assert.True(results != null);
-            Assert.NotEmpty(results.Documents);
+            Assert.NotEmpty(results.Results);
             Assert.Empty(results.Buckets);
         }
         [Fact]
@@ -494,7 +494,7 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
             Assert.True(results != null);
-            Assert.NotEmpty(results.Documents);
+            Assert.NotEmpty(results.Results);
             Assert.Empty(results.Buckets);
         }
     }

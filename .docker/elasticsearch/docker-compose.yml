@@ -2,7 +2,7 @@ version: '3.7'
 services:
   elasticsearch:
     container_name: seaq_local
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
     ports:
       - 9200:9200
     environment:
@@ -14,7 +14,7 @@ services:
       - seaq_local_network
   kibana:
     container_name: kb_kibana
-    image: docker.elastic.co/kibana/kibana:7.14.0
+    image: docker.elastic.co/kibana/kibana:7.15.0
     ports:
       - 5601:5601
     environment:
@@ -34,25 +34,18 @@ services:
       -E output.elasticsearch.protocol=http
       -E output.elasticsearch.username=elastic
       -E output.elasticsearch.password=elastic
-      -E apm-server.secret_token=thisisasecret
-      -E setup.kibana.host=kb_kibana:5601
+      -E apm-server.secret_token=lRiDTwv2dis5J53dke
+      -E setup.kibana.host=seaq_kibana:5601
       -E apm-server.kibana.enabled=true
-      -E apm-server.kibana.host=kibana:5601
+      -E apm-server.kibana.host=seaq_kibana:5601
       -E apm-server.kibana.protocol=http
       -E apm-server.kibana.username=elastic
       -E apm-server.kibana.password=elastic
-    # environment:
-    #   - output.elasticsearch.hosts=["seaq_local:9200"]
-    #   - output.elasticsearch.protocol=http
-    #   - output.elasticsearch.username=elastic
-    #   - output.elasticsearch.password=elastic
-    #   - apm-server.secret_token=thisisasecret
-    #   - setup.kibana.host=kb_kibana:5601
-    #   - apm-server.kibana.enabled=true
-    #   - apm-server.kibana.host=kibana:5601
-    #   - apm-server.kibana.protocol=http
-    #   - apm-server.kibana.username=elastic
-    #   - apm-server.kibana.password=elastic
+      
+      -E apm-server.auth.anonymous.enabled=true
+      -E apm-server.auth.allow_agent=["dotnet","rum-js","js-base"]
+      -E apm-server.auth.rate_limit.event_limit=100
+      -E apm-server.rum.enabled=true
     networks:
       - seaq_local_network
 

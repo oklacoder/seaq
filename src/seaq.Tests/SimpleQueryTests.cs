@@ -57,7 +57,7 @@ namespace SEAQ.Tests
             var query = new SimpleQuery<SampleResult>(criteria);
 
             var results = query.Execute(_client);
-            Assert.Equal(25, results.Documents.Count());
+            Assert.Equal(25, results.Results.Count());
         }
         [Fact]
         public void SimpleQueryCriteriaWorksCorrectly_Take_Untyped()
@@ -67,7 +67,7 @@ namespace SEAQ.Tests
             var query = new SimpleQuery(criteria);
 
             var results = query.Execute(_client);
-            Assert.Equal(25, results.Documents.Count());
+            Assert.Equal(25, results.Results.Count());
         }
         [Fact]
         public void SimpleQueryCriteriaWorksCorrectly_Skip()
@@ -83,8 +83,8 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
             var results2 = query2.Execute(_client);
 
-            var r = results.Documents.ElementAt(1) as SampleResult;
-            var r2 = results2.Documents.ElementAt(0) as SampleResult;
+            var r = results.Results.ElementAt(1)?.Document as SampleResult;
+            var r2 = results2.Results.ElementAt(0)?.Document as SampleResult;
 
             Assert.Equal(r.OrderId, r2.OrderId);
 
@@ -103,8 +103,8 @@ namespace SEAQ.Tests
             var results = query.Execute(_client);
             var results2 = query2.Execute(_client);
 
-            var r = results.Documents.ElementAt(1) as SampleResult;
-            var r2 = results2.Documents.ElementAt(0) as SampleResult;
+            var r = results.Results.ElementAt(1)?.Document as SampleResult;
+            var r2 = results2.Results.ElementAt(0)?.Document as SampleResult;
 
             Assert.Equal(r.OrderId, r2.OrderId);
 
@@ -122,8 +122,8 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
 
-            var actualFirst = results.Documents.FirstOrDefault() as SampleResult;
-            var intendedFirst = results.Documents.OrderBy(x => (x as SampleResult)?.OrderId).FirstOrDefault() as SampleResult;
+            var actualFirst = results.Results.FirstOrDefault()?.Document as SampleResult;
+            var intendedFirst = results.Results.OrderBy(x => (x?.Document as SampleResult)?.OrderId).FirstOrDefault()?.Document as SampleResult;
 
             Assert.Equal(actualFirst.OrderId, intendedFirst.OrderId);
         }
@@ -139,8 +139,8 @@ namespace SEAQ.Tests
 
             var results = query.Execute(_client);
 
-            var actualFirst = results.Documents.FirstOrDefault() as SampleResult;
-            var intendedFirst = results.Documents.OrderBy(x => (x as SampleResult)?.OrderId).FirstOrDefault() as SampleResult;
+            var actualFirst = results.Results.FirstOrDefault()?.Document as SampleResult;
+            var intendedFirst = results.Results.OrderBy(x => (x?.Document as SampleResult)?.OrderId).FirstOrDefault()?.Document as SampleResult;
 
             Assert.Equal(actualFirst.OrderId, intendedFirst.OrderId);
         }

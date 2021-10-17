@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace seaq
 {
@@ -6,25 +7,27 @@ namespace seaq
         ISeaqQueryResults
     {
 
-        public IEnumerable<BaseDocument> Documents { get; }
+        public IEnumerable<DefaultQueryResult> Results { get; }
+        IEnumerable<ISeaqQueryResult> ISeaqQueryResults.Results => Results;
+
         public IEnumerable<IBucketResult> Buckets { get; }
         public long Total { get; }
         public long Took { get; }
         public AdvancedQueryResults() { }
         public AdvancedQueryResults(
-            IEnumerable<BaseDocument> documents,
+            IEnumerable<DefaultQueryResult> results,
             long took,
             long total)
         {
-            Documents = documents;
+            Results = results;
             Took = took;
             Total = total;
         }
         public AdvancedQueryResults(
             Nest.ISearchResponse<BaseDocument> searchResponse)
         {
-            //want to capture the scores, so need to pull from hits rather than docs directly.  probably with a poco here that contains a "document" prop
-            Documents = searchResponse.Documents;
+            Results = searchResponse.Hits.Select(x => new DefaultQueryResult(x));
+
             Total = searchResponse.Total;
             Took = searchResponse.Took;
             Buckets = searchResponse.Aggregations?.BuildBucketResult();
@@ -35,25 +38,28 @@ namespace seaq
         ISeaqQueryResults<T>
     where T : BaseDocument
     {
-        public IEnumerable<T> Documents { get; }
+        public IEnumerable<DefaultQueryResult<T>> Results { get; }
+        IEnumerable<ISeaqQueryResult<T>> ISeaqQueryResults<T>.Results => Results;
+
         public IEnumerable<IBucketResult> Buckets { get; }
         public long Total { get; }
         public long Took { get; }
 
         public AdvancedQueryResults() { }
         public AdvancedQueryResults(
-            IEnumerable<T> documents,
+            IEnumerable<DefaultQueryResult<T>> results,
             long took,
             long total)
         {
-            Documents = documents;
+            Results = results;
             Took = took;
             Total = total;
         }
         public AdvancedQueryResults(
             Nest.ISearchResponse<T> searchResponse)
         {
-            Documents = searchResponse.Documents;
+            Results = searchResponse.Hits.Select(x => new DefaultQueryResult<T>(x));
+
             Total = searchResponse.Total;
             Took = searchResponse.Took;
             Buckets = searchResponse.Aggregations?.BuildBucketResult();
