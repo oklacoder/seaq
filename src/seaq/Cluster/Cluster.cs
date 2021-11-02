@@ -301,12 +301,12 @@ namespace seaq
 
         //commit docs
         public bool Commit<T>(T document)
-            where T : BaseDocument  
+            where T : class, IDocument
         {
             return CommitAsync(document).Result;
         }
         public async Task<bool> CommitAsync<T>(T document)
-            where T : BaseDocument
+            where T : class, IDocument
         {
             if (!TryGetIndexForDocument(document, out var idx))
             {
@@ -339,12 +339,12 @@ namespace seaq
             return res.IsValid;
         }
         public bool Commit<T>(IEnumerable<T> documents)
-            where T : BaseDocument
+            where T : class, IDocument
         {
             return CommitAsync(documents).Result;
         }
         public async Task<bool> CommitAsync<T>(IEnumerable<T> documents)
-            where T : BaseDocument
+            where T : class, IDocument
         {
 
             var bulk = new BulkDescriptor();
@@ -358,7 +358,7 @@ namespace seaq
                     return false;
                 }
 
-                bulk.Index<BaseDocument>(x => x
+                bulk.Index<object>(x => x
                     .Index(idx.Name)
                     .Id(document.Id)
                     .Document(document))
@@ -673,13 +673,13 @@ namespace seaq
 
 
         private bool TryGetIndexForDocument<T>(T document, out Index index)
-            where T : BaseDocument
+            where T : IDocument
         {
 
             var resp = _indices.TryGetValue(document.IndexName ?? "", out index);
 
 
-            if (!document.IndexName.StartsWith(ClusterScope))
+            if (document?.IndexName?.StartsWith(ClusterScope) is not true)
             {
                 var index_name_adj = string.Join(Constants.Indices.NamePartSeparator, ClusterScope, document.IndexName);
                 Log.Debug("Provided index name {0} doesn't begin with ClusterScope {1} as expected.  Coerced name to {2} to match expectations", document.IndexName, ClusterScope, index_name_adj);
