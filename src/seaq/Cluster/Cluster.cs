@@ -675,7 +675,16 @@ namespace seaq
         private bool TryGetIndexForDocument<T>(T document, out Index index)
             where T : BaseDocument
         {
+
             var resp = _indices.TryGetValue(document.IndexName ?? "", out index);
+
+
+            if (!document.IndexName.StartsWith(ClusterScope))
+            {
+                var index_name_adj = string.Join(Constants.Indices.NamePartSeparator, ClusterScope, document.IndexName);
+                Log.Debug("Provided index name {0} doesn't begin with ClusterScope {1} as expected.  Coerced name to {2} to match expectations", document.IndexName, ClusterScope, index_name_adj);
+                resp = _indices.TryGetValue(index_name_adj ?? "", out index);
+            }
 
             if (resp is not true)
             {
