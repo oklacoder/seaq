@@ -5,6 +5,7 @@ using System.Reflection;
 
 namespace seaq
 {
+
     public static class FieldNameUtilities
     {
         public static string GetElasticPropertyName(

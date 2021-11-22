@@ -145,7 +145,7 @@ namespace seaq
             if (!config.Name.Equals(config.Name.ToLowerInvariant()))
             {
                 var oldName = config.Name;
-                var newName = config.Name.ToLowerInvariant();
+                var newName = IndexNameUtilities.FormatIndexName(config.Name);
 
                 config.Name = newName;
 

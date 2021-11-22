@@ -126,7 +126,7 @@ namespace SEAQ.Tests
 
             Assert.True(resp);
         }
-        [Fact]
+        [Fact(Skip = "performance")]
         public async void CanIndex10000Documents()
         {
             const string method = "CanIndex10000Documents";
