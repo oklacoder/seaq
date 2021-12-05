@@ -41,6 +41,8 @@ namespace seaq
         public bool IsCacheRefreshing { get; private set; } = false;
         public DateTime? CacheRefreshedUtc { get; private set; } = null;
 
+        public bool AllowAutomaticIndexCreation { get; private set; }
+
         private Dictionary<string, Index> _indices;
         private Dictionary<string, Type> _searchableTypes;
         private ISeaqElasticsearchSerializer _serializer;
@@ -70,6 +72,7 @@ namespace seaq
             ClusterArgs args)
         {
             ClusterScope = args.ClusterScope;
+            AllowAutomaticIndexCreation = args.AllowAutomaticIndexCreation;
             _serializer = args.Serializer ?? new DefaultSeaqElasticsearchSerializer((x) => TryGetSearchType(x));
 
             _client = BuildClient(args, _serializer);
@@ -310,8 +313,17 @@ namespace seaq
         {
             if (!TryGetIndexForDocument(document, out var idx))
             {
-                Log.Warning("Could not identify index for provided document {0}", document.Id);
-                return false;
+                if (!AllowAutomaticIndexCreation)
+                {
+                    Log.Warning("Could not identify index for provided document {0} and cluster settings do not allow for automatic index creation.", document.Id);
+                    return false;
+                }
+                else
+                {
+                    Log.Warning("No index found for document with type {0}, but cluster settings allow for automatic index creation.", document.GetType().FullName);
+                    var indexConfig = new IndexConfig(document.GetType().FullName, document.GetType().FullName);
+                    idx = await CreateIndexAsync(indexConfig);
+                }
             }
 
             Log.Verbose("Attempting to index document {0} to index {1}", document.Id, idx.Name);

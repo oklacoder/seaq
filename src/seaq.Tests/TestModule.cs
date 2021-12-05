@@ -47,10 +47,10 @@ namespace SEAQ.Tests
 
         protected string Scope => Guid.NewGuid().ToString("N");
 
-        protected ClusterArgs GetArgs(string method)
+        protected ClusterArgs GetArgs(string method, bool allowAutomaticIndexCreation = true)
         {
             var scope = $"{Scope}_{method}".ToLower();
-            return new ClusterArgs(scope, Url, Username, Password, true);
+            return new ClusterArgs(scope, Url, Username, Password, true, null, allowAutomaticIndexCreation);
         }
 
         public IEnumerable<TestDoc> GetFakeDocs(int count = 100)

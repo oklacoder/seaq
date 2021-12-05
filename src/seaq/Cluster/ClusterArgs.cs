@@ -8,6 +8,8 @@
         public string Password { get; }
         public bool BypassCertificateValidation { get; }
         public ISeaqElasticsearchSerializer Serializer { get; } = null;
+        public bool AllowAutomaticIndexCreation { get; }
+
 
         public ClusterArgs(
             string clusterScope,
@@ -15,7 +17,8 @@
             string username,
             string password,
             bool bypassCertificateValidation = false,
-            ISeaqElasticsearchSerializer serializer = null)
+            ISeaqElasticsearchSerializer serializer = null,
+            bool allowAutomaticIndexCreation = true)
         {
             ClusterScope = clusterScope;
             Url = url;
@@ -23,6 +26,7 @@
             Password = password;
             BypassCertificateValidation = bypassCertificateValidation;
             Serializer = serializer;
+            AllowAutomaticIndexCreation = allowAutomaticIndexCreation;
         }
     }
 }

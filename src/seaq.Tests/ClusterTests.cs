@@ -106,6 +106,40 @@ namespace SEAQ.Tests
 
             Assert.True(resp);
         }
+        [Fact]
+        public async void CanIndexOneDocument_AutomaticIndexCreation()
+        {
+            const string method = "CanIndexOneDocument";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+
+            var doc = GetFakeDocs(1).FirstOrDefault();
+
+            var resp = await cluster.CommitAsync(doc);
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.True(resp);
+        }
+        [Fact]
+        public async void CanIndexOneDocument_FailsWhenIndexNotExists()
+        {
+            const string method = "CanIndexOneDocument";
+            var cluster = await Cluster.CreateAsync(GetArgs(method, false));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+
+            var doc = GetFakeDocs(1).FirstOrDefault();
+
+            var resp = await cluster.CommitAsync(doc);
+
+            Assert.False(resp);
+        }
         //can index multi
         [Fact]
         public async void CanIndex100Documents()
