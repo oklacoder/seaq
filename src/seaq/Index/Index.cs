@@ -10,7 +10,7 @@ namespace seaq
         BaseDocument
     {
         public override string Id => Name;
-        public override string IndexName => Constants.Indices.InternalIndexStoreName;
+        public override string IndexName => GetType().FullName;
         public override string Type => GetType().FullName;
 
         public string Name { get; set; }

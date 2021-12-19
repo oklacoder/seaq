@@ -22,7 +22,6 @@ namespace seaq
         }
         public class Indices
         {
-            public const string InternalIndexStoreName = ".seaq_internal_index_store";
             public const string NamePartSeparator = "_";
             public class Meta
             {

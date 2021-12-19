@@ -105,10 +105,10 @@ namespace seaq
             var vals = resp.Indices.Select(Index.Create);
             _indices = vals.ToDictionary(x => x.Name, x => x);
 
-            if (!_indices.ContainsKey(Constants.Indices.InternalIndexStoreName))
+            if (!IndicesByType.Contains(typeof(seaq.Index).FullName))
             {
                 var indexConfig = new IndexConfig(
-                    Constants.Indices.InternalIndexStoreName, typeof(Index).FullName);
+                    typeof(seaq.Index).FullName, typeof(Index).FullName);
                 await CreateIndexAsync(indexConfig);
                 await HydrateInternalStore();
             }
@@ -806,7 +806,7 @@ namespace seaq
         }
         private async Task DeleteInternalStore()
         {
-            await DeleteIndexAsync(Constants.Indices.InternalIndexStoreName);
+            await DeleteIndexAsync(typeof(seaq.Index).FullName);
         }
         private async Task SaveToInternalStore(Index idx)
         {
