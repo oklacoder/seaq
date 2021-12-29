@@ -99,7 +99,7 @@ namespace seaq
                         $"@{f.FieldName}" : 
                         f.FieldName;
 
-                res.Terms(f.FieldName, t => t
+                res.Terms(key, t => t
                     .Field(f.FieldName)
                     .MinimumDocumentCount(2)
                     .Order(o => o.CountDescending().KeyAscending()));

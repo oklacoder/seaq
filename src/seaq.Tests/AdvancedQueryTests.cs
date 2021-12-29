@@ -403,6 +403,22 @@ namespace SEAQ.Tests
             Assert.True(all);
         }
         [Fact]
+        public void ReturnsBucketsForSpecifiedFields_ReservedName()
+        {
+            var b = new[] { new DefaultBucketField("type") };
+
+            var criteria = new AdvancedQueryCriteria<SampleResult>(
+                SampleIndices,
+                bucketFields: b);
+            var query = new AdvancedQuery<SampleResult>(
+                criteria);
+
+            var results = query.Execute(_client);
+            Assert.True(results != null);
+            Assert.NotEmpty(results.Results);
+            Assert.NotEmpty(results.Buckets);
+        }
+        [Fact]
         public void ReturnsBucketsForSpecifiedFields()
         {
             var b = new[] { new DefaultBucketField("manufacturer.keyword") };
