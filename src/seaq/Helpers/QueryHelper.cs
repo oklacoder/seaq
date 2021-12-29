@@ -1,4 +1,5 @@
 ﻿using Nest;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -93,6 +94,11 @@ namespace seaq
 
             foreach (var f in fields)
             {
+                var key = Constants.Fields.NestReservedFieldNames
+                    .Contains(f.FieldName, StringComparer.OrdinalIgnoreCase) ? 
+                        $"@{f.FieldName}" : 
+                        f.FieldName;
+
                 res.Terms(f.FieldName, t => t
                     .Field(f.FieldName)
                     .MinimumDocumentCount(2)
@@ -121,7 +127,12 @@ namespace seaq
                                 if (b?.Any() != true && b.DocCount < 2)
                                     continue;
 
-                                res.Add(new DefaultBucketResult(b.Key, b.DocCount));
+                                var key = Constants.Fields.NestReservedFieldNameSubs
+                                    .Contains(b.Key, StringComparer.OrdinalIgnoreCase) ? 
+                                        b.Key.Substring(1) : 
+                                        b.Key;
+
+                                res.Add(new DefaultBucketResult(key, b.DocCount));
                             }
                         }
                     }

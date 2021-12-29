@@ -44,6 +44,8 @@ namespace seaq
             public const string SortField = "sort";
             public const string KeywordField = "keyword";
             public static IEnumerable<string> AlwaysReturnedFields => new string[] { nameof(BaseDocument.Id), nameof(BaseDocument.IndexName), nameof(BaseDocument.Type) };
+            public static IEnumerable<string> NestReservedFieldNames => new string[] { "score", "value_as_string", "keys", "max_score", "type" };
+            public static IEnumerable<string> NestReservedFieldNameSubs => new string[] { "@score", "@value_as_string", "@keys", "@max_score", "@type" };
         }
 
     }
