@@ -128,11 +128,11 @@ namespace seaq
                                     continue;
 
                                 var key = Constants.Fields.NestReservedFieldNameSubs
-                                    .Contains(b.Key, StringComparer.OrdinalIgnoreCase) ? 
-                                        b.Key.Substring(1) : 
-                                        b.Key;
+                                    .Contains(a, StringComparer.OrdinalIgnoreCase) ? 
+                                        a.Substring(1) : 
+                                        a;
 
-                                res.Add(new DefaultBucketResult(key, b.DocCount));
+                                res.Add(new DefaultBucketResult(key, b.Key, b.DocCount));
                             }
                         }
                     }
