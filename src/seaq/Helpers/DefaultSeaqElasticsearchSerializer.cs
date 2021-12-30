@@ -16,7 +16,8 @@ namespace seaq
         { 
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase, 
             NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString,
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
+            ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
         };
 
     public DefaultSeaqElasticsearchSerializer(
