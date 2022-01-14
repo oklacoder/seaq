@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace SEAQ.Tests
 {
@@ -11,7 +12,12 @@ namespace SEAQ.Tests
     public class ClusterTests :
         TestModule
     {
-        //TODO: unhappy paths
+        public ClusterTests(
+            ITestOutputHelper testOutput) :
+            base(testOutput)
+        {
+
+        }
 
         [Fact]
         public async void CanPingCluster()
@@ -107,6 +113,44 @@ namespace SEAQ.Tests
             Assert.True(resp);
         }
         [Fact]
+        public async void CanIndexOneDocument_Untyped()
+        {
+            const string method = "CanIndexOneDocument_Untyped";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            await cluster.CreateIndexAsync(config);
+
+            var doc = GetFakeDocs(1).FirstOrDefault();
+
+            var resp = await cluster.CommitAsync(doc as object);
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.True(resp);
+        }
+        [Fact]
+        public async void CanIndexOneDocument_Untyped_FailsWhenBadType()
+        {
+            const string method = "CanIndexOneDocument_Untyped_FailsWhenBadType";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            await cluster.CreateIndexAsync(config);
+
+            var doc = new { value1 = "test", value2 = 2 };
+
+            var resp = await cluster.CommitAsync(doc as object);
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.False(resp);
+        }
+        [Fact]
         public async void CanIndexOneDocument_AutomaticIndexCreation()
         {
             const string method = "CanIndexOneDocument";
@@ -159,6 +203,45 @@ namespace SEAQ.Tests
             await cluster.DeleteIndexAsync(config.Name);
 
             Assert.True(resp);
+        }
+        [Fact]
+        public async void CanIndex100Documents_Untyped()
+        {
+            const string method = "CanIndex100Documents_Untyped";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs(100);
+
+            var resp = await cluster.CommitAsync(docs.Select(x => x as object));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.True(resp);
+        }
+
+        [Fact]
+        public async void CanIndex100Documents_Untyped_FailsWhenBadType()
+        {
+            const string method = "CanIndex100Documents_UntypedFailsWhenBadType";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            await cluster.CreateIndexAsync(config);
+
+            var docs = new[] { new {value1 = "test", value2 = 2}};
+
+            var resp = await cluster.CommitAsync(docs.Select(x => x as object));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.False(resp);
         }
         [Fact(Skip = "performance")]
         public async void CanIndex10000Documents()
@@ -318,6 +401,30 @@ namespace SEAQ.Tests
 
             Assert.True(resp);
         }
+        //delete single doc
+        [Fact]
+        public async void CanDelete1Document_Untyped()
+        {
+            const string method = "CanDelete1Document_Untyped";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs(100).ToList();
+
+            await cluster.CommitAsync(docs);
+
+            var toDelete = docs.ElementAt(5) as object;
+
+            var resp = await cluster.DeleteAsync(toDelete);
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.True(resp);
+        }
         //delete mult docs
         [Fact]
         public async void CanDelete5Documents()
@@ -335,6 +442,29 @@ namespace SEAQ.Tests
             await cluster.CommitAsync(docs);
 
             var toDelete = docs.Take(5);
+
+            var resp = await cluster.DeleteAsync(toDelete);
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.True(resp);
+        }
+        [Fact]
+        public async void CanDelete5Documents_Untyped()
+        {
+            const string method = "CanDelete5Documents_Untyped";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs(100).ToList();
+
+            await cluster.CommitAsync(docs);
+
+            var toDelete = docs.Take(5).Select(x => x as object);
 
             var resp = await cluster.DeleteAsync(toDelete);
 

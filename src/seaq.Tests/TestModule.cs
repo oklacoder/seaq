@@ -1,9 +1,11 @@
 ﻿using Bogus;
 using Nest;
 using seaq;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Xunit.Abstractions;
 
 namespace SEAQ.Tests
 {
@@ -23,11 +25,19 @@ namespace SEAQ.Tests
             .BasicAuthentication(Username, Password);
         protected ElasticClient _client => new ElasticClient(_connection);
         protected const string SampleIndex = "kibana_sample_data_ecommerce";
+        private readonly ITestOutputHelper testOutput;
+
         protected static string[] SampleIndices => new[] { SampleIndex };
         protected static Dictionary<string, Type> _searchableTypes;
 
-        public TestModule()
+        public TestModule(
+            ITestOutputHelper testOutput)
         {
+            this.testOutput = testOutput;
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .WriteTo.TestOutput(testOutput)
+                .CreateLogger();
             _searchableTypes = FieldNameUtilities.GetAllSearchableTypes().ToDictionary(t => t.FullName, t => t);
             _searchableTypes.Add("order", typeof(SampleResult));
         }

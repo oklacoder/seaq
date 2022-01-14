@@ -2,12 +2,19 @@
 using System;
 using System.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace SEAQ.Tests
 {
     public class AdvancedQueryTests :
         TestModule
     {
+        public AdvancedQueryTests(
+            ITestOutputHelper testOutput) : 
+            base(testOutput)
+        {
+
+        }
 
         [Fact]
         public void CanExecute()

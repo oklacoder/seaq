@@ -303,6 +303,7 @@ namespace seaq
         }
 
         //commit docs
+        //TODO: untyped commit/delete
         public bool Commit<T>(T document)
             where T : class, IDocument
         {
@@ -389,6 +390,128 @@ namespace seaq
             {
                 Log.Error("Some items - {0} of {1} - failed to complete, with the following errors:", resp.ItemsWithErrors.Count(), resp.Items.Count());
                 foreach(var err in resp.ItemsWithErrors)
+                {
+                    Log.Error("Item Id: {0}, Index: {1}", err?.Id, err?.Index);
+                    Log.Error(err?.Error?.Reason);
+                    Log.Error(err?.Error?.CausedBy?.Reason);
+                    Log.Error(err?.Error?.StackTrace);
+                }
+
+                return false;
+            }
+            if (resp.IsValid is not true)
+            {
+                Log.Error("Error in index attempt:");
+                Log.Error(resp.ServerError?.Error?.Reason);
+                Log.Error(resp.OriginalException?.Message);
+                Log.Error(resp.OriginalException?.StackTrace);
+            }
+
+            return resp.IsValid;
+        }
+
+        public bool Commit(BaseDocument document)
+        {
+            return CommitAsync(document).Result;
+        }
+        public async Task<bool> CommitAsync(object document)
+        {
+            if (!document.GetType().IsAssignableTo(typeof(BaseDocument)))
+            {
+                Log.Warning("Type {0} could not be indexed - only types that inherit from {1} are allowed.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
+                return false;
+            }
+            var doc = document as BaseDocument;
+            if (doc == null)
+            {
+                Log.Warning("Provided document of type {0} could not be cast as {1}.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
+                return false;
+            }
+            if (!TryGetIndexForDocument(doc, out var idx))
+            {
+                if (!AllowAutomaticIndexCreation)
+                {
+                    Log.Warning("Could not identify index for provided document {0} and cluster settings do not allow for automatic index creation.", doc.Id);
+                    return false;
+                }
+                else
+                {
+                    Log.Warning("No index found for document with type {0}, but cluster settings allow for automatic index creation.", doc.GetType().FullName);
+                    var indexConfig = new IndexConfig(doc.GetType().FullName, doc.GetType().FullName);
+                    idx = await CreateIndexAsync(indexConfig);
+                }
+            }
+
+            Log.Verbose("Attempting to index document {0} to index {1}", doc.Id, idx.Name);
+            var res = await _client.IndexAsync(
+                doc,
+                x => x
+                    .Index(Nest.Indices.Index(idx.Name))
+                    .Refresh(idx.ForceRefreshOnDocumentCommit
+                        ? Refresh.True
+                        : Refresh.False));
+            Log.Verbose("Index operation complete for document {0} to index {1}", doc.Id, idx.Name);
+
+            if (res.IsValid is not true)
+            {
+                const string msg = @"Could not index document {0} to index {1}, and could not recover from error.  Review logs and try again.";
+                Log.Error(msg, doc.Id, idx.Name);
+                Log.Error(res.ServerError?.Error?.Reason);
+                Log.Error(res.OriginalException.Message);
+                Log.Error(res.OriginalException.StackTrace);
+
+                throw new InvalidOperationException(
+                    string.Format(msg, doc.Id, idx.Name));
+            }
+
+            return res.IsValid;
+        }
+        public bool Commit(IEnumerable<object> documents)
+        {
+            return CommitAsync(documents).Result;
+        }
+        public async Task<bool> CommitAsync(IEnumerable<object> documents)
+        {
+            var bulk = new BulkDescriptor();
+
+            foreach (var document in documents)
+            {
+                if (!document.GetType().IsAssignableTo(typeof(BaseDocument)))
+                {
+                    Log.Warning("Type {0} could not be indexed - only types that inherit from {1} are allowed.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
+                    return false;
+                }
+                var doc = document as BaseDocument;
+                if (doc == null)
+                {
+                    Log.Warning("Provided document of type {0} could not be cast as {1}.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
+                    return false;
+                }
+                if (!TryGetIndexForDocument(doc, out var idx))
+                {
+                    Log.Warning("Could not identify index for provided document {0}", doc.Id);
+                    return false;
+                }
+
+                bulk.Index<object>(x => x
+                    .Index(idx.Name)
+                    .Id(doc.Id)
+                    .Document(document))
+                    .Refresh(idx.ForceRefreshOnDocumentCommit
+                        ? Refresh.True
+                        : Refresh.False);
+            }
+
+            Log.Verbose("Indexing {0} documents", documents.Count());
+
+            var resp = await _client.BulkAsync(bulk);
+
+            Log.Verbose("Bulk index attempt complete with {0} errors.", resp.ItemsWithErrors.Count());
+
+            if (resp.ItemsWithErrors?.Any() is true)
+            {
+                Log.Error("Some items - {0} of {1} - failed to complete, with the following errors:", resp.ItemsWithErrors.Count(), resp.Items.Count());
+                foreach (var err in resp.ItemsWithErrors)
                 {
                     Log.Error("Item Id: {0}, Index: {1}", err?.Id, err?.Index);
                     Log.Error(err?.Error?.Reason);
@@ -588,6 +711,144 @@ namespace seaq
                 var notFound = resp.Items.Where(x => x?.Status == 404);
 
                 foreach(var nf in notFound)
+                {
+                    const string msg = @"Could not find document {0} on index {1}";
+                    Log.Warning(msg, nf.Id, nf.Index);
+                    errors.Add(nf);
+                }
+            }
+
+            if (resp.ItemsWithErrors?.Any() is true)
+            {
+                Log.Error("Some items - {0} of {1} - failed to complete, with the following errors:", resp.ItemsWithErrors.Count(), resp.ItemsWithErrors.Count());
+                foreach (var err in resp.ItemsWithErrors)
+                {
+                    Log.Error("Item Id: {0}, Index: {1}", err?.Id, err?.Index);
+                    Log.Error(err?.Error?.Reason);
+                    Log.Error(err?.Error?.CausedBy?.Reason);
+                    Log.Error(err?.Error?.StackTrace);
+                }
+
+                return false;
+            }
+            if (resp.IsValid is not true)
+            {
+                Log.Error("Error in delete attempt:");
+                Log.Error(resp.ServerError?.Error?.Reason);
+                Log.Error(resp.OriginalException?.Message);
+                Log.Error(resp.OriginalException?.StackTrace);
+            }
+
+            return resp.IsValid && errors?.Any() is not true;
+        }
+
+        public bool Delete(BaseDocument document)
+        {
+            return DeleteAsync(document).Result;
+        }
+        public async Task<bool> DeleteAsync(object document)
+        {
+            if (!document.GetType().IsAssignableTo(typeof(BaseDocument)))
+            {
+                Log.Warning("Type {0} could not be indexed - only types that inherit from {1} are allowed.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
+                return false;
+            }
+            var doc = document as BaseDocument;
+            if (doc == null)
+            {
+                Log.Warning("Provided document of type {0} could not be cast as {1}.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
+                return false;
+            }
+            if (!TryGetIndexForDocument(doc, out var idx))
+            {
+                Log.Warning("Could not identify index for provided document {0}", doc.Id);
+                return false;
+            }
+
+            Log.Verbose("Attempting to delete document {0} from index {1}", doc.Id, idx.Name);
+
+            var resp = await _client.DeleteAsync<BaseDocument>(
+                doc.Id,
+                x => x
+                    .Index(Nest.Indices.Index(idx.Name))
+                    .Refresh(idx.ForceRefreshOnDocumentCommit
+                        ? Refresh.True
+                        : Refresh.False));
+
+            Log.Verbose("Delete operation complete for document {0} on index {1}", doc.Id, idx.Name);
+
+
+            if (resp.IsValid is not true)
+            {
+                if (resp.ApiCall.HttpStatusCode == 404)
+                {
+                    const string msg = @"Could not find document {0} on index {1}";
+                    Log.Warning(msg, doc.Id, idx.Name);
+                    return false;
+                }
+                else
+                {
+                    const string msg = @"Could not delete document {0} from index {1}, and could not recover from error.  Review logs and try again.";
+                    Log.Error(msg, doc.Id, idx.Name);
+                    Log.Error(resp?.ServerError?.Error?.Reason);
+                    Log.Error(resp?.OriginalException.Message);
+                    Log.Error(resp?.OriginalException.StackTrace);
+
+                    throw new InvalidOperationException(
+                        string.Format(msg, doc.Id, idx.Name));
+                }
+            }
+
+            return resp.IsValid;
+        }
+        public bool Delete(IEnumerable<BaseDocument> documents)
+        {
+            return DeleteAsync(documents).Result;
+        }
+        public async Task<bool> DeleteAsync(IEnumerable<object> documents)
+        {
+            var bulk = new BulkDescriptor();
+
+            foreach (var document in documents)
+            {
+                if (!document.GetType().IsAssignableTo(typeof(BaseDocument)))
+                {
+                    Log.Warning("Type {0} could not be indexed - only types that inherit from {1} are allowed.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
+                    return false;
+                }
+                var doc = document as BaseDocument;
+                if (doc == null)
+                {
+                    Log.Warning("Provided document of type {0} could not be cast as {1}.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
+                    return false;
+                }
+                if (!TryGetIndexForDocument(doc, out var idx))
+                {
+                    Log.Warning("Could not identify index for provided document {0}", doc.Id);
+                    return false;
+                }
+
+                bulk.Delete<BaseDocument>(x => x
+                    .Index(idx.Name)
+                    .Id(doc.Id)
+                    .Document(doc))
+                    .Refresh(idx.ForceRefreshOnDocumentCommit
+                        ? Refresh.True
+                        : Refresh.False);
+            }
+
+            Log.Verbose("Deleting {0} documents", documents.Count());
+
+            var resp = await _client.BulkAsync(bulk);
+            List<BulkResponseItemBase> errors = resp.ItemsWithErrors.ToList();
+
+            Log.Verbose("Bulk delete attempt complete with {0} errors.", resp.ItemsWithErrors.Count());
+
+            if (resp.Items.Any(x => x?.Status == 404))
+            {
+                var notFound = resp.Items.Where(x => x?.Status == 404);
+
+                foreach (var nf in notFound)
                 {
                     const string msg = @"Could not find document {0} on index {1}";
                     Log.Warning(msg, nf.Id, nf.Index);
