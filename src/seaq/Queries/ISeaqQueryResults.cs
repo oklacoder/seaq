@@ -6,10 +6,25 @@ namespace seaq
     public class DefaultQueryResult :
         ISeaqQueryResult
     {
+        /// <summary>
+        /// Document Id
+        /// </summary>
         public string Id { get; set; }
+        /// <summary>
+        /// Document's index
+        /// </summary>
         public string Index { get; set; }
+        /// <summary>
+        /// Elaticsearch search score for this document in the provided query
+        /// </summary>
         public double? Score { get; set; }
+        /// <summary>
+        /// Document version in this Elasticsearch index
+        /// </summary>
         public long? Version { get; set; }
+        /// <summary>
+        /// Document body
+        /// </summary>
         public BaseDocument Document { get; set; }
 
         public DefaultQueryResult() { }
@@ -41,10 +56,25 @@ namespace seaq
         ISeaqQueryResult<T>
         where T : BaseDocument
     {
+        /// <summary>
+        /// Document Id
+        /// </summary>
         public string Id { get; set; }
+        /// <summary>
+        /// Document's index
+        /// </summary>
         public string Index { get; set; }
+        /// <summary>
+        /// Elaticsearch search score for this document in the provided query
+        /// </summary>
         public double? Score { get; set; }
+        /// <summary>
+        /// Document version in this Elasticsearch index
+        /// </summary>
         public long? Version { get; set; }
+        /// <summary>
+        /// Document body
+        /// </summary>
         public T Document { get; set; }
         public DefaultQueryResult() { }
         public DefaultQueryResult(
@@ -73,35 +103,81 @@ namespace seaq
     }
     public interface ISeaqQueryResult
     {
+        /// <summary>
+        /// Document Id
+        /// </summary>
         public string Id { get; set; }
+        /// <summary>
+        /// Document's index
+        /// </summary>
         public string Index { get; set; }
+        /// <summary>
+        /// Elaticsearch search score for this document in the provided query
+        /// </summary>
         public double? Score { get; set; }
+        /// <summary>
+        /// Document version in this Elasticsearch index
+        /// </summary>
         public long? Version { get; set; }
-
+        /// <summary>
+        /// Document body
+        /// </summary>
         public BaseDocument Document { get; set; }
     }
     public interface ISeaqQueryResult<T>
         where T : BaseDocument
     {
+        /// <summary>
+        /// Document Id
+        /// </summary>
         public string Id { get; set; }
+        /// <summary>
+        /// Document's index
+        /// </summary>
         public string Index { get; set; }
+        /// <summary>
+        /// Elaticsearch search score for this document in the provided query
+        /// </summary>
         public double? Score { get; set; }
+        /// <summary>
+        /// Document version in this Elasticsearch index
+        /// </summary>
         public long? Version { get; set; }
-
+        /// <summary>
+        /// Document body
+        /// </summary>
         public T Document { get; set; }
     }
 
     public interface ISeaqQueryResults
     {
+        /// <summary>
+        /// Collection of query result objects
+        /// </summary>
         public IEnumerable<ISeaqQueryResult> Results { get; }
+        /// <summary>
+        /// Query execution duration
+        /// </summary>
         long Took { get; }
+        /// <summary>
+        /// Total query results before paging applied
+        /// </summary>
         long Total { get; }
     }
     public interface ISeaqQueryResults<T>
         where T : BaseDocument
     {
+        /// <summary>
+        /// Collection of query result objects
+        /// </summary>
         public IEnumerable<ISeaqQueryResult<T>> Results { get; }
+        /// <summary>
+        /// Query execution duration
+        /// </summary>
         long Took { get; }
+        /// <summary>
+        /// Total query results before paging applied
+        /// </summary>
         long Total { get; }
     }
 }

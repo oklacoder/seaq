@@ -6,11 +6,23 @@ namespace seaq
     public class SimpleQueryResults :
         ISeaqQueryResults
     {
+        /// <summary>
+        /// Collection of query result objects
+        /// </summary>
         public IEnumerable<DefaultQueryResult> Results { get; }
+        /// <summary>
+        /// Collection of query result objects
+        /// </summary>
         IEnumerable<ISeaqQueryResult> ISeaqQueryResults.Results => Results;
 
+        /// <summary>
+        /// Query execution duration
+        /// </summary>
         public long Took { get; }
 
+        /// <summary>
+        /// Total query results before paging applied
+        /// </summary>
         public long Total { get; }
 
         public SimpleQueryResults() { }
@@ -36,11 +48,23 @@ namespace seaq
         ISeaqQueryResults<T>
         where T : BaseDocument
     {
+        /// <summary>
+        /// Collection of query result objects
+        /// </summary>
         public IEnumerable<DefaultQueryResult<T>> Results { get; }
+        /// <summary>
+        /// Collection of query result objects
+        /// </summary>
         IEnumerable<ISeaqQueryResult<T>> ISeaqQueryResults<T>.Results => Results;
 
+        /// <summary>
+        /// Query execution duration
+        /// </summary>
         public long Took { get; }
 
+        /// <summary>
+        /// Total query results before paging applied
+        /// </summary>
         public long Total { get; }
 
         public SimpleQueryResults() { }

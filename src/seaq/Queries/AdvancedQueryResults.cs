@@ -7,11 +7,25 @@ namespace seaq
         ISeaqQueryResults
     {
 
+        /// <summary>
+        /// Collection of query result objects
+        /// </summary>
         public IEnumerable<DefaultQueryResult> Results { get; }
+        /// <summary>
+        /// Collection of query result objects
+        /// </summary>
         IEnumerable<ISeaqQueryResult> ISeaqQueryResults.Results => Results;
-
+        /// <summary>
+        /// Collection of aggregation bucket objects
+        /// </summary>
         public IEnumerable<IBucketResult> Buckets { get; }
+        /// <summary>
+        /// Query execution duration
+        /// </summary>
         public long Total { get; }
+        /// <summary>
+        /// Total query results before paging applied
+        /// </summary>
         public long Took { get; }
         public AdvancedQueryResults() { }
         public AdvancedQueryResults(
@@ -38,11 +52,25 @@ namespace seaq
         ISeaqQueryResults<T>
     where T : BaseDocument
     {
+        /// <summary>
+        /// Collection of query result objects
+        /// </summary>
         public IEnumerable<DefaultQueryResult<T>> Results { get; }
+        /// <summary>
+        /// Collection of query result objects
+        /// </summary>
         IEnumerable<ISeaqQueryResult<T>> ISeaqQueryResults<T>.Results => Results;
-
+        /// <summary>
+        /// Collection of aggregation bucket objects
+        /// </summary>
         public IEnumerable<IBucketResult> Buckets { get; }
+        /// <summary>
+        /// Query execution duration
+        /// </summary>
         public long Total { get; }
+        /// <summary>
+        /// Total query results before paging applied
+        /// </summary>
         public long Took { get; }
 
         public AdvancedQueryResults() { }

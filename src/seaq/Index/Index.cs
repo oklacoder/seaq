@@ -9,17 +9,52 @@ namespace seaq
     public class Index : 
         BaseDocument
     {
+        /// <summary>
+        /// Used for internal index definition store.  The id of this index's document in that store.
+        /// </summary>
         public override string Id => Name;
+        /// <summary>
+        /// Used for internal index definition store.  The index in which this document's definition is saved.
+        /// </summary>
         public override string IndexName => GetType().FullName;
+        /// <summary>
+        /// Used for internal index definition store.  The dotnet type of this index's document in that store.
+        /// </summary>
         public override string Type => GetType().FullName;
 
+        /// <summary>
+        /// The name of the index
+        /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// The dotnet type full name of the index's documents
+        /// </summary>
         public string DocumentType { get; set; }
+        /// <summary>
+        /// A list of Elasticsearch aliases applied to this index
+        /// </summary>
         public IEnumerable<string> Aliases { get; set; }
+        /// <summary>
+        /// Number of Elasticsearch primary shards allocated to this index
+        /// </summary>
         public int PrimaryShards { get; set; }
+        /// <summary>
+        /// Number of Elasticsearch replica shards allocated to this index
+        /// </summary>
         public int ReplicaShards { get; set; }
+        /// <summary>
+        /// Whether to force an index refresh after committing documents to this index.  This can cause a performance hit,
+        /// the size of which depends on several factors including number of documents committed, but allows the documents
+        /// to be immediately searchable, rather than eventually available per Elastic's defaults.
+        /// </summary>
         public bool ForceRefreshOnDocumentCommit { get; set; }
+        /// <summary>
+        /// Save index schema to internal index store automatically
+        /// </summary>
         public bool EagerlyPersistSchema { get; set; }
+        /// <summary>
+        /// List of index fields.  Maps loosely to dotnet type properties.
+        /// </summary>
         public IEnumerable<Field> Fields { get; set; } = Array.Empty<Field>();
 
 
