@@ -27,24 +27,34 @@ namespace seaq
         /// Total query results before paging applied
         /// </summary>
         public long Took { get; }
+
+        /// <summary>
+        /// Additional information about this query execution
+        /// </summary>
+        public IEnumerable<string> Messages { get; set; } = Enumerable.Empty<string>();
+
         public AdvancedQueryResults() { }
         public AdvancedQueryResults(
             IEnumerable<DefaultQueryResult> results,
             long took,
-            long total)
+            long total,
+            IEnumerable<string> messages = null)
         {
             Results = results;
             Took = took;
             Total = total;
+            Messages = messages;
         }
         public AdvancedQueryResults(
-            Nest.ISearchResponse<BaseDocument> searchResponse)
+            Nest.ISearchResponse<BaseDocument> searchResponse,
+            IEnumerable<string> messages = null)
         {
             Results = searchResponse.Hits.Select(x => new DefaultQueryResult(x));
 
             Total = searchResponse.Total;
             Took = searchResponse.Took;
             Buckets = searchResponse.Aggregations?.BuildBucketResult();
+            Messages = messages;
         }
     }
 
@@ -73,24 +83,33 @@ namespace seaq
         /// </summary>
         public long Took { get; }
 
+        /// <summary>
+        /// Additional information about this query execution
+        /// </summary>
+        public IEnumerable<string> Messages { get; set; } = Enumerable.Empty<string>();
+
         public AdvancedQueryResults() { }
         public AdvancedQueryResults(
             IEnumerable<DefaultQueryResult<T>> results,
             long took,
-            long total)
+            long total,
+            IEnumerable<string> messages = null)
         {
             Results = results;
             Took = took;
             Total = total;
+            Messages = messages;
         }
         public AdvancedQueryResults(
-            Nest.ISearchResponse<T> searchResponse)
+            Nest.ISearchResponse<T> searchResponse,
+            IEnumerable<string> messages = null)
         {
             Results = searchResponse.Hits.Select(x => new DefaultQueryResult<T>(x));
 
             Total = searchResponse.Total;
             Took = searchResponse.Took;
             Buckets = searchResponse.Aggregations?.BuildBucketResult();
+            Messages = messages;
         }
     }
 }

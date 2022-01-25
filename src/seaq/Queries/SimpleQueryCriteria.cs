@@ -77,23 +77,45 @@ namespace seaq
         [JsonPropertyName("boostedFields")]
         public IEnumerable<string> BoostedFields { get; protected set; } = new string[] { "*" };
 
+        /// <summary>
+        /// Indexes targeted by this query that are marked as "deprecated" on the containing cluster
+        /// </summary>
+        [DataMember(Name = "deprecatedIndexTargets")]
+        [JsonPropertyName("deprecatedIndexTargets")]
+        public IEnumerable<string> DeprecatedIndexTargets { get; protected set; } = Enumerable.Empty<string>();
+
         public void ApplyClusterSettings(Cluster cluster)
         {
-            ApplyClusterIndices(cluster.IndicesByType);
+            ApplyClusterIndices(cluster);
             ApplyQueryBoosts(cluster.Indices);
         }
 
-        public void ApplyClusterIndices(ILookup<string, Index> indices)
+        public void ApplyClusterIndices(Cluster cluster)
         {
-            var idx = indices[Type];
-            var resp = Indices.ToList();
-            resp.AddRange(
-                idx
-                    .Where(x =>
-                        !resp.Any(z => z
-                            .Equals(x.Name, StringComparison.OrdinalIgnoreCase)))
-                    .Select(x => x.Name));
-            Indices = resp.ToArray();
+            if (Indices?.Any() is true)
+            {
+                if (Indices.Any(z => cluster.DeprecatedIndices.Any(x => x.Name.Equals(z, StringComparison.OrdinalIgnoreCase))))
+                {
+                    var deps = cluster.DeprecatedIndices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
+
+                    DeprecatedIndexTargets = deps.Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
+                }
+                return;
+            }
+            IEnumerable<Index> idx;
+            if (string.IsNullOrWhiteSpace(Type))
+            {
+                idx = cluster.Indices.Where(x =>
+                    x.IsHidden is not true &&
+                    x.ReturnInGlobalSearch is true);
+            }
+            else
+            {
+                idx = cluster.IndicesByType[Type];
+                DeprecatedIndexTargets = idx.Where(x => x.IsDeprecated).Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
+                idx = idx.Where(x => x.IsHidden is not true);
+            }
+            Indices = idx.Select(x => x.Name).ToArray();
         }
 
         public void ApplyQueryBoosts(IEnumerable<Index> indices)
@@ -217,23 +239,45 @@ namespace seaq
         [JsonPropertyName("boostedFields")]
         public IEnumerable<string> BoostedFields { get; protected set; } = new string[] { "*" };
 
+        /// <summary>
+        /// Indexes targeted by this query that are marked as "deprecated" on the containing cluster
+        /// </summary>
+        [DataMember(Name = "deprecatedIndexTargets")]
+        [JsonPropertyName("deprecatedIndexTargets")]
+        public IEnumerable<string> DeprecatedIndexTargets { get; protected set; } = Enumerable.Empty<string>();
+
         public void ApplyClusterSettings(Cluster cluster)
         {
-            ApplyClusterIndices(cluster.IndicesByType);
+            ApplyClusterIndices(cluster);
             ApplyQueryBoosts(cluster.Indices);
         }
 
-        public virtual void ApplyClusterIndices(ILookup<string, Index> indices)
+        public virtual void ApplyClusterIndices(Cluster cluster)
         {
-            var idx = indices[typeof(T).FullName];
-            var resp = Indices.ToList();
-            resp.AddRange(
-                idx
-                    .Where(x =>
-                        !resp.Any(z => z
-                            .Equals(x.Name, StringComparison.OrdinalIgnoreCase)))
-                    .Select(x => x.Name));
-            Indices = resp.ToArray();
+            if (Indices?.Any() is true)
+            {
+                if (Indices.Any(z => cluster.DeprecatedIndices.Any(x => x.Name.Equals(z, StringComparison.OrdinalIgnoreCase))))
+                {
+                    var deps = cluster.DeprecatedIndices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
+
+                    DeprecatedIndexTargets = deps.Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
+                }
+                return;
+            }
+            IEnumerable<Index> idx;
+            if (string.IsNullOrWhiteSpace(typeof(T).FullName))
+            {
+                idx = cluster.Indices.Where(x =>
+                    x.IsHidden is not true &&
+                    x.ReturnInGlobalSearch is true);
+            }
+            else
+            {
+                idx = cluster.IndicesByType[typeof(T).FullName];
+                idx = idx.Where(x => x.IsHidden is not true);
+            }
+            DeprecatedIndexTargets = idx.Where(x => x.IsDeprecated).Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
+            Indices = idx.Select(x => x.Name).ToArray();
         }
 
         public void ApplyQueryBoosts(IEnumerable<Index> indices)

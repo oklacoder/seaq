@@ -24,7 +24,7 @@ namespace seaq
         {
             var results = client.Search<BaseDocument>(_criteria.GetSearchDescriptor());
 
-            return new AdvancedQueryResults(results);
+            return new AdvancedQueryResults(results, _criteria.DeprecatedIndexTargets);
         }
         async Task<ISeaqQueryResults> ISeaqQuery.ExecuteAsync(Nest.ElasticClient client)
         {
@@ -34,7 +34,7 @@ namespace seaq
         {
             var results = await client.SearchAsync<BaseDocument>(_criteria.GetSearchDescriptor());
 
-            return new AdvancedQueryResults(results);
+            return new AdvancedQueryResults(results, _criteria.DeprecatedIndexTargets);
         }
     }
     public class AdvancedQuery<T> :
@@ -62,7 +62,7 @@ namespace seaq
 
             var results = client.Search<T>(query);
 
-            return new AdvancedQueryResults<T>(results);
+            return new AdvancedQueryResults<T>(results, _criteria.DeprecatedIndexTargets);
         }
 
         async Task<ISeaqQueryResults<T>> ISeaqQuery<T>.ExecuteAsync(Nest.ElasticClient client)
@@ -74,7 +74,7 @@ namespace seaq
         {
             var results = await client.SearchAsync<T>(_criteria.GetSearchDescriptor());
 
-            return new AdvancedQueryResults<T>(results);
+            return new AdvancedQueryResults<T>(results, _criteria.DeprecatedIndexTargets);
         }
     }
 }

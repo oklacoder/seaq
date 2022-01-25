@@ -24,7 +24,7 @@ namespace seaq
 
             var results = client.Search<BaseDocument>(query);
 
-            return new SimpleQueryResults(results);
+            return new SimpleQueryResults(results, _criteria.DeprecatedIndexTargets);
         }
 
         public async Task<ISeaqQueryResults> ExecuteAsync(Nest.ElasticClient client)
@@ -36,7 +36,7 @@ namespace seaq
 
             var results = await client.SearchAsync<BaseDocument>(query);
 
-            return new SimpleQueryResults(results);
+            return new SimpleQueryResults(results, _criteria.DeprecatedIndexTargets);
         }
 
         public SimpleQuery(
@@ -69,7 +69,7 @@ namespace seaq
 
             var results = client.Search<T>(query);
 
-            return new SimpleQueryResults<T>(results);
+            return new SimpleQueryResults<T>(results, _criteria.DeprecatedIndexTargets);
         }
 
         public async Task<ISeaqQueryResults<T>> ExecuteAsync(Nest.ElasticClient client)
@@ -81,7 +81,7 @@ namespace seaq
 
             var results = await client.SearchAsync<T>(query);
 
-            return new SimpleQueryResults<T>(results);
+            return new SimpleQueryResults<T>(results, _criteria.DeprecatedIndexTargets);
         }
 
         public SimpleQuery(

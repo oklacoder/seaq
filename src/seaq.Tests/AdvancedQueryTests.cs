@@ -520,5 +520,155 @@ namespace SEAQ.Tests
             Assert.NotEmpty(results.Results);
             Assert.Empty(results.Buckets);
         }
+
+        //works correctly
+        ///includes message for deprecated
+        [Fact]
+        public async void IncludesMessagesWhenTargetingDeprecatedIndices()
+        {
+            const string method = "IncludesMessagesWhenTargetingDeprecatedIndices";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var idxArgs = new IndexConfig(
+                typeof(SampleResult).FullName,
+                typeof(SampleResult).FullName);
+            var idx = await cluster.CreateIndexAsync(idxArgs);
+
+            var criteria = new AdvancedQueryCriteria(
+                typeof(SampleResult).FullName,
+                SampleIndices);
+            var query = new AdvancedQuery(
+                criteria);
+
+            var docs = query.Execute(_client)?.Results.Select(x => x.Document as SampleResult);
+            foreach(var doc in docs)
+            {
+                doc.IndexName = idx.Name;
+            }
+
+            await cluster.CommitAsync<SampleResult>(docs);
+
+            const string depMsg = "Test Deprecation";
+            cluster.DeprecateIndex(idx.Name, depMsg);
+
+            var criteria2 = new AdvancedQueryCriteria(
+                typeof(SampleResult).FullName);
+            var query2 = new AdvancedQuery(
+                criteria2);
+            var results = await cluster.QueryAsync<AdvancedQueryResults>(query2);
+
+            foreach (var i in cluster.Indices)
+            {
+                await cluster.DeleteIndexAsync(i.Name);
+            }
+
+            Assert.NotNull(results);
+            Assert.NotEmpty(results.Messages);
+            Assert.Collection(results.Messages,x => x.Contains(depMsg));
+        }
+        ///excludes hidden
+        [Fact]
+        public async void ExcludesHiddenIndices()
+        {
+            const string method = "ExcludesHiddenIndices";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var idxArgs = new IndexConfig(
+                typeof(SampleResult).FullName,
+                typeof(SampleResult).FullName);
+            var idx = await cluster.CreateIndexAsync(idxArgs);
+            var idxArgs2 = new IndexConfig(
+                typeof(SampleResult).FullName + "2",
+                typeof(SampleResult).FullName);
+            var idx2 = await cluster.CreateIndexAsync(idxArgs2);
+
+            var criteria = new AdvancedQueryCriteria(
+                typeof(SampleResult).FullName,
+                SampleIndices);
+            var query = new AdvancedQuery(
+                criteria);
+
+            var docs = query.Execute(_client)?.Results.Select(x => x.Document as SampleResult);
+            foreach (var doc in docs)
+            {
+                doc.IndexName = idx.Name;
+            }
+            await cluster.CommitAsync<SampleResult>(docs);
+            foreach (var doc in docs)
+            {
+                doc.IndexName = idx2.Name;
+            }
+            await cluster.CommitAsync<SampleResult>(docs);
+
+            await cluster.HideIndexAsync(idx.Name);
+
+            var criteria2 = new AdvancedQueryCriteria(
+                typeof(SampleResult).FullName,
+                take: 100);
+            var query2 = new AdvancedQuery(
+                criteria2);
+            var results = await cluster.QueryAsync<AdvancedQueryResults>(query2);
+
+
+            foreach (var i in cluster.Indices)
+            {
+                await cluster.DeleteIndexAsync(i.Name);
+            }
+
+            Assert.NotNull(results);
+            Assert.All(results.Results, x => x.Index.Equals(idx2.Name));
+        }
+        ///properly handles global search include/exclude
+        [Fact]
+        public async void ReturnsInGlobalSearch()
+        {
+            const string method = "IncludesMessagesWhenTargetingDeprecatedIndices";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var idxArgs = new IndexConfig(
+                typeof(SampleResult).FullName,
+                typeof(SampleResult).FullName);
+            var idx = await cluster.CreateIndexAsync(idxArgs);
+            var idxArgs2 = new IndexConfig(
+                typeof(SampleResult).FullName + "2",
+                typeof(SampleResult).FullName);
+            var idx2 = await cluster.CreateIndexAsync(idxArgs2);
+
+            var criteria = new AdvancedQueryCriteria(
+                typeof(SampleResult).FullName,
+                SampleIndices);
+            var query = new AdvancedQuery(
+                criteria);
+
+            var docs = query.Execute(_client)?.Results.Select(x => x.Document as SampleResult);
+            foreach (var doc in docs)
+            {
+                doc.IndexName = idx.Name;
+            }
+            await cluster.CommitAsync<SampleResult>(docs);
+            foreach (var doc in docs)
+            {
+                doc.IndexName = idx2.Name;
+            }
+            await cluster.CommitAsync<SampleResult>(docs);
+
+            await cluster.ExcludeIndexFromGlobalSearchAsync(idx.Name);
+
+            var criteria2 = new AdvancedQueryCriteria(
+                typeof(SampleResult).FullName,
+                take: 100);
+            var query2 = new AdvancedQuery(
+                criteria2);
+            var results = await cluster.QueryAsync<AdvancedQueryResults>(query2);
+
+
+            foreach (var i in cluster.Indices)
+            {
+                await cluster.DeleteIndexAsync(i.Name);
+            }
+
+            Assert.NotNull(results);
+            Assert.All(results.Results, x => x.Index.Equals(idx2.Name));
+        }
     }
 }

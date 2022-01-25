@@ -377,8 +377,143 @@ namespace SEAQ.Tests
         }
 
         //deprecate index
+        [Fact]
+        public async void CanDeprecateIndex()
+        {
+            const string method = "CanDeprecateIndex";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            const string depMsg = "Test Deprecation Message";
+            var resp = await cluster.DeprecateIndexAsync(createResp.Name, depMsg);
+
+            var idx = cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.Equal(resp.IsDeprecated, idx.IsDeprecated);
+            Assert.Equal(resp.DeprecationMessage, idx.DeprecationMessage);
+            Assert.True(idx.IsDeprecated);
+            Assert.Equal(idx.DeprecationMessage, depMsg);
+        }
+        [Fact]
+        public async void CanUnDeprecateIndex()
+        {
+            const string method = "CanUnDeprecateIndex";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            const string depMsg = "Test Deprecation Message";
+            await cluster.DeprecateIndexAsync(createResp.Name, depMsg);
+            var resp = await cluster.UnDeprecateIndexAsync(createResp.Name);
+
+            var idx = cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.False(idx.IsDeprecated);
+            Assert.Null(idx.DeprecationMessage);
+            Assert.False(resp.IsDeprecated);
+            Assert.Null(resp.DeprecationMessage);
+        }
         //hide index
+        [Fact]
+        public async void CanHideIndex()
+        {
+            const string method = "CanHideIndex";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            var resp = await cluster.HideIndexAsync(createResp.Name);
+
+            var idx = cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.True(idx.IsHidden);
+            Assert.True(resp.IsHidden);
+        }
+        [Fact]
+        public async void CanUnHideIndex()
+        {
+            const string method = "CanUnHideIndex";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            await cluster.HideIndexAsync(createResp.Name);
+            var resp = await cluster.UnHideIndexAsync(createResp.Name);
+
+            var idx = cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.False(idx.IsHidden);
+            Assert.False(resp.IsHidden);
+        }
         //toggle inclusion in global search results
+        [Fact]
+        public async void CanIncludeInGlobalSearch()
+        {
+            const string method = "CanIncludeInGlobalSearch";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            var resp = await cluster.IncludeIndexInGlobalSearchAsync(createResp.Name);
+
+            var idx = cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.True(idx.ReturnInGlobalSearch);
+            Assert.True(resp.ReturnInGlobalSearch);
+        }
+        [Fact]
+        public async void CanExcludeFromGlobalSearch()
+        {
+            const string method = "CanExcludeFromGlobalSearch";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            await cluster.HideIndexAsync(createResp.Name);
+            var resp = await cluster.ExcludeIndexFromGlobalSearchAsync(createResp.Name);
+
+            var idx = cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.False(idx.ReturnInGlobalSearch);
+            Assert.False(resp.ReturnInGlobalSearch);
+        }
 
 
         //delete single doc

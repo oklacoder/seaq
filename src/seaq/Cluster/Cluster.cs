@@ -30,7 +30,32 @@ namespace seaq
         /// <summary>
         /// Lookup of cluster indices, grouped by dotnet type
         /// </summary>
-        public ILookup<string, Index> IndicesByType => _indices.Values.ToLookup(x => x.DocumentType, x => x);
+        public ILookup<string, Index> IndicesByType => _indices?.Values.ToLookup(x => x.DocumentType, x => x);
+        /// <summary>
+        /// Lookup of deprecated indices
+        /// </summary>
+        public IEnumerable<Index> DeprecatedIndices => _indices?.Values.Where(x => x.IsDeprecated is true);
+        /// <summary>
+        /// Lookup of *not* deprecated indices
+        /// </summary>
+        public IEnumerable<Index> NotDeprecatedIndices => _indices?.Values.Where(x => x.IsDeprecated is not true);
+        /// <summary>
+        /// Lookup of hidden indices
+        /// </summary>
+        public IEnumerable<Index> HiddenIndices => _indices?.Values.Where(x => x.IsHidden is true);
+        /// <summary>
+        /// Lookup of *not* hidden indices
+        /// </summary>
+        public IEnumerable<Index> NotHiddenIndices => _indices?.Values.Where(x => x.IsHidden is not true);
+        /// <summary>
+        /// Lookup of indices included in global results
+        /// </summary>
+        public IEnumerable<Index> GlobalResultIndices => _indices?.Values.Where(x => x.ReturnInGlobalSearch is true);
+        /// <summary>
+        /// Lookup of indices *not* included in global results
+        /// </summary>
+        public IEnumerable<Index> NotGlobalResultIndices => _indices?.Values.Where(x => x.ReturnInGlobalSearch is not true);
+        
         /// <summary>
         /// List of loaded types that implement the BaseDocument interface
         /// </summary>
@@ -619,6 +644,114 @@ namespace seaq
 
             return index;
         }
+        public Index DeprecateIndex(string indexName, string deprecationMessage)
+        {
+            return DeprecateIndexAsync(indexName, deprecationMessage).Result;
+        }
+        public async Task<Index> DeprecateIndexAsync(string indexName, string deprecationMessage)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to update index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.IsDeprecated = true;
+            index.DeprecationMessage = deprecationMessage;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index UnDeprecateIndex(string indexName)
+        {
+            return UnDeprecateIndexAsync(indexName).Result;
+        }
+        public async Task<Index> UnDeprecateIndexAsync(string indexName)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to update index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.IsDeprecated = false;
+            index.DeprecationMessage = null;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+
+        public Index HideIndex(string indexName, string deprecationMessage)
+        {
+            return HideIndexAsync(indexName).Result;
+        }
+        public async Task<Index> HideIndexAsync(string indexName)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to update index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.IsHidden = true;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index UnHideIndex(string indexName)
+        {
+            return UnHideIndexAsync(indexName).Result;
+        }
+        public async Task<Index> UnHideIndexAsync(string indexName)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to update index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.IsHidden = false;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+
+
+        public Index IncludeIndexInGlobalSearch(string indexName)
+        {
+            return IncludeIndexInGlobalSearchAsync(indexName).Result;
+        }
+        public async Task<Index> IncludeIndexInGlobalSearchAsync(string indexName)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to update index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.ReturnInGlobalSearch = true;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index ExcludeIndexFromGlobalSearch(string indexName)
+        {
+            return ExcludeIndexFromGlobalSearchAsync(indexName).Result;
+        }
+        public async Task<Index> ExcludeIndexFromGlobalSearchAsync(string indexName)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to update index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.ReturnInGlobalSearch = false;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+
 
         //delete docs
         public bool Delete<T>(T document)

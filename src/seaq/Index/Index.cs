@@ -72,7 +72,7 @@ namespace seaq
         /// <summary>
         /// The index that contains the newest version of this data, and should be referenced instead
         /// </summary>
-        public string DeprecationReplacement { get; set; }
+        public string DeprecationMessage { get; set; }
 
         /// <summary>
         /// Functions as a soft delete.  Allows to retain the index temporarily, but eliminates it from search results.
