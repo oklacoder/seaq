@@ -4,6 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+//need to:
+//be able to mark deprecated
+//return that deprecation warning in a result set
+
+//be able to mark for global return
+//ensure global return vs specified index functions
+
 namespace seaq
 {
     public class Index : 
@@ -57,6 +64,25 @@ namespace seaq
         /// </summary>
         public IEnumerable<Field> Fields { get; set; } = Array.Empty<Field>();
 
+        /// <summary>
+        /// Indicates that the data in this index is deprecated - still maintained, but soon to be unsupported
+        /// </summary>
+        public bool IsDeprecated { get; set; }
+
+        /// <summary>
+        /// The index that contains the newest version of this data, and should be referenced instead
+        /// </summary>
+        public string DeprecationReplacement { get; set; }
+
+        /// <summary>
+        /// Functions as a soft delete.  Allows to retain the index temporarily, but eliminates it from search results.
+        /// </summary>
+        public bool IsHidden { get; set; }
+
+        /// <summary>
+        /// Includes this index for consideration in queries where no type or index list is specified
+        /// </summary>
+        public bool ReturnInGlobalSearch { get; set; }
 
         private Index(
             string name,

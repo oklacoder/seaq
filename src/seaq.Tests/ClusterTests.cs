@@ -376,6 +376,10 @@ namespace SEAQ.Tests
             Assert.Equal(testLabel, actual);
         }
 
+        //deprecate index
+        //hide index
+        //toggle inclusion in global search results
+
 
         //delete single doc
         [Fact]
