@@ -25,23 +25,32 @@ namespace seaq
         /// </summary>
         public long Total { get; }
 
+        /// <summary>
+        /// Additional information about this query execution
+        /// </summary>
+        public IEnumerable<string> Messages { get; set; } = Enumerable.Empty<string>();
+
         public SimpleQueryResults() { }
         public SimpleQueryResults(
             IEnumerable<DefaultQueryResult> results,
             long took,
-            long total)
+            long total,
+            IEnumerable<string> messages = null)
         {
             Results = results;
             Took = took;
             Total = total;
+            Messages = messages;
         }
         public SimpleQueryResults(
-            Nest.ISearchResponse<BaseDocument> searchResponse)
+            Nest.ISearchResponse<BaseDocument> searchResponse,
+            IEnumerable<string> messages = null)
         {
             Results = searchResponse.Hits.Select(x => new DefaultQueryResult(x));
 
             Took = searchResponse.Took;
             Total = searchResponse.Total;
+            Messages = messages;
         }
     }
     public class SimpleQueryResults<T> :
@@ -67,23 +76,32 @@ namespace seaq
         /// </summary>
         public long Total { get; }
 
+        /// <summary>
+        /// Additional information about this query execution
+        /// </summary>
+        public IEnumerable<string> Messages { get; set; } = Enumerable.Empty<string>();
+
         public SimpleQueryResults() { }
         public SimpleQueryResults(
             IEnumerable<DefaultQueryResult<T>> results,
             long took,
-            long total)
+            long total,
+            IEnumerable<string> messages = null)
         {
             Results = results;
             Took = took;
             Total = total;
+            Messages = messages;
         }
         public SimpleQueryResults(
-            Nest.ISearchResponse<T> searchResponse)
+            Nest.ISearchResponse<T> searchResponse,
+            IEnumerable<string> messages = null)
         {
             Results = searchResponse.Hits.Select(x => new DefaultQueryResult<T>(x));
 
             Took = searchResponse.Took;
             Total = searchResponse.Total;
+            Messages = messages;
         }
     }
 }

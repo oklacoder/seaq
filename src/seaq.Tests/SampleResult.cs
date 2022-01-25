@@ -12,8 +12,8 @@ namespace SEAQ.Tests
         [DataMember(Name = "id")]
         [JsonPropertyName("id")]
         public override string Id => OrderId.ToString();
-        [DataMember(Name = "_index")]
-        [JsonPropertyName("_index")]
+        //[DataMember(Name = "_index")]
+        //[JsonPropertyName("_index")]
         public override string IndexName { get; set; } = "kibana_sample_data_ecommerce";
 
         public IEnumerable<string> Category { get; set; }
