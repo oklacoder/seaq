@@ -681,7 +681,7 @@ namespace seaq
             return await UpdateIndexDefinitionAsync(index);
         }
 
-        public Index HideIndex(string indexName, string deprecationMessage)
+        public Index HideIndex(string indexName)
         {
             return HideIndexAsync(indexName).Result;
         }
