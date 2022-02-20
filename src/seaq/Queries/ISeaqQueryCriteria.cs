@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Elastic.Clients.Elasticsearch;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace seaq
@@ -9,7 +10,7 @@ namespace seaq
         /// Full dotnet type name of desired return objects
         /// </summary>
         public string Type { get; }
-        Nest.SearchDescriptor<BaseDocument> GetSearchDescriptor();
+        SearchRequestDescriptor<BaseDocument> GetSearchDescriptor();
         void ApplyClusterSettings(Cluster cluster);
         /// <summary>
         /// Specify which indices to query.  If empty or null, query will default to the default index for the provided type.
@@ -43,7 +44,7 @@ namespace seaq
     public interface ISeaqQueryCriteria<T>
         where T : BaseDocument
     {
-        Nest.SearchDescriptor<T> GetSearchDescriptor();
+        SearchRequestDescriptor<T> GetSearchDescriptor();
         void ApplyClusterSettings(Cluster cluster);
         /// <summary>
         /// Specify which indices to query.  If empty or null, query will default to the default index for the provided type.

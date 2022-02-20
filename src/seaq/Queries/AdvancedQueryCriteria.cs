@@ -1,4 +1,5 @@
-﻿using Nest;
+﻿using Elastic.Clients.Elasticsearch;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -154,17 +155,17 @@ namespace seaq
             Take = take;
         }
 
-        public SearchDescriptor<BaseDocument> GetSearchDescriptor()
+        public SearchRequestDescriptor<BaseDocument> GetSearchDescriptor()
         {
-            var s = new SearchDescriptor<BaseDocument>()
+            var s = new SearchRequestDescriptor<BaseDocument>()
                 .Index(Indices)
-                .Skip(Skip ?? 0)
-                .Take(Take ?? 10)
+                .From(Skip ?? 0)
+                .Size(Take ?? 10)
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<BaseDocument>())
                 .Query(q => FilterFields.GetQueryDesctiptor<BaseDocument>())
-                .Source(t => ReturnFields.GetSourceFilterDescriptor<BaseDocument>())
+                //.Source(t => ReturnFields.GetSourceFilterDescriptor<BaseDocument>())
                 .Sort(s => SortFields.GetSortDescriptor<BaseDocument>());
-
+            Log.Warning("Source filtering is currently disabled.");
             return s;
         }
     }
@@ -308,17 +309,17 @@ namespace seaq
             Take = take;
         }
 
-        public SearchDescriptor<T> GetSearchDescriptor()
+        public SearchRequestDescriptor<T> GetSearchDescriptor()
         {
-            var s = new SearchDescriptor<T>()
+            var s = new SearchRequestDescriptor<T>()
                 .Index(Indices)
-                .Skip(Skip ?? 0)
-                .Take(Take ?? 10)
+                .From(Skip ?? 0)
+                .Size(Take ?? 10)
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<T>())
                 .Query(q => FilterFields.GetQueryDesctiptor<T>())
-                .Source(t => ReturnFields.GetSourceFilterDescriptor<T>())                
+                //.Source(t => ReturnFields.GetSourceFilterDescriptor<T>())                
                 .Sort(s => SortFields.GetSortDescriptor<T>());
-
+            Log.Warning("Source filtering is currently disabled.");
             return s;
         }
     }

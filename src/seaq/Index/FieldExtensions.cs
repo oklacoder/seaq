@@ -1,5 +1,4 @@
-﻿using Nest;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace seaq
@@ -37,6 +36,8 @@ namespace seaq
             this IProperty property,
             string parentFieldName = null)
         {
+            
+
             var fieldName =
                 string.IsNullOrWhiteSpace(parentFieldName) ?
                 property.Name.Name :

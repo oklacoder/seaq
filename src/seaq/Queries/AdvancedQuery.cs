@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Elasticsearch.Net;
+using Elastic.Clients.Elasticsearch;
 
 namespace seaq
 {
@@ -16,23 +16,23 @@ namespace seaq
             _criteria = criteria;
         }
 
-        ISeaqQueryResults ISeaqQuery.Execute(Nest.ElasticClient client)
+        ISeaqQueryResults ISeaqQuery.Execute(ElasticsearchClient client)
         {
             return Execute(client);
         }
-        public AdvancedQueryResults Execute(Nest.ElasticClient client)
+        public AdvancedQueryResults Execute(ElasticsearchClient client)
         {
-            var results = client.Search<BaseDocument>(_criteria.GetSearchDescriptor());
+            var results = client.Search<BaseDocument>(x => _criteria.GetSearchDescriptor());
 
             return new AdvancedQueryResults(results, _criteria.DeprecatedIndexTargets);
         }
-        async Task<ISeaqQueryResults> ISeaqQuery.ExecuteAsync(Nest.ElasticClient client)
+        async Task<ISeaqQueryResults> ISeaqQuery.ExecuteAsync(ElasticsearchClient client)
         {
             return await ExecuteAsync(client);
         }
-        public async Task<AdvancedQueryResults> ExecuteAsync(Nest.ElasticClient client)
+        public async Task<AdvancedQueryResults> ExecuteAsync(ElasticsearchClient client)
         {
-            var results = await client.SearchAsync<BaseDocument>(_criteria.GetSearchDescriptor());
+            var results = await client.SearchAsync<BaseDocument>(x => _criteria.GetSearchDescriptor());
 
             return new AdvancedQueryResults(results, _criteria.DeprecatedIndexTargets);
         }
@@ -50,29 +50,25 @@ namespace seaq
             _criteria = criteria;
         }
 
-        ISeaqQueryResults<T> ISeaqQuery<T>.Execute(Nest.ElasticClient client)
+        ISeaqQueryResults<T> ISeaqQuery<T>.Execute(ElasticsearchClient client)
         {
             return Execute(client);
         }
-        public AdvancedQueryResults<T> Execute(Nest.ElasticClient client)
+        public AdvancedQueryResults<T> Execute(ElasticsearchClient client)
         {
-            var query = _criteria.GetSearchDescriptor();
-
-            var json = client.RequestResponseSerializer.SerializeToString(query, SerializationFormatting.Indented);
-
-            var results = client.Search<T>(query);
+            var results = client.Search<T>(x => _criteria.GetSearchDescriptor());
 
             return new AdvancedQueryResults<T>(results, _criteria.DeprecatedIndexTargets);
         }
 
-        async Task<ISeaqQueryResults<T>> ISeaqQuery<T>.ExecuteAsync(Nest.ElasticClient client)
+        async Task<ISeaqQueryResults<T>> ISeaqQuery<T>.ExecuteAsync(ElasticsearchClient client)
         {
             return await ExecuteAsync(client);
         }
 
-        public async Task<AdvancedQueryResults<T>> ExecuteAsync(Nest.ElasticClient client)
+        public async Task<AdvancedQueryResults<T>> ExecuteAsync(ElasticsearchClient client)
         {
-            var results = await client.SearchAsync<T>(_criteria.GetSearchDescriptor());
+            var results = await client.SearchAsync<T>(x => _criteria.GetSearchDescriptor());
 
             return new AdvancedQueryResults<T>(results, _criteria.DeprecatedIndexTargets);
         }

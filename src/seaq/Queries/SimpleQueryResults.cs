@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Elastic.Clients.Elasticsearch;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace seaq
@@ -43,7 +44,7 @@ namespace seaq
             Messages = messages;
         }
         public SimpleQueryResults(
-            Nest.ISearchResponse<BaseDocument> searchResponse,
+            SearchResponse<BaseDocument> searchResponse,
             IEnumerable<string> messages = null)
         {
             Results = searchResponse.Hits.Select(x => new DefaultQueryResult(x));
@@ -94,7 +95,7 @@ namespace seaq
             Messages = messages;
         }
         public SimpleQueryResults(
-            Nest.ISearchResponse<T> searchResponse,
+            SearchResponse<T> searchResponse,
             IEnumerable<string> messages = null)
         {
             Results = searchResponse.Hits.Select(x => new DefaultQueryResult<T>(x));

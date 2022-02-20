@@ -1,8 +1,10 @@
-﻿namespace seaq
+﻿using Elastic.Clients.Elasticsearch;
+
+namespace seaq
 {
-    public interface ISeaqElasticsearchSerializer :
-        Elasticsearch.Net.IElasticsearchSerializer
+    public abstract class SeaqElasticsearchSerializer :
+        SourceSerializer
     {
-        T Deserialize<T>(object data);
+        protected abstract T Deserialize<T>(object data);
     }
 }

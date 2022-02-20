@@ -7,7 +7,7 @@
         public string Username { get; }
         public string Password { get; }
         public bool BypassCertificateValidation { get; }
-        public ISeaqElasticsearchSerializer Serializer { get; } = null;
+        public SeaqElasticsearchSerializer Serializer { get; } = null;
         public bool AllowAutomaticIndexCreation { get; }
 
 
@@ -17,7 +17,7 @@
             string username,
             string password,
             bool bypassCertificateValidation = false,
-            ISeaqElasticsearchSerializer serializer = null,
+            SeaqElasticsearchSerializer serializer = null,
             bool allowAutomaticIndexCreation = true)
         {
             ClusterScope = clusterScope;

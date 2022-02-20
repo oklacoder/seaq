@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 using System.Runtime.Serialization;
-using Elasticsearch.Net;
 using Serilog;
+using Elastic.Clients.Elasticsearch;
 
 namespace seaq
 {
@@ -15,26 +15,16 @@ namespace seaq
         public SimpleQueryCriteria  _criteria { get; set; }
         public ISeaqQueryCriteria Criteria => _criteria;
 
-        public ISeaqQueryResults Execute(Nest.ElasticClient client)
+        public ISeaqQueryResults Execute(ElasticsearchClient client)
         {
-            var query = Criteria.GetSearchDescriptor();
-
-            Log.Verbose("Executing query with params: {0}", 
-                client.RequestResponseSerializer.SerializeToString(query));
-
-            var results = client.Search<BaseDocument>(query);
+            var results = client.Search<BaseDocument>(x => _criteria.GetSearchDescriptor());
 
             return new SimpleQueryResults(results, _criteria.DeprecatedIndexTargets);
         }
 
-        public async Task<ISeaqQueryResults> ExecuteAsync(Nest.ElasticClient client)
+        public async Task<ISeaqQueryResults> ExecuteAsync(ElasticsearchClient client)
         {
-            var query = Criteria.GetSearchDescriptor();
-
-            Log.Verbose("Executing query with params: {0}",
-                client.RequestResponseSerializer.SerializeToString(query));
-
-            var results = await client.SearchAsync<BaseDocument>(query);
+            var results = await client.SearchAsync<BaseDocument>(x => _criteria.GetSearchDescriptor());
 
             return new SimpleQueryResults(results, _criteria.DeprecatedIndexTargets);
         }
@@ -60,26 +50,16 @@ namespace seaq
         public ISeaqQueryCriteria<T> Criteria => _criteria;
 
 
-        public ISeaqQueryResults<T> Execute(Nest.ElasticClient client)
+        public ISeaqQueryResults<T> Execute(ElasticsearchClient client)
         {
-            var query = Criteria.GetSearchDescriptor();
-
-            Log.Verbose("Executing query with params: {0}",
-                client.RequestResponseSerializer.SerializeToString(query));
-
-            var results = client.Search<T>(query);
+            var results = client.Search<T>(x => _criteria.GetSearchDescriptor());
 
             return new SimpleQueryResults<T>(results, _criteria.DeprecatedIndexTargets);
         }
 
-        public async Task<ISeaqQueryResults<T>> ExecuteAsync(Nest.ElasticClient client)
+        public async Task<ISeaqQueryResults<T>> ExecuteAsync(ElasticsearchClient client)
         {
-            var query = Criteria.GetSearchDescriptor();
-
-            Log.Verbose("Executing query with params: {0}",
-                client.RequestResponseSerializer.SerializeToString(query));
-
-            var results = await client.SearchAsync<T>(query);
+            var results = await client.SearchAsync<T>(x => _criteria.GetSearchDescriptor());
 
             return new SimpleQueryResults<T>(results, _criteria.DeprecatedIndexTargets);
         }

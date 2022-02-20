@@ -1,4 +1,5 @@
-﻿using Elasticsearch.Net;
+﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Transport;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 namespace seaq
 {
     public class DefaultSeaqElasticsearchSerializer :
-        ISeaqElasticsearchSerializer
+        SeaqElasticsearchSerializer
     {
         readonly Func<string, Type> TryGetCollectionType;
 
@@ -26,27 +27,27 @@ namespace seaq
             TryGetCollectionType = tryGetCollectionType;
         }
 
-        public object Deserialize(Type type, Stream stream)
+        public override object Deserialize(Type type, Stream stream)
         {
             return DeserializeAsync(type, stream).Result;
         }
 
-        public T Deserialize<T>(Stream stream)
+        public override T Deserialize<T>(Stream stream)
         {
             return DeserializeAsync<T>(stream).Result;            
         }
 
-        public T Deserialize<T>(object data)
+        protected override T Deserialize<T>(object data)
         {
             return JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(data, Options), Options);
         }
 
-        public async Task<object> DeserializeAsync(Type type, Stream stream, CancellationToken cancellationToken = default)
+        public override async ValueTask<object> DeserializeAsync(Type type, Stream stream, CancellationToken cancellationToken = default)
         {
             return await JsonSerializer.DeserializeAsync(stream, type, Options);
         }
 
-        public async Task<T> DeserializeAsync<T>(Stream stream, CancellationToken cancellationToken = default)
+        public override async ValueTask<T> DeserializeAsync<T>(Stream stream, CancellationToken cancellationToken = default)
         {
             Type type = null;
 
@@ -74,12 +75,12 @@ namespace seaq
             }
         }
 
-        public void Serialize<T>(T data, Stream stream, SerializationFormatting formatting = SerializationFormatting.None)
+        public override void Serialize<T>(T data, Stream stream, SerializationFormatting formatting = SerializationFormatting.None)
         {
             SerializeAsync<T>(data, stream, formatting).Wait();
         }
 
-        public async Task SerializeAsync<T>(T data, Stream stream, SerializationFormatting formatting = SerializationFormatting.None, CancellationToken cancellationToken = default)
+        public override async Task SerializeAsync<T>(T data, Stream stream, SerializationFormatting formatting = SerializationFormatting.None, CancellationToken cancellationToken = default)
         {
             var type = TryGetCollectionType((data as BaseDocument)?.Type);
             if (type is null)

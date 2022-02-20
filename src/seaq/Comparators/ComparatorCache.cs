@@ -1,4 +1,4 @@
-﻿using Nest;
+﻿using Elastic.Clients.Elasticsearch.QueryDsl;
 using System;
 using System.Collections.Generic;
 using System.Linq;

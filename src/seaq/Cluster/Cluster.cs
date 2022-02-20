@@ -1,5 +1,5 @@
-﻿using Elasticsearch.Net;
-using Nest;
+﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Transport;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -70,8 +70,8 @@ namespace seaq
 
         private Dictionary<string, Index> _indices;
         private Dictionary<string, Type> _searchableTypes;
-        private ISeaqElasticsearchSerializer _serializer;
-        private readonly ElasticClient _client;
+        private SeaqElasticsearchSerializer _serializer;
+        private readonly ElasticsearchClient _client;
 
         public static Cluster Create(
             ClusterArgs args)
@@ -122,8 +122,8 @@ namespace seaq
         public async Task InitializeIndexCache()
         {
             IndexCacheInitializing?.Invoke(this, null);
-
-            var query = new GetIndexRequest(Nest.Indices.Index($"{ClusterScope}*"));
+            
+            var query = new GetIndexRequest(Elastic.Clients.Elasticsearch.Indices.Index($"{ClusterScope}*"));
             var resp = await _client.Indices
                 .GetAsync(query);
 
@@ -146,7 +146,7 @@ namespace seaq
         {
             IndexCacheRefreshing?.Invoke(this, null);
 
-            var query = new GetIndexRequest(Nest.Indices.Index($"{ClusterScope}*"));
+            var query = new GetIndexRequest(Elastic.Clients.Elasticsearch.Indices.Index($"{ClusterScope}*"));
             var resp = await _client.Indices
                 .GetAsync(query);
 
@@ -255,9 +255,9 @@ namespace seaq
                 await Task.CompletedTask;
                 return false;
             }
-
-            var req = new DeleteIndexDescriptor(Nest.Indices.Index(indexName));
-
+            
+            var req = new Elastic.Clients.Elasticsearch.IndexManagement.DeleteRequest(Elastic.Clients.Elasticsearch.Indices.Index(indexName));
+            
             var result = await _client.Indices.DeleteAsync(req);
 
             if (!result.IsValid)
@@ -356,7 +356,7 @@ namespace seaq
             var res = await _client.IndexAsync(
                 document,
                 x => x
-                    .Index(Nest.Indices.Index(idx.Name))
+                    .Index(Elastic.Clients.Elasticsearch.Indices.Index(idx.Name))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
                         ? Refresh.True
                         : Refresh.False));
@@ -385,7 +385,7 @@ namespace seaq
             where T : class, IDocument
         {
 
-            var bulk = new BulkDescriptor();
+            var bulk = new Elastic.Clients.Elasticsearch.BulkRequest();
 
             foreach(var document in documents)
             {
@@ -396,14 +396,13 @@ namespace seaq
                     return false;
                 }
 
-                bulk.Index<object>(x => x
-                    .Index(idx.Name)
-                    .Id(document.Id)
-                    .Document(document))
-                    .Refresh(idx.ForceRefreshOnDocumentCommit
-                        ? Refresh.True
-                        : Refresh.False);
+                var op = new BulkIndexOperation<object>(document);
+                op.Id = document.Id;
+                op.Index = idx.Name;
+
+                bulk.Operations.Add(op);
             }
+            Log.Warning("Bulk actions don't currently respect the 'refresh' setting on the respective index - waiting for access to that api");
 
             Log.Verbose("Indexing {0} documents", documents.Count());
 
@@ -471,7 +470,7 @@ namespace seaq
             var res = await _client.IndexAsync(
                 doc,
                 x => x
-                    .Index(Nest.Indices.Index(idx.Name))
+                    .Index(Elastic.Clients.Elasticsearch.Indices.Index(idx.Name))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
                         ? Refresh.True
                         : Refresh.False));
@@ -497,7 +496,7 @@ namespace seaq
         }
         public async Task<bool> CommitAsync(IEnumerable<object> documents)
         {
-            var bulk = new BulkDescriptor();
+            var bulk = new BulkRequest();
 
             foreach (var document in documents)
             {
@@ -518,14 +517,13 @@ namespace seaq
                     return false;
                 }
 
-                bulk.Index<object>(x => x
-                    .Index(idx.Name)
-                    .Id(doc.Id)
-                    .Document(document))
-                    .Refresh(idx.ForceRefreshOnDocumentCommit
-                        ? Refresh.True
-                        : Refresh.False);
+                var op = new BulkIndexOperation<object>(document);
+                op.Id = doc.Id;
+                op.Index = idx.Name;
+
+                bulk.Operations.Add(op);
             }
+            Log.Warning("Bulk actions don't currently respect the 'refresh' setting on the respective index - waiting for access to that api");
 
             Log.Verbose("Indexing {0} documents", documents.Count());
 
@@ -565,7 +563,7 @@ namespace seaq
         }
         public async Task<Index> GetIndexDefinitionAsync(string indexName)
         {
-            var query = new GetIndexRequest(Nest.Indices.Index(indexName));
+            var query = new GetIndexRequest(Elastic.Clients.Elasticsearch.Indices.Index(indexName));
             var resp = await _client.Indices
                 .GetAsync(query);
 
@@ -594,7 +592,7 @@ namespace seaq
                 return null;
             }
 
-            var getMapping = new GetMappingRequest(Nest.Indices.Index(index.Name));
+            var getMapping = new GetMappingRequest(Elastic.Clients.Elasticsearch.Indices.Index(index.Name));
             var mapping = await _client.Indices.GetMappingAsync(getMapping);
 
             if (mapping.IsValid is not true)
@@ -614,7 +612,7 @@ namespace seaq
             }
 
             meta[Constants.Indices.Meta.SchemaKey] = index;
-            var putMapping = new PutMappingRequest(Nest.Indices.Index(index.Name));
+            var putMapping = new PutMappingRequest(Elastic.Clients.Elasticsearch.Indices.Index(index.Name));
             putMapping.Meta = meta;
 
             var resp = await _client.Indices.PutMappingAsync(putMapping);
@@ -773,7 +771,7 @@ namespace seaq
             var resp = await _client.DeleteAsync<T>(
                 document.Id, 
                 x => x
-                    .Index(Nest.Indices.Index(idx.Name))
+                    .Index(Elastic.Clients.Elasticsearch.Indices.Index(idx.Name))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
                         ? Refresh.True
                         : Refresh.False));
@@ -812,7 +810,7 @@ namespace seaq
         public async Task<bool> DeleteAsync<T>(IEnumerable<T> documents)
             where T : BaseDocument
         {
-            var bulk = new BulkDescriptor();
+            var bulk = new BulkRequest();
 
             foreach (var document in documents)
             {
@@ -823,14 +821,14 @@ namespace seaq
                     return false;
                 }
 
-                bulk.Delete<BaseDocument>(x => x
-                    .Index(idx.Name)
-                    .Id(document.Id)
-                    .Document(document))
-                    .Refresh(idx.ForceRefreshOnDocumentCommit
-                        ? Refresh.True
-                        : Refresh.False);
+                var op = new BulkDeleteOperation(document.Id);
+                op.Index = idx.Name;
+                op.Id = document.Id;
+                
+                bulk.Operations.Add(op);
+
             }
+            Log.Warning("Bulk actions don't currently respect the 'refresh' setting on the respective index - waiting for access to that api");
 
             Log.Verbose("Deleting {0} documents", documents.Count());
 
@@ -903,7 +901,7 @@ namespace seaq
             var resp = await _client.DeleteAsync<BaseDocument>(
                 doc.Id,
                 x => x
-                    .Index(Nest.Indices.Index(idx.Name))
+                    .Index(Elastic.Clients.Elasticsearch.Indices.Index(idx.Name))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
                         ? Refresh.True
                         : Refresh.False));
@@ -940,7 +938,7 @@ namespace seaq
         }
         public async Task<bool> DeleteAsync(IEnumerable<object> documents)
         {
-            var bulk = new BulkDescriptor();
+            var bulk = new BulkRequest();
 
             foreach (var document in documents)
             {
@@ -961,14 +959,11 @@ namespace seaq
                     return false;
                 }
 
-                bulk.Delete<BaseDocument>(x => x
-                    .Index(idx.Name)
-                    .Id(doc.Id)
-                    .Document(doc))
-                    .Refresh(idx.ForceRefreshOnDocumentCommit
-                        ? Refresh.True
-                        : Refresh.False);
+                var op = new BulkDeleteOperation(doc.Id);
+                op.Index = idx.Name;
+                bulk.Operations.Add(op);
             }
+            Log.Warning("Bulk actions don't currently respect the 'refresh' setting on the respective index - waiting for access to that api");
 
             Log.Verbose("Deleting {0} documents", documents.Count());
 
@@ -1161,20 +1156,21 @@ namespace seaq
                 return typeof(BaseDocument);
             }
         }
-        private static ElasticClient BuildClient(
+        private static ElasticsearchClient BuildClient(
             ClusterArgs args,
-            ISeaqElasticsearchSerializer serializer)
+            SeaqElasticsearchSerializer serializer)
         {
-            var pool = new SingleNodeConnectionPool(
+            
+            var pool = new SingleNodePool(
                 new Uri(args.Url));
-
-            var settings = new ConnectionSettings(
+            
+            var settings = new ElasticsearchClientSettings(
                 pool,
                 (a, b) => serializer);
 
             if (!string.IsNullOrWhiteSpace(args.Username) && !string.IsNullOrWhiteSpace(args.Password))
             {
-                settings.BasicAuthentication(args.Username, args.Password);
+                settings.Authentication(new BasicAuthentication(args.Username, args.Password));
                 ///this is the great big hammer to break out when things aren't working - 
                 ///it bypasses certificate validation entirely, which is necessary for local self-signed certs,
                 ///but can be a GIANT security risk otherwise.  Only used for debugging for a reason.
@@ -1190,7 +1186,7 @@ namespace seaq
                 settings.ServerCertificateValidationCallback((a, b, c, d) => true);
             }
 
-            return new ElasticClient(settings);
+            return new ElasticsearchClient(settings);
         }
     
     

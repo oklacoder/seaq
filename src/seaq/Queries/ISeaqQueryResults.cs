@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Elastic.Clients.Elasticsearch;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace seaq
@@ -43,13 +44,13 @@ namespace seaq
         }
 
         public DefaultQueryResult(
-            Nest.IHit<BaseDocument> hit)
+            Hit<BaseDocument> hit)
         {
-            Document = hit.Source;
-            Id = hit.Id;
-            Index = hit.Index;
-            Score = hit.Score;
-            Version = hit.Version;
+            Document = hit?.Source;
+            Id = hit?.Id?.ToString();
+            Index = hit?.Index?.Name;
+            Score = hit?.Score;
+            Version = hit?.Version;
         }
     }
     public class DefaultQueryResult<T> :
@@ -92,13 +93,13 @@ namespace seaq
         }
 
         public DefaultQueryResult(
-            Nest.IHit<T> hit)
+            Hit<T> hit)
         {
-            Document = hit.Source;
-            Id = hit.Id;
-            Index = hit.Index;
-            Score = hit.Score;
-            Version = hit.Version;
+            Document = hit?.Source;
+            Id = hit?.Id?.ToString();
+            Index = hit?.Index?.Name;
+            Score = hit?.Score;
+            Version = hit?.Version;
         }
     }
     public interface ISeaqQueryResult

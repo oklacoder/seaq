@@ -1,4 +1,6 @@
-﻿using Nest;
+﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Aggregations;
+using Elastic.Clients.Elasticsearch.QueryDsl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -101,14 +103,14 @@ namespace seaq
 
                 res.Terms(key, t => t
                     .Field(f.FieldName)
-                    .MinimumDocumentCount(2)
+                    .MinDocCount(2)
                     .Order(o => o.CountDescending().KeyAscending()));
             }
 
             return res;
         }
         public static IEnumerable<IBucketResult> BuildBucketResult(
-            this Nest.AggregateDictionary aggs)
+            this AggregateDictionary aggs)
         {
             var res = new List<DefaultBucketResult>();
 
@@ -124,7 +126,7 @@ namespace seaq
                         {
                             foreach (var b in buckets)
                             {
-                                if (b?.Any() != true && b.DocCount < 2)
+                                if (b.DocCount < 2)
                                     continue;
 
                                 var key = Constants.Fields.NestReservedFieldNameSubs
