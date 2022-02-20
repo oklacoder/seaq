@@ -9,7 +9,7 @@
         public bool BypassCertificateValidation { get; }
         public ISeaqElasticsearchSerializer Serializer { get; } = null;
         public bool AllowAutomaticIndexCreation { get; }
-
+        public bool EnableVersionCompatabilityHeader { get; }
 
         public ClusterArgs(
             string clusterScope,
@@ -18,7 +18,8 @@
             string password,
             bool bypassCertificateValidation = false,
             ISeaqElasticsearchSerializer serializer = null,
-            bool allowAutomaticIndexCreation = true)
+            bool allowAutomaticIndexCreation = true, 
+            bool enableVersionCompatabilityHeader = true)
         {
             ClusterScope = clusterScope;
             Url = url;
@@ -27,6 +28,7 @@
             BypassCertificateValidation = bypassCertificateValidation;
             Serializer = serializer;
             AllowAutomaticIndexCreation = allowAutomaticIndexCreation;
+            EnableVersionCompatabilityHeader = enableVersionCompatabilityHeader;
         }
     }
 }

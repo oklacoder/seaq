@@ -409,30 +409,36 @@ namespace seaq
 
             var resp = await _client.BulkAsync(bulk);
 
-            Log.Verbose("Bulk index attempt complete with {0} errors.", resp.ItemsWithErrors.Count());
+            //There are issues with cross-version compatability and error detection on bulk methods - many successful index ops report unknown errors.
+            //Taking a simpler, more naive path towards success detection until a new release of the client that functions correctly.
 
-            if (resp.ItemsWithErrors?.Any() is true)
-            {
-                Log.Error("Some items - {0} of {1} - failed to complete, with the following errors:", resp.ItemsWithErrors.Count(), resp.Items.Count());
-                foreach(var err in resp.ItemsWithErrors)
-                {
-                    Log.Error("Item Id: {0}, Index: {1}", err?.Id, err?.Index);
-                    Log.Error(err?.Error?.Reason);
-                    Log.Error(err?.Error?.CausedBy?.Reason);
-                    Log.Error(err?.Error?.StackTrace);
-                }
+            //Log.Verbose("Bulk index attempt complete with {0} errors.", resp.ItemsWithErrors.Count());
 
-                return false;
-            }
-            if (resp.IsValid is not true)
-            {
-                Log.Error("Error in index attempt:");
-                Log.Error(resp.ServerError?.Error?.Reason);
-                Log.Error(resp.OriginalException?.Message);
-                Log.Error(resp.OriginalException?.StackTrace);
-            }
+            //if (resp.Errors is true)
+            //{
+            //    if (resp.ItemsWithErrors?.Any() is true)
+            //    {
+            //        Log.Error("Some items - {0} of {1} - failed to complete, with the following errors:", resp.ItemsWithErrors.Count(), resp.Items.Count());
+            //        foreach(var err in resp.ItemsWithErrors)
+            //        {
+            //            Log.Error("Item Id: {0}, Index: {1}", err?.Id, err?.Index);
+            //            Log.Error(err?.Error?.Reason);
+            //            Log.Error(err?.Error?.CausedBy?.Reason);
+            //            Log.Error(err?.Error?.StackTrace);
+            //        }
 
-            return resp.IsValid;
+            //        return false;
+            //    }
+            //    if (resp.IsValid is not true)
+            //    {
+            //        Log.Error("Error in index attempt:");
+            //        Log.Error(resp.ServerError?.Error?.Reason);
+            //        Log.Error(resp.OriginalException?.Message);
+            //        Log.Error(resp.OriginalException?.StackTrace);
+            //    }
+            //}
+
+            return resp?.Items?.Count.Equals(documents?.Count()) ?? false;
         }
 
         public bool Commit(BaseDocument document)
@@ -531,30 +537,36 @@ namespace seaq
 
             var resp = await _client.BulkAsync(bulk);
 
-            Log.Verbose("Bulk index attempt complete with {0} errors.", resp.ItemsWithErrors.Count());
+            //There are issues with cross-version compatability and error detection on bulk methods - many successful index ops report unknown errors.
+            //Taking a simpler, more naive path towards success detection until a new release of the client that functions correctly.
 
-            if (resp.ItemsWithErrors?.Any() is true)
-            {
-                Log.Error("Some items - {0} of {1} - failed to complete, with the following errors:", resp.ItemsWithErrors.Count(), resp.Items.Count());
-                foreach (var err in resp.ItemsWithErrors)
-                {
-                    Log.Error("Item Id: {0}, Index: {1}", err?.Id, err?.Index);
-                    Log.Error(err?.Error?.Reason);
-                    Log.Error(err?.Error?.CausedBy?.Reason);
-                    Log.Error(err?.Error?.StackTrace);
-                }
+            //Log.Verbose("Bulk index attempt complete with {0} errors.", resp.ItemsWithErrors.Count());
 
-                return false;
-            }
-            if (resp.IsValid is not true)
-            {
-                Log.Error("Error in index attempt:");
-                Log.Error(resp.ServerError?.Error?.Reason);
-                Log.Error(resp.OriginalException?.Message);
-                Log.Error(resp.OriginalException?.StackTrace);
-            }
+            //if (resp.Errors is true)
+            //{
+            //    if (resp.ItemsWithErrors?.Any() is true)
+            //    {
+            //        Log.Error("Some items - {0} of {1} - failed to complete, with the following errors:", resp.ItemsWithErrors.Count(), resp.Items.Count());
+            //        foreach(var err in resp.ItemsWithErrors)
+            //        {
+            //            Log.Error("Item Id: {0}, Index: {1}", err?.Id, err?.Index);
+            //            Log.Error(err?.Error?.Reason);
+            //            Log.Error(err?.Error?.CausedBy?.Reason);
+            //            Log.Error(err?.Error?.StackTrace);
+            //        }
 
-            return resp.IsValid;
+            //        return false;
+            //    }
+            //    if (resp.IsValid is not true)
+            //    {
+            //        Log.Error("Error in index attempt:");
+            //        Log.Error(resp.ServerError?.Error?.Reason);
+            //        Log.Error(resp.OriginalException?.Message);
+            //        Log.Error(resp.OriginalException?.StackTrace);
+            //    }
+            //}
+
+            return resp?.Items?.Count.Equals(documents?.Count()) ?? false;
         }
 
 
@@ -835,44 +847,47 @@ namespace seaq
             Log.Verbose("Deleting {0} documents", documents.Count());
 
             var resp = await _client.BulkAsync(bulk);
-            List<BulkResponseItemBase> errors = resp.ItemsWithErrors.ToList();
 
-            Log.Verbose("Bulk delete attempt complete with {0} errors.", resp.ItemsWithErrors.Count());
+            //There are issues with cross-version compatability and error detection on bulk methods - many successful index ops report unknown errors.
+            //Taking a simpler, more naive path towards success detection until a new release of the client that functions correctly.
 
-            if (resp.Items.Any(x => x?.Status == 404))
-            {
-                var notFound = resp.Items.Where(x => x?.Status == 404);
+            //Log.Verbose("Bulk delete attempt complete with {0} errors.", resp.ItemsWithErrors.Count());
 
-                foreach(var nf in notFound)
-                {
-                    const string msg = @"Could not find document {0} on index {1}";
-                    Log.Warning(msg, nf.Id, nf.Index);
-                    errors.Add(nf);
-                }
-            }
+            //List<BulkResponseItemBase> errors = resp.ItemsWithErrors.ToList();
+            //if (resp.Items.Any(x => x?.Status == 404))
+            //{
+            //    var notFound = resp.Items.Where(x => x?.Status == 404);
 
-            if (resp.ItemsWithErrors?.Any() is true)
-            {
-                Log.Error("Some items - {0} of {1} - failed to complete, with the following errors:", resp.ItemsWithErrors.Count(), resp.ItemsWithErrors.Count());
-                foreach (var err in resp.ItemsWithErrors)
-                {
-                    Log.Error("Item Id: {0}, Index: {1}", err?.Id, err?.Index);
-                    Log.Error(err?.Error?.Reason);
-                    Log.Error(err?.Error?.CausedBy?.Reason);
-                    Log.Error(err?.Error?.StackTrace);
-                }
+            //    foreach(var nf in notFound)
+            //    {
+            //        const string msg = @"Could not find document {0} on index {1}";
+            //        Log.Warning(msg, nf.Id, nf.Index);
+            //        errors.Add(nf);
+            //    }
+            //}
 
-                return false;
-            }
-            if (resp.IsValid is not true)
-            {
-                Log.Error("Error in delete attempt:");
-                Log.Error(resp.ServerError?.Error?.Reason);
-                Log.Error(resp.OriginalException?.Message);
-                Log.Error(resp.OriginalException?.StackTrace);
-            }
+            //if (resp.ItemsWithErrors?.Any() is true)
+            //{
+            //    Log.Error("Some items - {0} of {1} - failed to complete, with the following errors:", resp.ItemsWithErrors.Count(), resp.ItemsWithErrors.Count());
+            //    foreach (var err in resp.ItemsWithErrors)
+            //    {
+            //        Log.Error("Item Id: {0}, Index: {1}", err?.Id, err?.Index);
+            //        Log.Error(err?.Error?.Reason);
+            //        Log.Error(err?.Error?.CausedBy?.Reason);
+            //        Log.Error(err?.Error?.StackTrace);
+            //    }
 
-            return resp.IsValid && errors?.Any() is not true;
+            //    return false;
+            //}
+            //if (resp.IsValid is not true)
+            //{
+            //    Log.Error("Error in delete attempt:");
+            //    Log.Error(resp.ServerError?.Error?.Reason);
+            //    Log.Error(resp.OriginalException?.Message);
+            //    Log.Error(resp.OriginalException?.StackTrace);
+            //}
+
+            return resp?.Items?.Count.Equals(documents?.Count()) ?? false;
         }
 
         public bool Delete(BaseDocument document)
@@ -973,44 +988,47 @@ namespace seaq
             Log.Verbose("Deleting {0} documents", documents.Count());
 
             var resp = await _client.BulkAsync(bulk);
-            List<BulkResponseItemBase> errors = resp.ItemsWithErrors.ToList();
 
-            Log.Verbose("Bulk delete attempt complete with {0} errors.", resp.ItemsWithErrors.Count());
+            //There are issues with cross-version compatability and error detection on bulk methods - many successful index ops report unknown errors.
+            //Taking a simpler, more naive path towards success detection until a new release of the client that functions correctly.
 
-            if (resp.Items.Any(x => x?.Status == 404))
-            {
-                var notFound = resp.Items.Where(x => x?.Status == 404);
+            //Log.Verbose("Bulk delete attempt complete with {0} errors.", resp.ItemsWithErrors.Count());
 
-                foreach (var nf in notFound)
-                {
-                    const string msg = @"Could not find document {0} on index {1}";
-                    Log.Warning(msg, nf.Id, nf.Index);
-                    errors.Add(nf);
-                }
-            }
+            //List<BulkResponseItemBase> errors = resp.ItemsWithErrors.ToList();
+            //if (resp.Items.Any(x => x?.Status == 404))
+            //{
+            //    var notFound = resp.Items.Where(x => x?.Status == 404);
 
-            if (resp.ItemsWithErrors?.Any() is true)
-            {
-                Log.Error("Some items - {0} of {1} - failed to complete, with the following errors:", resp.ItemsWithErrors.Count(), resp.ItemsWithErrors.Count());
-                foreach (var err in resp.ItemsWithErrors)
-                {
-                    Log.Error("Item Id: {0}, Index: {1}", err?.Id, err?.Index);
-                    Log.Error(err?.Error?.Reason);
-                    Log.Error(err?.Error?.CausedBy?.Reason);
-                    Log.Error(err?.Error?.StackTrace);
-                }
+            //    foreach(var nf in notFound)
+            //    {
+            //        const string msg = @"Could not find document {0} on index {1}";
+            //        Log.Warning(msg, nf.Id, nf.Index);
+            //        errors.Add(nf);
+            //    }
+            //}
 
-                return false;
-            }
-            if (resp.IsValid is not true)
-            {
-                Log.Error("Error in delete attempt:");
-                Log.Error(resp.ServerError?.Error?.Reason);
-                Log.Error(resp.OriginalException?.Message);
-                Log.Error(resp.OriginalException?.StackTrace);
-            }
+            //if (resp.ItemsWithErrors?.Any() is true)
+            //{
+            //    Log.Error("Some items - {0} of {1} - failed to complete, with the following errors:", resp.ItemsWithErrors.Count(), resp.ItemsWithErrors.Count());
+            //    foreach (var err in resp.ItemsWithErrors)
+            //    {
+            //        Log.Error("Item Id: {0}, Index: {1}", err?.Id, err?.Index);
+            //        Log.Error(err?.Error?.Reason);
+            //        Log.Error(err?.Error?.CausedBy?.Reason);
+            //        Log.Error(err?.Error?.StackTrace);
+            //    }
 
-            return resp.IsValid && errors?.Any() is not true;
+            //    return false;
+            //}
+            //if (resp.IsValid is not true)
+            //{
+            //    Log.Error("Error in delete attempt:");
+            //    Log.Error(resp.ServerError?.Error?.Reason);
+            //    Log.Error(resp.OriginalException?.Message);
+            //    Log.Error(resp.OriginalException?.StackTrace);
+            //}
+
+            return resp?.Items?.Count.Equals(documents?.Count()) ?? false;
         }
 
         //query
@@ -1171,6 +1189,9 @@ namespace seaq
             var settings = new ConnectionSettings(
                 pool,
                 (a, b) => serializer);
+
+            if (args.EnableVersionCompatabilityHeader is true)
+                settings.EnableApiVersioningHeader();
 
             if (!string.IsNullOrWhiteSpace(args.Username) && !string.IsNullOrWhiteSpace(args.Password))
             {

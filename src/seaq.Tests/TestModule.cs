@@ -11,17 +11,19 @@ namespace SEAQ.Tests
 {
     public class TestModule
     {
+        protected const string Url_8x = "https://localhost:9200/";
         protected const string Url_7x = "http://localhost:9200/";
         protected const string Url_6x = "http://localhost:9200/";
         protected const string Username = "elastic";
         protected const string Password = "elastic";
-        protected string Url => Url_7x;
+        protected string Url => Url_8x;
 
         protected ConnectionSettings _connection => new ConnectionSettings(
                 new Elasticsearch.Net.SingleNodeConnectionPool(
                     new Uri(Url)),
                 (a, b) => new DefaultSeaqElasticsearchSerializer(TryGetSearchType))
             .ServerCertificateValidationCallback((a, b, c, d) => true)
+            .EnableApiVersioningHeader()
             .BasicAuthentication(Username, Password);
         protected ElasticClient _client => new ElasticClient(_connection);
         protected const string SampleIndex = "kibana_sample_data_ecommerce";
