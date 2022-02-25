@@ -40,6 +40,7 @@ namespace seaq
                 GreaterThanOrEqualComparator gte => GetQuery(gte, filter),
                 LessThanComparator lt => GetQuery(lt, filter),
                 LessThanOrEqualComparator lte => GetQuery(lte, filter),
+                MultiMatchComparator mm => GetQuery(mm, filter),
                 NotAnyWordComparator naw => GetQuery(naw, filter),
                 NotEqualComparator neq => GetQuery(neq, filter),
                 PartialPhraseComparator part => GetQuery(part, filter),
