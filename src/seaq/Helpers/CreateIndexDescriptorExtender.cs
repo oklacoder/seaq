@@ -53,7 +53,9 @@ namespace seaq
         {
             return
                 indexSettingsDescriptor.Analysis(
-                    analysis => analysis.Normalizers(GetLowerCaseNormalizer));
+                    analysis => analysis
+                        .Normalizers(GetLowerCaseNormalizer)
+                        .Analyzers(GetDefaultTextAnalyzer));
         }
 
         private static NormalizersDescriptor GetLowerCaseNormalizer(
@@ -63,6 +65,14 @@ namespace seaq
                 normalizersDescriptor.Custom(
                     Constants.Normalizers.Lowercase,
                     customNormalizer => customNormalizer.Filters(Constants.Normalizers.Lowercase));
+        }
+
+        private static AnalyzersDescriptor GetDefaultTextAnalyzer(
+            AnalyzersDescriptor analyzersDescriptor)
+        {
+            return analyzersDescriptor.Custom(
+                Constants.Tokenizers.Letter,
+                c => c.Tokenizer(Constants.Tokenizers.Letter));
         }
 
         private static TypeMappingDescriptor<object> GetTypeMappingDescriptor(

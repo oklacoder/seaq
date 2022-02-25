@@ -15,6 +15,10 @@ namespace seaq
         {
             public const string Lowercase = "lowercase";
         }
+        public static class Tokenizers
+        {
+            public const string Letter = "letter";
+        }
 
         public class Clusters
         {
