@@ -14,6 +14,9 @@ services:
         elif [ x${KIBANA_PASSWORD} == x ]; then
           echo "Set the KIBANA_PASSWORD environment variable in the .env file";
           exit 1;
+        elif [ x${APM_PASSWORD} == x ]; then
+          echo "Set the APM_PASSWORD environment variable in the .env file";
+          exit 1;
         fi;
         if [ ! -f certs/ca.zip ]; then
           echo "Creating CA";
@@ -54,6 +57,8 @@ services:
         until curl -s --cacert config/certs/ca/ca.crt https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
         echo "Setting kibana_system password";
         until curl -s -X POST --cacert config/certs/ca/ca.crt -u elastic:${ELASTIC_PASSWORD} -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        echo "Setting apm_system password";
+        until curl -s -X POST --cacert config/certs/ca/ca.crt -u elastic:${ELASTIC_PASSWORD} -H "Content-Type: application/json" https://es01:9200/_security/user/apm_system/_password -d "{\"password\":\"${APM_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
         echo "All done!";
       '
     healthcheck:
@@ -84,12 +89,12 @@ services:
       - xpack.security.http.ssl.key=certs/es01/es01.key
       - xpack.security.http.ssl.certificate=certs/es01/es01.crt
       - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
-      - xpack.security.http.ssl.verification_mode=certificate
+      - xpack.security.http.ssl.verification_mode=none
       - xpack.security.transport.ssl.enabled=true
       - xpack.security.transport.ssl.key=certs/es01/es01.key
       - xpack.security.transport.ssl.certificate=certs/es01/es01.crt
       - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
-      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.verification_mode=none
       - xpack.license.self_generated.type=${LICENSE}
     mem_limit: ${MEM_LIMIT}
     ulimits:
@@ -124,12 +129,12 @@ services:
       - xpack.security.http.ssl.key=certs/es02/es02.key
       - xpack.security.http.ssl.certificate=certs/es02/es02.crt
       - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
-      - xpack.security.http.ssl.verification_mode=certificate
+      - xpack.security.http.ssl.verification_mode=none
       - xpack.security.transport.ssl.enabled=true
       - xpack.security.transport.ssl.key=certs/es02/es02.key
       - xpack.security.transport.ssl.certificate=certs/es02/es02.crt
       - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
-      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.verification_mode=none
       - xpack.license.self_generated.type=${LICENSE}
     mem_limit: ${MEM_LIMIT}
     ulimits:
@@ -164,12 +169,12 @@ services:
       - xpack.security.http.ssl.key=certs/es03/es03.key
       - xpack.security.http.ssl.certificate=certs/es03/es03.crt
       - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
-      - xpack.security.http.ssl.verification_mode=certificate
+      - xpack.security.http.ssl.verification_mode=none
       - xpack.security.transport.ssl.enabled=true
       - xpack.security.transport.ssl.key=certs/es03/es03.key
       - xpack.security.transport.ssl.certificate=certs/es03/es03.crt
       - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
-      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.verification_mode=none
       - xpack.license.self_generated.type=${LICENSE}
     mem_limit: ${MEM_LIMIT}
     ulimits:
@@ -228,3 +233,36 @@ volumes:
     driver: local
   kibanadata:
     driver: local
+  
+  # apm:
+  #   depends_on:
+  #     es01:
+  #       condition: service_healthy
+  #     es02:
+  #       condition: service_healthy
+  #     es03:
+  #       condition: service_healthy
+  #     kibana:
+  #       condition: service_healthy
+  #   image: docker.elastic.co/apm/apm-server:${STACK_VERSION}
+  #   ports:
+  #     - 8200:8200
+  # command: >
+  #   apm-server -e
+  #   -E output.elasticsearch.hosts=["es01:9200","es02:9200","es03:9200"]
+  #   -E output.elasticsearch.protocol=https
+  #   -E output.elasticsearch.username=apm_system
+  #   -E output.elasticsearch.password=${APM_PASSWORD}
+  #   -E output.elasticsearch.ssl.verification_mode=none
+  #   -E apm-server.secret_token=lRiDTwv2dis5J53dke
+  #   -E setup.kibana.host=kibana:5601
+  #   -E apm-server.kibana.enabled=true
+  #   -E apm-server.kibana.host=kibana:5601
+  #   -E apm-server.kibana.protocol=http
+  #   -E apm-server.kibana.username=apm_system
+  #   -E apm-server.kibana.password=${APM_PASSWORD}      
+  #   -E apm-server.auth.anonymous.enabled=true
+  #   -E apm-server.auth.allow_agent=["dotnet","rum-js","js-base"]
+  #   -E apm-server.auth.rate_limit.event_limit=100
+  #   -E apm-server.rum.enabled=true
+    

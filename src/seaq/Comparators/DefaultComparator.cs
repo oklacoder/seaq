@@ -32,6 +32,7 @@ namespace seaq
         public static GreaterThanOrEqualComparator GreaterThanOrEqual { get; } = new GreaterThanOrEqualComparator();
         public static LessThanComparator LessThan { get; } = new LessThanComparator();
         public static LessThanOrEqualComparator LessThanOrEqual { get; } = new LessThanOrEqualComparator();
+        public static MultiMatchComparator MultiMatch { get; } = new MultiMatchComparator();
         public static NotAnyWordComparator NotAnyWord { get; } = new NotAnyWordComparator();
         public static NotEqualComparator NotEqual { get; } = new NotEqualComparator();
         public static PartialPhraseComparator PartialPhrase { get; } = new PartialPhraseComparator();
@@ -46,6 +47,7 @@ namespace seaq
             GreaterThanOrEqual,
             LessThan,
             LessThanOrEqual,
+            MultiMatch,
             NotAnyWord,
             NotEqual,
             PartialPhrase
@@ -65,20 +67,7 @@ namespace seaq
         {
             get
             {
-                return new IComparator[]
-                {
-                    AnyWord,
-                    Between,
-                    Equal,
-                    FullPhrase,
-                    GreaterThan,
-                    GreaterThanOrEqual,
-                    LessThan,
-                    LessThanOrEqual,
-                    NotAnyWord,
-                    NotEqual,
-                    PartialPhrase
-                }.Concat(AdditionalComparators);
+                return DefaultComparators?.Concat(AdditionalComparators);
             }
         }
     }
