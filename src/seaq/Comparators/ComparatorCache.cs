@@ -160,7 +160,7 @@ namespace seaq
         }
         private static QueryContainer GetQuery(MultiMatchComparator c, IFilterField filter)
         {
-            return new QueryContainerDescriptor<BaseDocument>().Bool(b => b.Must(m => m.MultiMatch(mm => mm.Query(filter.Value).Operator(Operator.Or).Type(TextQueryType.PhrasePrefix))));
+            return new QueryContainerDescriptor<BaseDocument>().Bool(b => b.Must(m => m.MultiMatch(mm => mm.Query(filter.Value).Fields(filter?.FieldName ?? "*").Operator(Operator.Or).Type(TextQueryType.PhrasePrefix))));
         }
     }
 }
