@@ -664,7 +664,7 @@ namespace seaq
         {
             if (!_indices.TryGetValue(indexName, out var index))
             {
-                Log.Warning("Attempt to update index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                Log.Warning("Attempt to DeprecateIndex for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
                 await Task.CompletedTask;
                 return null;
             }
@@ -682,7 +682,7 @@ namespace seaq
         {
             if (!_indices.TryGetValue(indexName, out var index))
             {
-                Log.Warning("Attempt to update index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                Log.Warning("Attempt to UnDeprecateIndex for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
                 await Task.CompletedTask;
                 return null;
             }
@@ -701,7 +701,7 @@ namespace seaq
         {
             if (!_indices.TryGetValue(indexName, out var index))
             {
-                Log.Warning("Attempt to update index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                Log.Warning("Attempt to HideIndex for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
                 await Task.CompletedTask;
                 return null;
             }
@@ -718,7 +718,7 @@ namespace seaq
         {
             if (!_indices.TryGetValue(indexName, out var index))
             {
-                Log.Warning("Attempt to update index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                Log.Warning("Attempt to UnHideIndex for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
                 await Task.CompletedTask;
                 return null;
             }
@@ -737,7 +737,7 @@ namespace seaq
         {
             if (!_indices.TryGetValue(indexName, out var index))
             {
-                Log.Warning("Attempt to update index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                Log.Warning("Attempt to IncludeIndexInGlobalSearch for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
                 await Task.CompletedTask;
                 return null;
             }
@@ -754,7 +754,7 @@ namespace seaq
         {
             if (!_indices.TryGetValue(indexName, out var index))
             {
-                Log.Warning("Attempt to update index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                Log.Warning("Attempt to ExcludeIndexFromGlobalSearch for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
                 await Task.CompletedTask;
                 return null;
             }
@@ -763,7 +763,184 @@ namespace seaq
 
             return await UpdateIndexDefinitionAsync(index);
         }
+        public Index SetIndexObjectLabel(string indexName, string label)
+        {
+            return SetIndexObjectLabelAsync(indexName, label).Result;
+        }
+        public async Task<Index> SetIndexObjectLabelAsync(string indexName, string label)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to SetIndexObjectLabel for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
 
+            index.ObjectLabel = label;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index SetIndexObjectLabelPlural(string indexName, string label)
+        {
+            return SetIndexObjectLabelPluralAsync(indexName, label).Result;
+        }
+        public async Task<Index> SetIndexObjectLabelPluralAsync(string indexName, string label)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to SetIndexObjectLabelPlural for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.ObjectLabelPlural = label;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index SetIndexPrimaryField(string indexName, string fieldName)
+        {
+            return SetIndexPrimaryFieldAsync(indexName, fieldName).Result;
+        }
+        public async Task<Index> SetIndexPrimaryFieldAsync(string indexName, string fieldName)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to SetIndexPrimaryField for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.PrimaryField = fieldName;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index SetIndexPrimaryFieldLabel(string indexName, string label)
+        {
+            return SetIndexPrimaryFieldLabelAsync(indexName, label).Result;
+        }
+        public async Task<Index> SetIndexPrimaryFieldLabelAsync(string indexName, string label)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to SetIndexPrimaryFieldLabel for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.PrimaryFieldLabel = label;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index SetIndexSecondaryField(string indexName, string fieldName)
+        {
+            return SetIndexSecondaryFieldAsync(indexName, fieldName).Result;
+        }
+        public async Task<Index> SetIndexSecondaryFieldAsync(string indexName, string fieldName)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to SetIndexSecondaryField for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.SecondaryField = fieldName;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index SetIndexSecondaryFieldLabel(string indexName, string label)
+        {
+            return SetIndexSecondaryFieldLabelAsync(indexName, label).Result;
+        }
+        public async Task<Index> SetIndexSecondaryFieldLabelAsync(string indexName, string label)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to SetIndexSecondaryFieldLabel for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.SecondaryFieldLabel = label;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index SetIndexMeta(string indexName, Dictionary<string, object> meta)
+        {
+            return SetIndexMetaAsync(indexName, meta).Result;
+        }
+        public async Task<Index> SetIndexMetaAsync(string indexName, Dictionary<string, object> meta)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to SetIndexMeta for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+            if (index?.Meta?.Keys?.Count > 0)
+            {
+                Log.Warning("Could not set index meta - a value already exists.  Use either AppendIndexMeta or the ReplaceIndexMeta to proceed.");
+                await Task.CompletedTask;
+                return index;
+            }
+
+            index.Meta = meta;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index ReplaceIndexMeta(string indexName, Dictionary<string, object> meta)
+        {
+            return ReplaceIndexMetaAsync(indexName, meta).Result;
+        }
+        public async Task<Index> ReplaceIndexMetaAsync(string indexName, Dictionary<string, object> meta)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to ReplaceIndexMeta for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.Meta = meta;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index AppendIndexMeta(string indexName, Dictionary<string, object> meta)
+        {
+            return AppendIndexMetaAsync(indexName, meta).Result;
+        }
+        public async Task<Index> AppendIndexMetaAsync(string indexName, Dictionary<string, object> meta)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to AppendIndexMeta for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+            foreach(var key in meta.Keys)
+            {
+                index.Meta[key] = meta[key];
+            }
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index DeleteIndexMeta(string indexName)
+        {
+            return DeleteIndexMetaAsync(indexName).Result;
+        }
+        public async Task<Index> DeleteIndexMetaAsync(string indexName)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to DeleteIndexMeta for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.Meta = new Dictionary<string, object>();
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
 
         //delete docs
         public bool Delete<T>(T document)

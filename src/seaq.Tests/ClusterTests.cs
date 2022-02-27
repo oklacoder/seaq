@@ -302,7 +302,7 @@ namespace SEAQ.Tests
             await cluster.CreateIndexAsync(config);
             var name2 = $"{config.Name}_2";
 
-            var docs = GetFakeDocs(10000);
+            var docs = GetFakeDocs(1000);
 
             foreach (var d in docs)
             {
@@ -391,7 +391,7 @@ namespace SEAQ.Tests
             const string depMsg = "Test Deprecation Message";
             var resp = await cluster.DeprecateIndexAsync(createResp.Name, depMsg);
 
-            var idx = cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
             await cluster.DeleteIndexAsync(config.Name);
 
@@ -416,7 +416,7 @@ namespace SEAQ.Tests
             await cluster.DeprecateIndexAsync(createResp.Name, depMsg);
             var resp = await cluster.UnDeprecateIndexAsync(createResp.Name);
 
-            var idx = cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
             await cluster.DeleteIndexAsync(config.Name);
 
@@ -440,7 +440,7 @@ namespace SEAQ.Tests
 
             var resp = await cluster.HideIndexAsync(createResp.Name);
 
-            var idx = cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
             await cluster.DeleteIndexAsync(config.Name);
 
@@ -462,7 +462,7 @@ namespace SEAQ.Tests
             await cluster.HideIndexAsync(createResp.Name);
             var resp = await cluster.UnHideIndexAsync(createResp.Name);
 
-            var idx = cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
             await cluster.DeleteIndexAsync(config.Name);
 
@@ -484,7 +484,7 @@ namespace SEAQ.Tests
 
             var resp = await cluster.IncludeIndexInGlobalSearchAsync(createResp.Name);
 
-            var idx = cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
             await cluster.DeleteIndexAsync(config.Name);
 
@@ -506,13 +506,294 @@ namespace SEAQ.Tests
             await cluster.HideIndexAsync(createResp.Name);
             var resp = await cluster.ExcludeIndexFromGlobalSearchAsync(createResp.Name);
 
-            var idx = cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
             await cluster.DeleteIndexAsync(config.Name);
 
             Assert.NotNull(resp);
             Assert.False(idx.ReturnInGlobalSearch);
             Assert.False(resp.ReturnInGlobalSearch);
+        }
+        [Fact]
+        public async void CanSetObjectLabel()
+        {
+            const string method = "CanSetObjectLabel";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            await cluster.HideIndexAsync(createResp.Name);
+            var resp = await cluster.SetIndexObjectLabelAsync(createResp.Name, method);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.Equal(resp.ObjectLabel, idx.ObjectLabel);
+            Assert.Equal(idx.ObjectLabel, method);
+        }
+        [Fact]
+        public async void CanSetObjectLabelPlural()
+        {
+            const string method = "CanSetObjectLabelPlural";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            await cluster.HideIndexAsync(createResp.Name);
+            var resp = await cluster.SetIndexObjectLabelPluralAsync(createResp.Name, method);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.Equal(resp.ObjectLabelPlural, idx.ObjectLabelPlural);
+            Assert.Equal(idx.ObjectLabelPlural, method);
+        }
+        [Fact]
+        public async void CanSetIndexPrimaryField()
+        {
+            const string method = "CanSetIndexPrimaryField";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            await cluster.HideIndexAsync(createResp.Name);
+            var resp = await cluster.SetIndexPrimaryFieldAsync(createResp.Name, method);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.Equal(resp.PrimaryField, idx.PrimaryField);
+            Assert.Equal(idx.PrimaryField, method);
+        }
+        [Fact]
+        public async void CanSetIndexPrimaryFieldLabel()
+        {
+            const string method = "CanSetIndexPrimaryFieldLabel";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            await cluster.HideIndexAsync(createResp.Name);
+            var resp = await cluster.SetIndexPrimaryFieldLabelAsync(createResp.Name, method);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.Equal(resp.PrimaryFieldLabel, idx.PrimaryFieldLabel);
+            Assert.Equal(idx.PrimaryFieldLabel, method);
+        }
+        [Fact]
+        public async void CanSetIndexSecondaryField()
+        {
+            const string method = "CanSetIndexSecondaryField";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            await cluster.HideIndexAsync(createResp.Name);
+            var resp = await cluster.SetIndexSecondaryFieldAsync(createResp.Name, method);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.Equal(resp.SecondaryField, idx.SecondaryField);
+            Assert.Equal(idx.SecondaryField, method);
+        }
+        [Fact]
+        public async void CanSetIndexSecondaryFieldLabel()
+        {
+            const string method = "CanSetIndexSecondaryFieldLabel";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            await cluster.HideIndexAsync(createResp.Name);
+            var resp = await cluster.SetIndexSecondaryFieldLabelAsync(createResp.Name, method);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.Equal(resp.SecondaryFieldLabel, idx.SecondaryFieldLabel);
+            Assert.Equal(idx.SecondaryFieldLabel, method);
+        }
+        [Fact]
+        public async void CanSetIndexMeta()
+        {
+            const string method = "CanSetIndexMeta";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            await cluster.HideIndexAsync(createResp.Name);
+            var meta = new Dictionary<string, object>();
+            meta.Add("1", method);
+            meta.Add("2", DateTime.Now);
+            meta.Add("3", 123);
+            var resp = await cluster.SetIndexMetaAsync(createResp.Name, meta);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.NotNull(idx);
+            Assert.NotNull(idx.Meta);
+            Assert.NotNull(resp.Meta);
+            foreach(var k in meta.Keys)
+            {
+                Assert.True(idx.Meta.ContainsKey(k));
+                Assert.True(resp.Meta.ContainsKey(k));
+                Assert.Equal(idx.Meta[k].ToString(), meta[k].ToString());
+                Assert.Equal(resp.Meta[k].ToString(), meta[k].ToString());
+            }
+        }
+        [Fact]
+        public async void CanDeleteIndexMeta()
+        {
+            const string method = "CanDeleteIndexMeta";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            await cluster.HideIndexAsync(createResp.Name);
+            var meta = new Dictionary<string, object>();
+            meta.Add("1", method);
+            meta.Add("2", DateTime.Now);
+            meta.Add("3", 123);
+            var resp = await cluster.SetIndexMetaAsync(createResp.Name, meta);
+
+            var resp2 = await cluster.DeleteIndexMetaAsync(createResp.Name);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.NotNull(idx);
+            Assert.NotNull(idx.Meta);
+            Assert.NotNull(resp.Meta);
+            Assert.NotNull(resp2.Meta);
+            Assert.Empty(resp2.Meta);
+        }
+        [Fact]
+        public async void CanReplaceIndexMeta()
+        {
+            const string method = "CanReplaceIndexMeta";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            await cluster.HideIndexAsync(createResp.Name);
+            var meta = new Dictionary<string, object>();
+            meta.Add("1", method);
+            meta.Add("2", DateTime.Now);
+            meta.Add("3", 123);
+            var resp = await cluster.SetIndexMetaAsync(createResp.Name, meta);
+            var meta2 = new Dictionary<string, object>();
+            meta2.Add("4", method);
+            meta2.Add("5", DateTime.Now);
+            meta2.Add("6", 123);
+            var resp2 = await cluster.ReplaceIndexMetaAsync(createResp.Name, meta2);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp2);
+            Assert.NotNull(idx);
+            Assert.NotNull(idx.Meta);
+            Assert.NotNull(resp2.Meta);
+            foreach(var k in meta2.Keys)
+            {
+                Assert.True(idx.Meta.ContainsKey(k));
+                Assert.True(resp2.Meta.ContainsKey(k));
+                Assert.Equal(idx.Meta[k].ToString(), meta2[k].ToString());
+                Assert.Equal(resp2.Meta[k].ToString(), meta2[k].ToString());
+            }
+        }
+        [Fact]
+        public async void CanAppendIndexMeta()
+        {
+            const string method = "CanAppendIndexMeta";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            await cluster.HideIndexAsync(createResp.Name);
+            var meta = new Dictionary<string, object>();
+            meta.Add("1", method);
+            meta.Add("2", DateTime.Now);
+            meta.Add("3", 123);
+            var resp = await cluster.SetIndexMetaAsync(createResp.Name, meta);
+            var meta2 = new Dictionary<string, object>();
+            meta2.Add("4", method);
+            meta2.Add("5", DateTime.Now);
+            meta2.Add("6", 123);
+            var resp2 = await cluster.AppendIndexMetaAsync(createResp.Name, meta2);
+
+            var combined = new Dictionary<string, object>();
+            foreach (var m in meta)
+                combined.Add(m.Key, m.Value);
+            foreach (var m in meta2)
+                combined.Add(m.Key, m.Value);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp2);
+            Assert.NotNull(idx);
+            Assert.NotNull(idx.Meta);
+            Assert.NotNull(resp2.Meta);
+            foreach(var k in combined.Keys)
+            {
+                Assert.True(idx.Meta.ContainsKey(k));
+                Assert.True(resp2.Meta.ContainsKey(k));
+                Assert.Equal(idx.Meta[k].ToString(), combined[k].ToString());
+                Assert.Equal(resp2.Meta[k].ToString(), combined[k].ToString());
+            }
         }
 
 
