@@ -3,6 +3,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Dynamic;
 
 //need to:
 //be able to mark deprecated
@@ -84,6 +85,36 @@ namespace seaq
         /// </summary>
         public bool ReturnInGlobalSearch { get; set; }
 
+        /// <summary>
+        /// Display value for an object from this index.  Eg an index with DocumentType seaq.Examples.Model.TestDocument could have a ObjectLabel value of "TestDocument"
+        /// </summary>
+        public string ObjectLabel { get; set; }
+        /// <summary>
+        /// Display value for a collection of objects from this index.  Eg an index with DocumentType seaq.Examples.Model.TestDocument could have a ObjectLabelPlural value of "TestDocuments"
+        /// </summary>
+        public string ObjectLabelPlural { get; set; }
+        /// <summary>
+        /// Primary display value for objects from this index.  Typically a human-readable identifier - not a surrogate key
+        /// </summary>
+        public string PrimaryField { get; set; }
+        /// <summary>
+        /// A display-friendly name for the PrimaryField, which will be camelCased and potentially contain 1:n dots/name pieces
+        /// </summary>
+        public string PrimaryFieldLabel { get; set; }
+        /// <summary>
+        /// Secondary display value for objects from this index.  Typically a human-readable identifier - not a surrogate key
+        /// </summary>
+        public string SecondaryField { get; set; }
+        /// <summary>
+        /// A display-friendly name for the SecondaryField, which will be camelCased and potentially contain 1:n dots/name pieces
+        /// </summary>
+        public string SecondaryFieldLabel { get; set; }
+        /// <summary>
+        /// A collection of other, implementation-driven index details that can't be cleanly mapped onto the provided fields.  These aren't used by seaq directly in any way.  
+        /// Map objects will be converted into form Dictionary<string, object>.
+        /// </summary>
+        public Dictionary<string, object> Meta { get; set; }
+
         private Index(
             string name,
             string documentType,
@@ -140,6 +171,23 @@ namespace seaq
                     new System.Text.Json.JsonSerializerOptions() { 
                         PropertyNameCaseInsensitive = true
                     });
+                if (resp.Meta != null)
+                {
+                    resp.Meta = resp.Meta
+                        .Select(kvp =>
+                        {
+                            if (kvp.Value.GetType() == typeof(System.Text.Json.JsonElement))
+                            {
+                                var v = GetMetaValueAsOriginalType((System.Text.Json.JsonElement)kvp.Value);
+                                return new KeyValuePair<string, object>(kvp.Key, v);
+                            }
+                            else
+                            {
+                                return kvp;
+                            }
+                        })
+                        .ToDictionary(x => x.Key, x => x.Value);
+                }
             }
             else
             {
@@ -167,6 +215,60 @@ namespace seaq
             }
 
             return resp;
+        }
+
+        public static object GetMetaValueAsOriginalType(System.Text.Json.JsonElement el)
+        {
+            return el.ValueKind switch
+            {
+                System.Text.Json.JsonValueKind.String => GetJsonStringAsDotnetType(el),
+                System.Text.Json.JsonValueKind.Number => GetJsonNumberAsDotnetType(el),
+                System.Text.Json.JsonValueKind.Object => GetJsonObjectAsDotnet(el),
+                System.Text.Json.JsonValueKind.Array => GetJsonArrayAsDotnet(el),
+                System.Text.Json.JsonValueKind.False => false,
+                System.Text.Json.JsonValueKind.True => true,
+                _ => el
+            };
+        }
+        public static object GetJsonStringAsDotnetType(
+            System.Text.Json.JsonElement el)
+        {
+            var s = el.ToString();
+            if (DateTime.TryParse(s, out var dt))
+                return dt;
+            else return s;
+        }
+        public static object GetJsonNumberAsDotnetType(
+            System.Text.Json.JsonElement el)
+        {
+            if (el.TryGetInt16(out var sh))
+                return sh;
+            if (el.TryGetInt32(out var i))
+                return i;
+            if (el.TryGetInt64(out var ln))
+                return ln;
+            else if (el.TryGetDouble(out var db))
+                return db;
+            else return el;
+        }
+        public static IEnumerable<object> GetJsonArrayAsDotnet(
+            System.Text.Json.JsonElement el)
+        {
+            return el.EnumerateArray().Select(x => GetMetaValueAsOriginalType(x));
+        }
+        public static object GetJsonObjectAsDotnet(
+            System.Text.Json.JsonElement el)
+        {
+            var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(el);
+            foreach(var k in dict.Keys)
+            {
+                if (dict[k].GetType() == typeof(System.Text.Json.JsonElement))
+                {
+                    var v = (System.Text.Json.JsonElement)dict[k];
+                    dict[k] = GetMetaValueAsOriginalType(v);
+                }
+            }
+            return dict;
         }
     }
 }
