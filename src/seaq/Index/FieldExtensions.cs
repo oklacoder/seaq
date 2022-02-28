@@ -26,11 +26,31 @@ namespace seaq
                     if (!string.IsNullOrWhiteSpace(tgt.Label))
                         src.Label = tgt.Label;
 
-
                     if (tgt.Fields?.Any() == src.Fields?.Any() == true)
                         tgt.Fields.Merge(src.Fields);
                 }
             }
+        }
+        public static void Merge(
+            this Field target,
+            Field source)
+        {
+            if (target is null) return;
+
+            if (source is not null)
+            {
+                if (target.Boost.HasValue)
+                    source.Boost = target.Boost;
+                if (target.IsFilterable.HasValue)
+                    source.IsFilterable = target.IsFilterable;
+                if (target.IncludeInResults.HasValue)
+                    source.IncludeInResults = target.IncludeInResults;
+                if (!string.IsNullOrWhiteSpace(target.Label))
+                    source.Label = target.Label;
+
+                if (target.Fields?.Any() == source.Fields?.Any() == true)
+                    target.Fields.Merge(source.Fields);
+            }            
         }
 
         public static Field FromNestProperty(
