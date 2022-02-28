@@ -59,7 +59,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "returnFields")]
         [JsonPropertyName("returnFields")]
-        public IEnumerable<DefaultReturnField> _returnFields { get; init; }
+        public IEnumerable<DefaultReturnField> _returnFields { get; protected set; }
         public IEnumerable<IReturnField> ReturnFields => _returnFields;
 
         /// <summary>
@@ -88,6 +88,7 @@ namespace seaq
         {
             ApplyClusterIndices(cluster);
             ApplyQueryBoosts(cluster.Indices);
+            ApplyDefaultSourceFilter(cluster);
         }
 
         public void ApplyClusterIndices(Cluster cluster)
@@ -117,7 +118,17 @@ namespace seaq
             DeprecatedIndexTargets = idx.Where(x => x.IsDeprecated).Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
             Indices = idx.Select(x => x.Name).ToArray();
         }
+        public void ApplyDefaultSourceFilter(Cluster cluster)
+        {
+            var indices = cluster.Indices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
 
+            if (_returnFields?.Any() is true)
+                return;
+
+            var flat = indices.SelectMany(x => x.Fields.Where(x => x.IsIncludedField is true || x.HasIncludedField is true));
+
+            _returnFields = flat.Where(x => x.IsIncludedField is true).Select(x => new DefaultReturnField(x.Name));
+        }
         public void ApplyQueryBoosts(IEnumerable<Index> indices)
         {
             List<string> fields = new List<string>() { "*" };
@@ -215,7 +226,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "returnFields")]
         [JsonPropertyName("returnFields")]
-        public IEnumerable<DefaultReturnField> _returnFields { get; init; }
+        public IEnumerable<DefaultReturnField> _returnFields { get; protected set; }
         public IEnumerable<IReturnField> ReturnFields => _returnFields;
 
         /// <summary>
@@ -244,6 +255,7 @@ namespace seaq
         {
             ApplyClusterIndices(cluster);
             ApplyQueryBoosts(cluster.Indices);
+            ApplyDefaultSourceFilter(cluster);
         }
 
         public virtual void ApplyClusterIndices(Cluster cluster)
@@ -274,6 +286,17 @@ namespace seaq
             Indices = idx.Select(x => x.Name).ToArray();
         }
 
+        public void ApplyDefaultSourceFilter(Cluster cluster)
+        {
+            var indices = cluster.Indices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
+
+            if (_returnFields?.Any() is true)
+                return;
+
+            var flat = indices.SelectMany(x => x.Fields.Where(x => x.IsIncludedField is true || x.HasIncludedField is true));
+
+            _returnFields = flat.Where(x => x.IsIncludedField is true).Select(x => new DefaultReturnField(x.Name));
+        }
         public void ApplyQueryBoosts(IEnumerable<Index> indices)
         {
             List<string> fields = new List<string>() { "*" };

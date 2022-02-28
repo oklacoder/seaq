@@ -149,6 +149,9 @@ namespace SEAQ.Tests
             var res = true;
             var props = obj.GetType().GetProperties().Where(x => !Constants.Fields.AlwaysReturnedFields.Contains(x.Name));
 
+            if (!fields.All(x => props.Any(z => z.Name.Equals(x, StringComparison.OrdinalIgnoreCase))))
+                return false;
+
             foreach (var p in props.Where(x =>
                  fields.Any(z =>
                      !z.Equals(x.Name, StringComparison.OrdinalIgnoreCase))))
