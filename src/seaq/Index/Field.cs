@@ -10,8 +10,8 @@ namespace seaq
         public string Type { get; set; }
         public double? Boost { get; set; }
         public string BoostedFieldName => $"{Name}^{Boost}";
-
         public bool? IsFilterable { get; set; }
+        public int? DisplayOrder { get; set; }
 
         public bool? IncludeInResults { get; set; }
 
