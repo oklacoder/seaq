@@ -375,6 +375,33 @@ namespace SEAQ.Tests
             Assert.NotNull(resp);
             Assert.Equal(testLabel, actual);
         }
+        [Fact]
+        public async void CanUpdateIndexField()
+        {
+            const string method = "CanUpdateIndexField";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            var fName = nameof(TestDoc.StringValue);
+            var f = createResp.Fields.FirstOrDefault(x => x.Name.Equals(fName, StringComparison.OrdinalIgnoreCase));
+
+            f.Label = method;
+
+            var resp = await cluster.UpdateIndexFieldAsync(createResp.Name, f);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.NotNull(idx);
+            Assert.Equal(resp.Fields.FirstOrDefault(x => x.Name.Equals(fName, StringComparison.OrdinalIgnoreCase))?.Label, method);
+            Assert.Equal(idx.Fields.FirstOrDefault(x => x.Name.Equals(fName, StringComparison.OrdinalIgnoreCase))?.Label, method);
+        }
 
         //deprecate index
         [Fact]
@@ -425,6 +452,50 @@ namespace SEAQ.Tests
             Assert.Null(idx.DeprecationMessage);
             Assert.False(resp.IsDeprecated);
             Assert.Null(resp.DeprecationMessage);
+        }
+        //force refresh on commit
+        [Fact]
+        public async void CanForceRefreshOnDocumentCommit()
+        {
+            const string method = "CanForceRefreshOnDocumentCommit";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            var resp = await cluster.ForceRefreshOnDocumentCommitAsync(createResp.Name);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.True(idx.ForceRefreshOnDocumentCommit);
+            Assert.True(resp.ForceRefreshOnDocumentCommit);
+        }
+
+        [Fact]
+        public async void DoNotForceRefreshOnDocumentCommit()
+        {
+            const string method = "DoNotForceRefreshOnDocumentCommit";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            var resp = await cluster.DoNotForceRefreshOnDocumentCommitAsync(createResp.Name);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.NotNull(resp);
+            Assert.False(idx.ForceRefreshOnDocumentCommit);
+            Assert.False(resp.ForceRefreshOnDocumentCommit);
         }
         //hide index
         [Fact]

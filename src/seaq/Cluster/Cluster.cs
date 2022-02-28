@@ -656,6 +656,36 @@ namespace seaq
 
             return index;
         }
+        
+        public Index UpdateIndexField(string indexName, Field field)
+        {
+            return UpdateIndexFieldAsync(indexName, field).Result;
+        }
+        public async Task<Index> UpdateIndexFieldAsync(string indexName, Field field)
+        {
+
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to UpdateIndexField for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            var f = index.Fields.ToList();
+            var idx = f.FindIndex(x => x.Name.Equals(field.Name, StringComparison.OrdinalIgnoreCase));
+            if (idx == -1)
+            {
+                Log.Warning("Could not find field {0} on index {1} - UpdateIndexField failed.", field.Name, indexName);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            field.Merge(f[idx]);
+            index.Fields = f;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        
         public Index DeprecateIndex(string indexName, string deprecationMessage)
         {
             return DeprecateIndexAsync(indexName, deprecationMessage).Result;
@@ -728,7 +758,44 @@ namespace seaq
             return await UpdateIndexDefinitionAsync(index);
         }
 
+        public Index ForceRefreshOnDocumentCommit(
+            string indexName)
+        {
+            return ForceRefreshOnDocumentCommitAsync(indexName).Result;
+        }
+        public async Task<Index> ForceRefreshOnDocumentCommitAsync(
+            string indexName)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to ForceRefreshOnDocumentCommitAsync for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
 
+            index.ForceRefreshOnDocumentCommit = true;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
+        public Index DoNotForceRefreshOnDocumentCommit(
+            string indexName)
+        {
+            return DoNotForceRefreshOnDocumentCommitAsync(indexName).Result;
+        }
+        public async Task<Index> DoNotForceRefreshOnDocumentCommitAsync(
+            string indexName)
+        {
+            if (!_indices.TryGetValue(indexName, out var index))
+            {
+                Log.Warning("Attempt to DoNotForceRefreshOnDocumentCommitAsync for index {0} failed - could not find it on cluster {1}", indexName, ClusterScope);
+                await Task.CompletedTask;
+                return null;
+            }
+
+            index.ForceRefreshOnDocumentCommit = false;
+
+            return await UpdateIndexDefinitionAsync(index);
+        }
         public Index IncludeIndexInGlobalSearch(string indexName)
         {
             return IncludeIndexInGlobalSearchAsync(indexName).Result;
