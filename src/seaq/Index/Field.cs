@@ -34,13 +34,14 @@ namespace seaq
 
         public bool? IsSortField => Name?.EndsWith(Constants.Fields.SortField, StringComparison.OrdinalIgnoreCase);
 
-        public bool? HasBoostedField => Fields?.Any(x => x.IsBoostedField == true) == true;
+        public bool? HasBoostedField => Fields?.Any(x => x.IsBoostedField == true || x.HasBoostedField == true) == true;
 
-        public bool? HasIncludedField => Fields?.Any(x => x.IsIncludedField == true) == true;
+        public bool? HasIncludedField => Fields?.Any(x => x.IsIncludedField == true || x.HasIncludedField == true) == true;
 
-        public bool? HasKeywordField => Fields?.Any(x => x.IsKeywordField == true) == true;
+        public bool? HasKeywordField => Fields?.Any(x => x.IsKeywordField == true || x.HasKeywordField == true) == true;
 
-        public bool? HasSortField => Fields?.Any(x => x.IsSortField == true) == true;
+        public bool? HasSortField => Fields?.Any(x => x.IsSortField == true || x.HasSortField == true) == true;
+        public bool? HasFilterField => Fields?.Any(x => x.IsFilterable == true || x.HasFilterField == true) == true;
 
         public IEnumerable<string> AllBoostedFields => new[] { this }.Concat(Fields)?.Where(x => x.IsBoostedField == true)?.Select(x => x.BoostedFieldName) ?? Array.Empty<string>();
 
