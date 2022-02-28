@@ -1,4 +1,5 @@
 ﻿using Elasticsearch.Net;
+using Serilog;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -52,11 +53,19 @@ namespace seaq
 
             var typ = typeof(T);
 
-            if (typ == typeof(BaseDocument))
+            var t = typeof(BaseDocument);
+            if (typ == t)
             {
-                var obj = await JsonSerializer.DeserializeAsync<BaseDocument>(stream, Options);
+                var src = await JsonSerializer.DeserializeAsync(stream, t, Options);
+                var obj = (BaseDocument)src;
                 if (obj.Type is not null)
                     type = TryGetCollectionType(obj?.Type);
+                if (type == typeof(BaseDocument))
+                {
+                    Log.Warning("Unable to match {0}-{1} to a loaded assembly type.  It will be returned as a {2}, likely missing some data that exists on the server.",
+                        obj.Type, obj.Id, typeof(BaseDocument).FullName);
+                    return (T)src;
+                }
             }
             else
             {

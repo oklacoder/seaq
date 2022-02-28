@@ -152,7 +152,55 @@ namespace SEAQ.Tests
 
             Assert.Equal(actualFirst.OrderId, intendedFirst.OrderId);
         }
+        [Fact]
+        public void ReturnsOnlySpecifiedFields()
+        {
+            const string fieldToUse = "customer_full_name";//nameof(SampleResult.CustomerFullName);// 
 
+            var criteria = new SimpleQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                returnFields: new[] { new DefaultReturnField(fieldToUse) }
+                );
+            var query = new SimpleQuery<SampleResult>(
+                criteria);
+
+            var results = query.Execute(_client);
+
+            var hasValues = DoOnlyTheseFieldsHaveValues(
+                results.Results.FirstOrDefault()?.Document,
+                nameof(SampleResult.CustomerFullName));
+
+            Assert.True(hasValues);
+        }
+        [Fact]
+        public async void ReturnsOnlySpecifiedFields_Untyped()
+        {
+            const string method = "ReturnsOnlySpecifiedFields_Untyped";
+            const string fieldToUse = "customer_full_name";//nameof(SampleResult.CustomerFullName);// 
+
+            var criteria = new SimpleQueryCriteria(
+                typeof(SampleResult).FullName,
+                null,
+                SampleIndices,
+                returnFields: new[] { new DefaultReturnField(fieldToUse) });
+            var query = new SimpleQuery(
+                criteria);
+
+            var r1 = query.Execute(_client);
+            //var cluster = await Cluster.CreateAsync(GetArgs(method));
+            //var r2 = cluster.Query<ISeaqQueryResults>(query);
+
+            var hasValues1 = DoOnlyTheseFieldsHaveValues(
+                r1.Results.FirstOrDefault()?.Document,
+                nameof(SampleResult.CustomerFullName));
+            //var hasValues2 = DoOnlyTheseFieldsHaveValues(
+            //    r2.Results.FirstOrDefault()?.Document,
+            //    nameof(SampleResult.CustomerFullName));
+
+            Assert.True(hasValues1);
+            //Assert.True(hasValues2);
+        }
         //works correctly
         ///includes message for deprecated
         [Fact]
@@ -236,6 +284,60 @@ namespace SEAQ.Tests
             await cluster.CommitAsync<SampleResult>(docs);
 
             await cluster.HideIndexAsync(idx.Name);
+
+            var criteria2 = new SimpleQueryCriteria(
+                typeof(SampleResult).FullName,
+                null,
+                take: 100);
+            var query2 = new SimpleQuery(
+                criteria2);
+            var results = await cluster.QueryAsync<SimpleQueryResults>(query2);
+
+
+            foreach (var i in cluster.Indices)
+            {
+                await cluster.DeleteIndexAsync(i.Name);
+            }
+
+            Assert.NotNull(results);
+            Assert.All(results.Results, x => x.Index.Equals(idx2.Name));
+        }
+        [Fact]
+        public async void ExcludesHiddenIndicesWithGlobalSearchEnabled()
+        {
+            const string method = "ExcludesHiddenIndices";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var idxArgs = new IndexConfig(
+                typeof(SampleResult).FullName,
+                typeof(SampleResult).FullName);
+            var idx = await cluster.CreateIndexAsync(idxArgs);
+            var idxArgs2 = new IndexConfig(
+                typeof(SampleResult).FullName + "2",
+                typeof(SampleResult).FullName);
+            var idx2 = await cluster.CreateIndexAsync(idxArgs2);
+
+            var criteria = new SimpleQueryCriteria(
+                typeof(SampleResult).FullName,
+                null,
+                SampleIndices);
+            var query = new SimpleQuery(
+                criteria);
+
+            var docs = query.Execute(_client)?.Results.Select(x => x.Document as SampleResult);
+            foreach (var doc in docs)
+            {
+                doc.IndexName = idx.Name;
+            }
+            await cluster.CommitAsync<SampleResult>(docs);
+            foreach (var doc in docs)
+            {
+                doc.IndexName = idx2.Name;
+            }
+            await cluster.CommitAsync<SampleResult>(docs);
+
+            await cluster.HideIndexAsync(idx.Name);
+            await cluster.IncludeIndexInGlobalSearchAsync(idx.Name);
 
             var criteria2 = new SimpleQueryCriteria(
                 typeof(SampleResult).FullName,
