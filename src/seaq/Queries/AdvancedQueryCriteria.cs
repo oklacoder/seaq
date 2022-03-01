@@ -183,11 +183,7 @@ namespace seaq
                 .Skip(Skip ?? 0)
                 .Take(Take ?? 10)
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<BaseDocument>())
-                .Query(q => q.Bool(x =>                
-                    x
-                    .Should(s => s.QueryString(qs => qs.Query(Text ?? "").Fields("*")))
-                    .Filter(FilterFields.GetQueryDesctiptor<BaseDocument>())
-                ))
+                .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields))
                 .Source(t => ReturnFields.GetSourceFilterDescriptor<BaseDocument>())
                 .Sort(s => SortFields.GetSortDescriptor<BaseDocument>());
 
@@ -364,11 +360,7 @@ namespace seaq
                 .Skip(Skip ?? 0)
                 .Take(Take ?? 10)
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<T>())
-                .Query(q => q.Bool(x =>
-                    x
-                    .Should(s => s.QueryString(qs => qs.Query(Text ?? "").Fields("*")))
-                    .Filter(FilterFields.GetQueryDesctiptor<BaseDocument>())
-                ))
+                .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields))
                 .Source(t => ReturnFields.GetSourceFilterDescriptor<T>())                
                 .Sort(s => SortFields.GetSortDescriptor<T>());
 

@@ -185,7 +185,7 @@ namespace seaq
                 .Source(t => ReturnFields.GetSourceFilterDescriptor<BaseDocument>())
                 .Sort(x => SortFields.GetSortDescriptor<BaseDocument>())
                 .Fields(f => f.Fields(BoostedFields.ToArray()))
-                .Query(x => x.QueryString(q => q.Query($"{Text}*").DefaultField("*")));
+                .Query(x => x.GetQueryContainerDescriptor(Text));
 
             return res;
         }
@@ -355,7 +355,7 @@ namespace seaq
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<T>())
                 .Source(t => ReturnFields.GetSourceFilterDescriptor<T>())
                 .Sort(x => SortFields.GetSortDescriptor<T>())
-                .Query(x => x.QueryString(q => q.Query($"{Text}*").DefaultField("*")));
+                .Query(x => x.GetQueryContainerDescriptor(Text));
 
             return res;
         }

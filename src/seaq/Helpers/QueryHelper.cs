@@ -141,5 +141,24 @@ namespace seaq
 
             return res;
         }
+        public static QueryContainerDescriptor<T> GetQueryContainerDescriptor<T>(
+            this QueryContainerDescriptor<T> desc,
+            string query,
+            IEnumerable<IFilterField> fields = null)
+            where T : BaseDocument
+        {
+
+            if (fields?.Any() is true)
+            {
+                desc.Bool(b => b
+                    .Should(s => s.QueryString(q => q.Query($"{query}*").DefaultField("*")))
+                    .Filter(fields?.GetQueryDesctiptor<T>()));
+            }
+            else
+            {
+                desc.QueryString(q => q.Query($"{query}*").DefaultField("*"));
+            }
+            return desc;
+        }
     }
 }
