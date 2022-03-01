@@ -12,7 +12,7 @@ namespace seaq
 
         public static QueryContainer GetQueryContainer(IFilterField filter)
         {
-            return comparatorQueries[filter.Comparator.Value]?.Invoke(filter.Comparator, filter);
+            return comparatorQueries[filter?.Comparator?.Value ?? DefaultComparator.Equal.Value]?.Invoke(filter.Comparator, filter);
         }
         public static bool CacheComparator(IComparator comparator, Func<IComparator, IFilterField, QueryContainer> function)
         {
@@ -44,6 +44,7 @@ namespace seaq
                 NotAnyWordComparator naw => GetQuery(naw, filter),
                 NotEqualComparator neq => GetQuery(neq, filter),
                 PartialPhraseComparator part => GetQuery(part, filter),
+                null => GetQuery(DefaultComparator.Equal, filter),
 
                 _ => throw new TypeAccessException($"Type {c.GetType().FullName} not recognized as a valid comparator.")
             };
