@@ -367,6 +367,49 @@ namespace SEAQ.Tests
             Assert.True(all);
         }
         [Fact]
+        public void SubstitutesEqualComparatorWhenNoneSpecified()
+        {
+            const string valToMatch = "Eddie";
+            var filter = new DefaultFilterField(null, valToMatch, "customer_first_name");
+
+            var criteria = new AdvancedQueryCriteria<SampleResult>(
+                SampleIndices,
+                null,
+                null,
+                new[] { filter });
+            var query = new AdvancedQuery<SampleResult>(
+                criteria);
+
+            var results = query.Execute(_client);
+
+            var all = results.Results.All(x => x?.Document?.CustomerFirstName == valToMatch);
+
+            Assert.NotEmpty(results.Results);
+            Assert.True(all);
+        }
+        [Fact]
+        public void SubstitutesEqualComparatorWhenNoneSpecified_Untyped()
+        {
+            const string valToMatch = "Eddie";
+            var filter = new DefaultFilterField(null, valToMatch, "customer_first_name");
+
+            var criteria = new AdvancedQueryCriteria(
+                typeof(SampleResult).FullName,
+                SampleIndices,
+                null,
+                null,
+                new[] { filter });
+            var query = new AdvancedQuery(
+                criteria);
+
+            var results = query.Execute(_client);
+
+            var all = results.Results.Select(x => x?.Document as SampleResult).All(x => x?.CustomerFirstName == valToMatch);
+
+            Assert.NotEmpty(results.Results);
+            Assert.True(all);
+        }
+        [Fact]
         public void ReturnsOnlyMatchingRecordsWhenFilterSpecified_Equal()
         {
             const string valToMatch = "Eddie";
