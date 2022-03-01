@@ -151,7 +151,7 @@ namespace seaq
             if (fields?.Any() is true)
             {
                 desc.Bool(b => b
-                    .Should(s => s.QueryString(q => q.Query($"{query}*").DefaultField("*")))
+                    .Must(s => s.QueryString(q => q.Query($"{query}*").DefaultField("*")))
                     .Filter(fields?.GetQueryDesctiptor<T>()));
             }
             else
