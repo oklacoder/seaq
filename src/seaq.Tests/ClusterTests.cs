@@ -24,8 +24,8 @@ namespace SEAQ.Tests
         {
             const string method = "CanPingCluster";
             //GetArgs(method)
-            var cluster = Cluster.Create(GetArgs(method));
-            var clusterAsync = Cluster.CreateAsync(GetArgs(method));
+            var cluster = Cluster.Create(GetArgs(method, scopeOverride: "ascent_"));
+            var clusterAsync = await Cluster.CreateAsync(GetArgs(method, scopeOverride: "ascent_"));
 
             var sync_sync = cluster.CanPing();
             var sync_async = await cluster.CanPingAsync();

@@ -59,9 +59,9 @@ namespace SEAQ.Tests
 
         protected string Scope => Guid.NewGuid().ToString("N");
 
-        protected ClusterArgs GetArgs(string method, bool allowAutomaticIndexCreation = true)
+        protected ClusterArgs GetArgs(string method, bool allowAutomaticIndexCreation = true, string scopeOverride = null)
         {
-            var scope = $"{Scope}_{method}".ToLower();
+            var scope = scopeOverride ?? $"{Scope}_{method}".ToLower();
             return new ClusterArgs(scope, Url, Username, Password, true, null, allowAutomaticIndexCreation);
         }
 

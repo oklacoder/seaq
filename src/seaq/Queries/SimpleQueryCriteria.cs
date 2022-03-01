@@ -125,7 +125,7 @@ namespace seaq
             if (_returnFields?.Any() is true)
                 return;
 
-            var flat = indices.SelectMany(x => x.Fields.Where(x => x.IsIncludedField is true || x.HasIncludedField is true));
+            var flat = indices.SelectMany(x => x.Fields.Where(x => x.IsIncludedField is true || x.HasIncludedField is true)).SelectMany(x => x.Fields);
 
             _returnFields = flat.Where(x => x.IsIncludedField is true).Select(x => new DefaultReturnField(x.Name));
         }
@@ -299,7 +299,7 @@ namespace seaq
             if (_returnFields?.Any() is true)
                 return;
 
-            var flat = indices.SelectMany(x => x.Fields.Where(x => x.IsIncludedField is true || x.HasIncludedField is true));
+            var flat = indices.SelectMany(x => x.Fields.Where(x => x.IsIncludedField is true || x.HasIncludedField is true)).SelectMany(x => x.Fields);
 
             _returnFields = flat.Where(x => x.IsIncludedField is true).Select(x => new DefaultReturnField(x.Name));
         }
