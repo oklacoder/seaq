@@ -37,6 +37,16 @@ namespace seaq
                 public const int ReplicaShardsDefault = 2;
                 public const bool ForceRefreshOnDocumentCommitDefault = true;
                 public const bool EagerlyPersistSchema = true;
+                public const bool IsDeprecated = false;
+                public const string DeprecationMessage = null;
+                public const bool IsHidden = false;
+                public const bool ReturnInGlobalSearch = false;
+                public const string ObjectLabel = null;
+                public const string ObjectLabelPlural = null;
+                public const string PrimaryField = null;
+                public const string PrimaryFieldLabel = null;
+                public const string SecondaryField = null;
+                public const string SecondaryFieldLabel = null;
             }
         }
         public class Documents

@@ -123,7 +123,17 @@ namespace seaq
             int? primaryShards = null,
             int? replicaShards = null,
             bool? forceRefreshOnDocumentCommit = null,
-            bool? eagerlyPersistSchema = null)
+            bool? eagerlyPersistSchema = null,
+            bool? isDeprecated = null,
+            string deprecationMessage = null,
+            bool? isHidden = null,
+            bool? returnInGlobalSearch = null,
+            string objectLabel = null,
+            string objectLabelPlural = null,
+            string primaryField = null,
+            string primaryFieldLabel = null,
+            string secondaryField = null,
+            string secondaryFieldLabel = null)
         {
             Name = name;
             DocumentType = documentType;
@@ -133,6 +143,17 @@ namespace seaq
             ReplicaShards = replicaShards ?? Constants.Indices.Defaults.ReplicaShardsDefault;
             ForceRefreshOnDocumentCommit = forceRefreshOnDocumentCommit ?? Constants.Indices.Defaults.ForceRefreshOnDocumentCommitDefault;
             EagerlyPersistSchema = eagerlyPersistSchema ?? Constants.Indices.Defaults.EagerlyPersistSchema;
+
+            IsDeprecated = isDeprecated ?? Constants.Indices.Defaults.IsDeprecated;
+            DeprecationMessage = deprecationMessage ?? Constants.Indices.Defaults.DeprecationMessage;
+            IsHidden = isHidden ?? Constants.Indices.Defaults.IsHidden;
+            ReturnInGlobalSearch = returnInGlobalSearch ?? Constants.Indices.Defaults.ReturnInGlobalSearch;
+            ObjectLabel = objectLabel ?? Constants.Indices.Defaults.ObjectLabel;
+            ObjectLabelPlural = objectLabelPlural ?? Constants.Indices.Defaults.ObjectLabelPlural;
+            PrimaryField = primaryField ?? Constants.Indices.Defaults.PrimaryField;
+            PrimaryFieldLabel = primaryFieldLabel ?? Constants.Indices.Defaults.PrimaryFieldLabel;
+            SecondaryField = secondaryField ?? Constants.Indices.Defaults.SecondaryField;
+            SecondaryFieldLabel = secondaryFieldLabel ?? Constants.Indices.Defaults.SecondaryFieldLabel;
         }
 
         public Index()
@@ -150,6 +171,17 @@ namespace seaq
             ReplicaShards = config.ReplicaShards;
             ForceRefreshOnDocumentCommit = config.ForceRefreshOnDocumentCommit;
             EagerlyPersistSchema = config.EagerlyPersistSchema;
+
+            IsDeprecated = config.IsDeprecated ?? Constants.Indices.Defaults.IsDeprecated;
+            DeprecationMessage = config.DeprecationMessage ?? Constants.Indices.Defaults.DeprecationMessage;
+            IsHidden = config.IsHidden ?? Constants.Indices.Defaults.IsHidden;
+            ReturnInGlobalSearch = config.ReturnInGlobalSearch ?? Constants.Indices.Defaults.ReturnInGlobalSearch;
+            ObjectLabel = config.ObjectLabel ?? Constants.Indices.Defaults.ObjectLabel;
+            ObjectLabelPlural = config.ObjectLabelPlural ?? Constants.Indices.Defaults.ObjectLabelPlural;
+            PrimaryField = config.PrimaryField ?? Constants.Indices.Defaults.PrimaryField;
+            PrimaryFieldLabel = config.PrimaryFieldLabel ?? Constants.Indices.Defaults.PrimaryFieldLabel;
+            SecondaryField = config.SecondaryField ?? Constants.Indices.Defaults.SecondaryField;
+            SecondaryFieldLabel = config.SecondaryFieldLabel ?? Constants.Indices.Defaults.SecondaryFieldLabel;
         }
 
         public static Index Create(
