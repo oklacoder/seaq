@@ -18,6 +18,13 @@ namespace seaq
         public string Type { get; init; }
 
         /// <summary>
+        /// Query text
+        /// </summary>
+        [DataMember(Name = "text")]
+        [JsonPropertyName("text")]
+        public string Text { get; init; }
+
+        /// <summary>
         /// Specify which indices to query.  If empty or null, query will default to the default index for the provided type.
         /// </summary>
         [DataMember(Name = "indices")]
@@ -176,7 +183,7 @@ namespace seaq
                 .Skip(Skip ?? 0)
                 .Take(Take ?? 10)
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<BaseDocument>())
-                .Query(q => FilterFields.GetQueryDesctiptor<BaseDocument>())
+                .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields))
                 .Source(t => ReturnFields.GetSourceFilterDescriptor<BaseDocument>())
                 .Sort(s => SortFields.GetSortDescriptor<BaseDocument>());
 
@@ -188,6 +195,13 @@ namespace seaq
         ISeaqQueryCriteria<T>
     where T : BaseDocument
     {
+        /// <summary>
+        /// Query text
+        /// </summary>
+        [DataMember(Name = "text")]
+        [JsonPropertyName("text")]
+        public string Text { get; init; }
+
         /// <summary>
         /// Specify which indices to query.  If empty or null, query will default to the default index for the provided type.
         /// </summary>
@@ -346,7 +360,7 @@ namespace seaq
                 .Skip(Skip ?? 0)
                 .Take(Take ?? 10)
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<T>())
-                .Query(q => FilterFields.GetQueryDesctiptor<T>())
+                .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields))
                 .Source(t => ReturnFields.GetSourceFilterDescriptor<T>())                
                 .Sort(s => SortFields.GetSortDescriptor<T>());
 
