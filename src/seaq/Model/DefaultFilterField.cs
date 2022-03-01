@@ -3,11 +3,11 @@
     public class DefaultFilterField :
        IFilterField
     {
-        public string FieldName { get; }
+        public string FieldName { get; set; }
 
-        public string Value { get; }
+        public string Value { get; set; }
 
-        public IComparator Comparator { get; }
+        public IComparator Comparator { get; set; }
 
         public DefaultFilterField()
         {
