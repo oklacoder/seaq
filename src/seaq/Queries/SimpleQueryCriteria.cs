@@ -117,6 +117,11 @@ namespace seaq
                 idx = idx.Where(x => x.IsHidden is not true);
             }
             Indices = idx.Select(x => x.Name).ToArray();
+            if (Indices?.Any() is not true)
+            {
+                throw new InvalidOperationException($"No indices could be identified for type {Type}.  Query could not be processed.  " +
+                    $"Ensure that either an index exists on your seaq cluster fo this type, or that you have specified an explicit type in your query definition.");
+            }
         }
         public void ApplyDefaultSourceFilter(Cluster cluster)
         {
@@ -294,6 +299,11 @@ namespace seaq
             }
             DeprecatedIndexTargets = idx.Where(x => x.IsDeprecated).Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
             Indices = idx.Select(x => x.Name).ToArray();
+            if (Indices?.Any() is not true)
+            {
+                throw new InvalidOperationException($"No indices could be identified for type {typeof(T).FullName}.  Query could not be processed.  " +
+                    $"Ensure that either an index exists on your seaq cluster fo this type, or that you have specified an explicit type in your query definition.");
+            }
         }
 
         public void ApplyDefaultSourceFilter(Cluster cluster)

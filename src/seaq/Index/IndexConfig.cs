@@ -6,6 +6,7 @@ namespace seaq
     {
         public string Name { get; set; }
         public string DocumentType { get; set; }
+        public string? IndexAsType { get; }
         public IEnumerable<string> Aliases { get; set; }
         public int PrimaryShards { get; set; }
         public int ReplicaShards { get; set; }
@@ -21,7 +22,6 @@ namespace seaq
         public string? PrimaryFieldLabel { get; set; }
         public string? SecondaryField { get; set; }
         public string? SecondaryFieldLabel { get; set; }
-
 
         public IndexConfig(
             string name,
@@ -40,7 +40,8 @@ namespace seaq
             string primaryField = null,
             string primaryFieldLabel = null,
             string secondaryField = null,
-            string secondaryFieldLabel = null)
+            string secondaryFieldLabel = null,
+            string indexAsType = null)
         {
 
             Name = name;
@@ -60,6 +61,7 @@ namespace seaq
             PrimaryFieldLabel = primaryFieldLabel;
             SecondaryField = secondaryField;
             SecondaryFieldLabel = secondaryFieldLabel;
+            IndexAsType = indexAsType;
         }
 
         public IndexConfig(

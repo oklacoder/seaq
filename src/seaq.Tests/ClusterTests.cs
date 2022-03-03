@@ -104,13 +104,36 @@ namespace SEAQ.Tests
             var config = new IndexConfig(type, type);
             await cluster.CreateIndexAsync(config);
 
-            var doc = GetFakeDocs(1).FirstOrDefault();
+            var doc = GetFakeDocs<TestDoc>(1).FirstOrDefault();
 
             var resp = await cluster.CommitAsync(doc);
 
             await cluster.DeleteIndexAsync(config.Name);
 
             Assert.True(resp);
+        }
+        [Fact]
+        public async void CanIndexOneDocumentAsOtherType()
+        {
+            const string method = "CanIndexOneDocument";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc1).FullName;
+
+            var config = new IndexConfig(type, type, indexAsType: typeof(TestDoc).FullName);
+            await cluster.CreateIndexAsync(config);
+
+            var doc = GetFakeDocs<TestDoc1>(1).FirstOrDefault();
+
+            var resp = await cluster.CommitAsync(doc);
+
+            var exists = cluster.Query<TestDoc>(new SimpleQuery<TestDoc>(new SimpleQueryCriteria<TestDoc>("")));
+
+            await cluster.DeleteIndexAsync(config.Name);
+
+            Assert.True(resp);
+            Assert.NotNull(exists);
+            Assert.NotEmpty(exists.Results);
         }
         [Fact]
         public async void CanIndexOneDocument_Untyped()
@@ -123,7 +146,7 @@ namespace SEAQ.Tests
             var config = new IndexConfig(type, type);
             await cluster.CreateIndexAsync(config);
 
-            var doc = GetFakeDocs(1).FirstOrDefault();
+            var doc = GetFakeDocs<TestDoc>(1).FirstOrDefault();
 
             var resp = await cluster.CommitAsync(doc as object);
 
@@ -160,7 +183,7 @@ namespace SEAQ.Tests
 
             var config = new IndexConfig(type, type);
 
-            var doc = GetFakeDocs(1).FirstOrDefault();
+            var doc = GetFakeDocs<TestDoc>(1).FirstOrDefault();
 
             var resp = await cluster.CommitAsync(doc);
 
@@ -178,7 +201,7 @@ namespace SEAQ.Tests
 
             var config = new IndexConfig(type, type);
 
-            var doc = GetFakeDocs(1).FirstOrDefault();
+            var doc = GetFakeDocs<TestDoc>(1).FirstOrDefault();
 
             var resp = await cluster.CommitAsync(doc);
 
@@ -196,7 +219,7 @@ namespace SEAQ.Tests
             var config = new IndexConfig(type, type);
             await cluster.CreateIndexAsync(config);
 
-            var docs = GetFakeDocs(100);
+            var docs = GetFakeDocs<TestDoc>(100);
 
             var resp = await cluster.CommitAsync(docs);
 
@@ -215,7 +238,7 @@ namespace SEAQ.Tests
             var config = new IndexConfig(type, type);
             await cluster.CreateIndexAsync(config);
 
-            var docs = GetFakeDocs(100);
+            var docs = GetFakeDocs<TestDoc>(100);
 
             var resp = await cluster.CommitAsync(docs.Select(x => x as object));
 
@@ -254,7 +277,7 @@ namespace SEAQ.Tests
             var config = new IndexConfig(type, type);
             await cluster.CreateIndexAsync(config);
 
-            var docs = GetFakeDocs(10000);
+            var docs = GetFakeDocs<TestDoc>(10000);
 
             var resp = await cluster.CommitAsync(docs);
 
@@ -302,7 +325,7 @@ namespace SEAQ.Tests
             await cluster.CreateIndexAsync(config);
             var name2 = $"{config.Name}_2";
 
-            var docs = GetFakeDocs(1000);
+            var docs = GetFakeDocs<TestDoc>(1000);
 
             foreach (var d in docs)
             {
@@ -880,7 +903,7 @@ namespace SEAQ.Tests
             var config = new IndexConfig(type, type);
             await cluster.CreateIndexAsync(config);
 
-            var docs = GetFakeDocs(100).ToList();
+            var docs = GetFakeDocs<TestDoc>(100).ToList();
 
             await cluster.CommitAsync(docs);
 
@@ -904,7 +927,7 @@ namespace SEAQ.Tests
             var config = new IndexConfig(type, type);
             await cluster.CreateIndexAsync(config);
 
-            var docs = GetFakeDocs(100).ToList();
+            var docs = GetFakeDocs<TestDoc>(100).ToList();
 
             await cluster.CommitAsync(docs);
 
@@ -928,7 +951,7 @@ namespace SEAQ.Tests
             var config = new IndexConfig(type, type);
             await cluster.CreateIndexAsync(config);
 
-            var docs = GetFakeDocs(100).ToList();
+            var docs = GetFakeDocs<TestDoc>(100).ToList();
 
             await cluster.CommitAsync(docs);
 
@@ -951,7 +974,7 @@ namespace SEAQ.Tests
             var config = new IndexConfig(type, type);
             await cluster.CreateIndexAsync(config);
 
-            var docs = GetFakeDocs(100).ToList();
+            var docs = GetFakeDocs<TestDoc>(100).ToList();
 
             await cluster.CommitAsync(docs);
 

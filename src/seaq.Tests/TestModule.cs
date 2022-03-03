@@ -65,7 +65,8 @@ namespace SEAQ.Tests
             return new ClusterArgs(scope, Url, Username, Password, true, null, allowAutomaticIndexCreation);
         }
 
-        public IEnumerable<TestDoc> GetFakeDocs(int count = 100)
+        public IEnumerable<T> GetFakeDocs<T>(int count = 100)
+            where T : TestDoc
         {
             var childFaker = new Faker<TestChild>()
                 .RuleFor(x => x.ChildId, f => f.Random.Guid())
@@ -74,7 +75,7 @@ namespace SEAQ.Tests
                 .RuleFor(x => x.DoubleValue, f => f.Random.Double())
                 .RuleFor(x => x.DecimalValue, f => f.Random.Decimal())
                 .RuleFor(x => x.DateValue, f => f.Date.Recent());
-            var faker = new Faker<TestDoc>()
+            var faker = new Faker<T>()
                 .RuleFor(x => x.DocId, f => f.Random.Guid())
                 .RuleFor(x => x.StringValue, f => f.Random.Utf16String())
                 .RuleFor(x => x.IntValue, f => f.Random.Int())
