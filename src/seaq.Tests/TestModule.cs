@@ -181,7 +181,11 @@ namespace SEAQ.Tests
         protected static void DecomissionCluster(Cluster cluster)
         {
             foreach (var idx in cluster.Indices)
-                cluster.DeleteIndex(idx.Name);
+                try
+                {
+                    cluster.DeleteIndex(idx.Name);
+                }
+                catch { }
         }
     }
 }

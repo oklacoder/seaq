@@ -67,6 +67,7 @@ namespace seaq
         public DateTime? CacheRefreshedUtc { get; private set; } = null;
 
         public bool AllowAutomaticIndexCreation { get; private set; }
+        public string InternalStoreIndex => $"{ClusterScope}_{IndexNameUtilities.FormatIndexName(typeof(Index))}";
 
         private Dictionary<string, Index> _indices;
         private Dictionary<string, Type> _searchableTypes;
@@ -123,12 +124,16 @@ namespace seaq
         {
             IndexCacheInitializing?.Invoke(this, null);
 
+            _indices = new Dictionary<string, Index>();
+
             var query = new GetIndexRequest(Nest.Indices.Index($"{ClusterScope}*"));
             var resp = await _client.Indices
                 .GetAsync(query);
 
-            var vals = resp.Indices.Select(Index.Create);
-            _indices = vals.ToDictionary(x => x.Name, x => x);
+            var vals = resp.Indices.Select(Index.Create); 
+            
+            foreach (var v in vals)
+                _indices[v.Name] = v;
 
             if (!IndicesByType.Contains(typeof(seaq.Index).FullName))
             {
@@ -137,6 +142,7 @@ namespace seaq
                 await CreateIndexAsync(indexConfig);
                 await HydrateInternalStore();
             }
+            await RefreshFromInternalStore();
 
             IndexCacheInitialized?.Invoke(this, null);
         }
@@ -151,7 +157,10 @@ namespace seaq
                 .GetAsync(query);
 
             var vals = resp.Indices.Select(Index.Create);
-            _indices = vals.ToDictionary(x => x.Name, x => x);
+            foreach (var v in vals)
+                _indices[v.Name] = v;
+            
+            await RefreshFromInternalStore();
 
             await HydrateInternalStore();
 
@@ -1566,6 +1575,20 @@ namespace seaq
         private async Task DeleteFromInternalStore(Index idx)
         {
             await DeleteAsync(idx);
+        }
+        private async Task RefreshFromInternalStore()
+        {
+            var resp = await _client.SearchAsync<Index>(x => x.Index(InternalStoreIndex).MatchAll());
+            if (resp.IsValid)
+            {
+                if (_indices?.Any() is not true)
+                    _indices = new Dictionary<string, Index>();
+                resp.Documents.ToList().ForEach(x =>
+                {
+                    if (!_indices.ContainsKey(x.Name))
+                        _indices[x.Name] = x;
+                });
+            }
         }
 
     }
