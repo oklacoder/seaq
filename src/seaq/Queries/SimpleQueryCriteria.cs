@@ -116,7 +116,24 @@ namespace seaq
                 DeprecatedIndexTargets = idx.Where(x => x.IsDeprecated).Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
                 idx = idx.Where(x => x.IsHidden is not true);
             }
-            Indices = idx.Select(x => x.Name).ToArray();
+            Indices = idx
+                .Select(x =>
+                {
+                    //it really feels like this needs more than this, but i can't put my finger on what
+                    if (string.IsNullOrWhiteSpace(x.IndexAsType))
+                        return x.Name;
+
+                    var byType = cluster.IndicesByType[x.IndexAsType];
+                    if (byType?.Any() is not true)
+                        throw new InvalidOperationException($"Index {x.Name} expects to query index of type {x.IndexAsType}, but no index exists on the cluster matching to that type.");
+                    return byType?.FirstOrDefault()?.Name;
+                })
+                .ToArray();
+            if (Indices?.Any() is not true)
+            {
+                throw new InvalidOperationException($"No indices could be identified for type {Type}.  Query could not be processed.  " +
+                    $"Ensure that either an index exists on your seaq cluster fo this type, or that you have specified an explicit type in your query definition.");
+            }
         }
         public void ApplyDefaultSourceFilter(Cluster cluster)
         {
@@ -150,7 +167,7 @@ namespace seaq
         }
         public SimpleQueryCriteria(
             string type,
-            string text,
+            string text = null,
             string[] indices = null,
             int? skip = null,
             int? take = null,
@@ -293,7 +310,24 @@ namespace seaq
                 idx = idx.Where(x => x.IsHidden is not true);
             }
             DeprecatedIndexTargets = idx.Where(x => x.IsDeprecated).Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
-            Indices = idx.Select(x => x.Name).ToArray();
+            Indices = idx
+                .Select(x =>
+                {
+                    //it really feels like this needs more than this, but i can't put my finger on what
+                    if (string.IsNullOrWhiteSpace(x.IndexAsType))
+                        return x.Name;
+
+                    var byType = cluster.IndicesByType[x.IndexAsType];
+                    if (byType?.Any() is not true)
+                        throw new InvalidOperationException($"Index {x.Name} expects to query index of type {x.IndexAsType}, but no index exists on the cluster matching to that type.");
+                    return byType?.FirstOrDefault()?.Name;
+                })
+                .ToArray();
+            if (Indices?.Any() is not true)
+            {
+                throw new InvalidOperationException($"No indices could be identified for type {typeof(T).FullName}.  Query could not be processed.  " +
+                    $"Ensure that either an index exists on your seaq cluster fo this type, or that you have specified an explicit type in your query definition.");
+            }
         }
 
         public void ApplyDefaultSourceFilter(Cluster cluster)

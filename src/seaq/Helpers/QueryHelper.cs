@@ -151,12 +151,12 @@ namespace seaq
             if (fields?.Any() is true)
             {
                 desc.Bool(b => b
-                    .Must(s => s.QueryString(q => q.Query($"{query}*").DefaultField("*")))
+                    .Must(s => s.QueryString(q => q.Query($"{query ?? ""}*").DefaultField("*")))
                     .Filter(fields?.GetQueryDesctiptor<T>()));
             }
             else
             {
-                desc.QueryString(q => q.Query($"{query}*").DefaultField("*"));
+                desc.QueryString(q => q.Query($"{query ?? ""}*").DefaultField("*"));
             }
             return desc;
         }

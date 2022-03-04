@@ -31,6 +31,11 @@ namespace seaq
         public override string Type => GetType().FullName;
 
         /// <summary>
+        /// Internal seaq target for all query/indexing operations mapped to this index.  Allows the grouping of implementing types so as to reduce the risk of Elastic oversharding.
+        /// </summary>
+        public override string IndexAsType { get; set; }
+
+        /// <summary>
         /// The name of the index
         /// </summary>
         public string Name { get; set; }
@@ -133,10 +138,12 @@ namespace seaq
             string primaryField = null,
             string primaryFieldLabel = null,
             string secondaryField = null,
-            string secondaryFieldLabel = null)
+            string secondaryFieldLabel = null,
+            string indexAsType = null)
         {
             Name = name;
             DocumentType = documentType;
+            IndexAsType = indexAsType;
             Fields = fields;
             Aliases = aliases;
             PrimaryShards = primaryShards ?? Constants.Indices.Defaults.PrimaryShardsDefault;
@@ -166,6 +173,7 @@ namespace seaq
         {
             Name = config.Name;
             DocumentType = config.DocumentType;
+            IndexAsType = config.IndexAsType;
             Aliases = config.Aliases;
             PrimaryShards = config.PrimaryShards;
             ReplicaShards = config.ReplicaShards;

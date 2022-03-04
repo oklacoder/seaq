@@ -6,6 +6,11 @@ using System.Text.Json.Serialization;
 
 namespace SEAQ.Tests
 {
+    public class SampleResult1 :
+        SampleResult
+    {
+
+    }
     public class SampleResult :
         BaseDocument
     {

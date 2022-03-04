@@ -23,4 +23,16 @@ namespace SEAQ.Tests
         public TestChild ObjectProperty { get; set; }
         public IEnumerable<TestChild> CollectionProperty { get; set; }
     }
+
+    public class TestDoc1 :
+        TestDoc
+    {
+        public override string IndexAsType => typeof(BaseDocument).FullName;
+    }
+    public class TestDoc2 :
+        TestDoc
+    {
+        public override string IndexAsType => typeof(BaseDocument).FullName;
+
+    }
 }

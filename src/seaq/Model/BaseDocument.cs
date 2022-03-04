@@ -19,6 +19,10 @@ namespace seaq
         [JsonPropertyName("type")]
         public virtual string Type { get; set; }
 
+        [DataMember(Name = "indexAsType")]
+        [JsonPropertyName("indexAsType")]
+        public virtual string IndexAsType { get; set; }
+
         public BaseDocument()
         {
 
