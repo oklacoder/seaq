@@ -1578,17 +1578,29 @@ namespace seaq
         }
         private async Task RefreshFromInternalStore()
         {
-            var resp = await _client.SearchAsync<Index>(x => x.Index(InternalStoreIndex).MatchAll());
-            if (resp.IsValid)
+            const int pageSize = 1000;
+            var cnt = await _client.CountAsync<Index>(x => x.Index(InternalStoreIndex));
+            var pages = Math.Ceiling(cnt.Count / (double)pageSize);
+
+            for (var i = 0; i < pages; i++)
             {
-                if (_indices?.Any() is not true)
-                    _indices = new Dictionary<string, Index>();
-                resp.Documents.ToList().ForEach(x =>
+                var resp = await _client.SearchAsync<Index>(x => x.Index(InternalStoreIndex).MatchAll()
+                    .Sort(z => z
+                        .Ascending(FieldNameUtilities.GetElasticSortPropertyName(typeof(Index), nameof(Index.Name))))
+                    .Skip(i * pageSize)
+                    .Size(pageSize));
+                if (resp.IsValid)
                 {
-                    if (!_indices.ContainsKey(x.Name))
-                        _indices[x.Name] = x;
-                });
+                    if (_indices?.Any() is not true)
+                        _indices = new Dictionary<string, Index>();
+                    resp.Documents.ToList().ForEach(x =>
+                    {
+                        if (!_indices.ContainsKey(x.Name))
+                            _indices[x.Name] = x;
+                    });
+                }
             }
+
         }
 
     }
