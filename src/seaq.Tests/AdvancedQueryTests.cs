@@ -21,6 +21,7 @@ namespace SEAQ.Tests
         {
 
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices);
             var query = new AdvancedQuery<SampleResult>(
                 criteria);
@@ -34,6 +35,7 @@ namespace SEAQ.Tests
         {
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices);
             var query = new AdvancedQuery(
@@ -47,6 +49,7 @@ namespace SEAQ.Tests
         public async void CanExecuteAsync()
         {
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices);
             var query = new AdvancedQuery<SampleResult>(
                 criteria);
@@ -58,6 +61,7 @@ namespace SEAQ.Tests
         public async void CanExecuteAsync_Untyped()
         {
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices);
             var query = new AdvancedQuery(
@@ -72,6 +76,7 @@ namespace SEAQ.Tests
             const int _take = 25;
 
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices,
                 take: _take);
             var query = new AdvancedQuery<SampleResult>(
@@ -86,6 +91,7 @@ namespace SEAQ.Tests
             const int _take = 25;
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
                 take: _take);
@@ -99,11 +105,13 @@ namespace SEAQ.Tests
         public void CriteriaWorksCorrectly_Skip()
         {
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices,
                 skip: 0);
             var query = new AdvancedQuery<SampleResult>(
                 criteria);
             var criteria2 = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices,
                 skip: 1);
             var query2 = new AdvancedQuery<SampleResult>(
@@ -122,12 +130,14 @@ namespace SEAQ.Tests
         public void CriteriaWorksCorrectly_Skip_Untyped()
         {
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
                 skip: 0);
             var query = new AdvancedQuery(
                 criteria);
             var criteria2 = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
                 skip: 1);
@@ -149,6 +159,7 @@ namespace SEAQ.Tests
             var sort = new[] { new DefaultSortField("order_id", 0, true) };
 
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices,
                 sort);
             var query = new AdvancedQuery<SampleResult>(
@@ -167,6 +178,7 @@ namespace SEAQ.Tests
             var sort = new[] { new DefaultSortField("order_id", 0, true) };
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
                 sort);
@@ -184,6 +196,7 @@ namespace SEAQ.Tests
         public void ReturnsAllFieldsByDefault()
         {
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices);
             var query = new AdvancedQuery<SampleResult>(
                 criteria);
@@ -200,6 +213,7 @@ namespace SEAQ.Tests
         public void ReturnsAllFieldsByDefault_Untyped()
         {
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices);
             var query = new AdvancedQuery(
@@ -219,6 +233,7 @@ namespace SEAQ.Tests
             const string fieldToUse = "customer_full_name";//nameof(SampleResult.CustomerFullName);// 
 
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices,
                 returnFields: new[] { new DefaultReturnField(fieldToUse) }
                 );
@@ -239,6 +254,7 @@ namespace SEAQ.Tests
             const string fieldToUse = "customer_full_name";//nameof(SampleResult.CustomerFullName);// 
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
                 returnFields: new[] { new DefaultReturnField(fieldToUse) });
@@ -257,6 +273,7 @@ namespace SEAQ.Tests
         public void ReturnsNoFieldsWhenEmptySpecified()
         {
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices);
             var query = new AdvancedQuery<SampleResult>(
                 criteria);
@@ -273,6 +290,7 @@ namespace SEAQ.Tests
         public void ReturnsNoFieldsWhenEmptySpecified_Untyped()
         {
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices);
             var query = new AdvancedQuery(
@@ -292,6 +310,7 @@ namespace SEAQ.Tests
             const int expectedTotal = 4675;
 
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices,
                 null,
                 null,
@@ -309,6 +328,7 @@ namespace SEAQ.Tests
             const int expectedTotal = 4675;
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
                 null,
@@ -328,6 +348,7 @@ namespace SEAQ.Tests
             var filter = new DefaultFilterField(DefaultComparator.AnyWord, valToMatch, "products.product_name");
 
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices,
                 null,
                 null,
@@ -350,6 +371,7 @@ namespace SEAQ.Tests
             var filter = new DefaultFilterField(DefaultComparator.AnyWord, valToMatch, "products.product_name");
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
                 null,
@@ -373,6 +395,7 @@ namespace SEAQ.Tests
             var filter = new DefaultFilterField(null, valToMatch, "customer_first_name");
 
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices,
                 null,
                 null,
@@ -394,6 +417,7 @@ namespace SEAQ.Tests
             var filter = new DefaultFilterField(null, valToMatch, "customer_first_name");
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
                 null,
@@ -416,6 +440,7 @@ namespace SEAQ.Tests
             var filter = new DefaultFilterField(DefaultComparator.Equal, valToMatch, "customer_first_name");
 
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices,
                 null,
                 null,
@@ -437,6 +462,7 @@ namespace SEAQ.Tests
             var filter = new DefaultFilterField(DefaultComparator.Equal, valToMatch, "customer_first_name");
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
                 null,
@@ -458,6 +484,7 @@ namespace SEAQ.Tests
             var b = new[] { new DefaultBucketField("type") };
 
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices,
                 bucketFields: b);
             var query = new AdvancedQuery<SampleResult>(
@@ -474,6 +501,7 @@ namespace SEAQ.Tests
             var b = new[] { new DefaultBucketField("manufacturer.keyword") };
 
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices,
                 bucketFields: b);
             var query = new AdvancedQuery<SampleResult>(
@@ -490,6 +518,7 @@ namespace SEAQ.Tests
             var b = new[] { new DefaultBucketField("manufacturer.keyword") };
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
                 bucketFields: b);
@@ -507,6 +536,7 @@ namespace SEAQ.Tests
             var b = new[] { new DefaultBucketField("manufacturer.keyword") };
 
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices,
                 bucketFields: b,
                 take: 0);
@@ -524,6 +554,7 @@ namespace SEAQ.Tests
             var b = new[] { new DefaultBucketField("manufacturer.keyword") };
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
                 bucketFields: b,
@@ -540,6 +571,7 @@ namespace SEAQ.Tests
         public void ReturnsNoBucketsWhenNoFieldsSpecified()
         {
             var criteria = new AdvancedQueryCriteria<SampleResult>(
+                null,
                 SampleIndices);
             var query = new AdvancedQuery<SampleResult>(
                 criteria);
@@ -553,6 +585,7 @@ namespace SEAQ.Tests
         public void ReturnsNoBucketsWhenNoFieldsSpecified_Untyped()
         {
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices);
             var query = new AdvancedQuery(
@@ -620,7 +653,8 @@ namespace SEAQ.Tests
             var docs = GetFakeDocs<TestDoc1>();
             cluster.Commit(docs);
 
-            var criteria = new AdvancedQueryCriteria(typeof(TestDoc1).FullName);
+            var criteria = new AdvancedQueryCriteria(
+                null, typeof(TestDoc1).FullName);
             var query = new AdvancedQuery(criteria);
 
             var resp = cluster.Query<ISeaqQueryResults>(query);
@@ -647,6 +681,7 @@ namespace SEAQ.Tests
             var idx = await cluster.CreateIndexAsync(idxArgs);
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices);
             var query = new AdvancedQuery(
@@ -664,6 +699,7 @@ namespace SEAQ.Tests
             cluster.DeprecateIndex(idx.Name, depMsg);
 
             var criteria2 = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName);
             var query2 = new AdvancedQuery(
                 criteria2);
@@ -692,6 +728,7 @@ namespace SEAQ.Tests
             var idx2 = await cluster.CreateIndexAsync(idxArgs2);
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices);
             var query = new AdvancedQuery(
@@ -712,6 +749,7 @@ namespace SEAQ.Tests
             await cluster.HideIndexAsync(idx.Name);
 
             var criteria2 = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 take: 100);
             var query2 = new AdvancedQuery(
@@ -740,6 +778,7 @@ namespace SEAQ.Tests
             var idx2 = await cluster.CreateIndexAsync(idxArgs2);
 
             var criteria = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 SampleIndices);
             var query = new AdvancedQuery(
@@ -760,6 +799,7 @@ namespace SEAQ.Tests
             await cluster.ExcludeIndexFromGlobalSearchAsync(idx.Name);
 
             var criteria2 = new AdvancedQueryCriteria(
+                null,
                 typeof(SampleResult).FullName,
                 take: 100);
             var query2 = new AdvancedQuery(

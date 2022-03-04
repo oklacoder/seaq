@@ -174,6 +174,7 @@ namespace seaq
         }
 
         public AdvancedQueryCriteria(
+            string text = null,
             string type = null,
             IEnumerable<string> indices = null,
             IEnumerable<DefaultSortField> sortFields = null,
@@ -184,6 +185,7 @@ namespace seaq
             int? take = null) 
         {
             Type = type;
+            Text = text;
             Indices = indices?.ToArray() ?? Array.Empty<string>();
             _filterFields = filterFields;
             _sortFields = sortFields;
@@ -370,6 +372,7 @@ namespace seaq
         }
 
         public AdvancedQueryCriteria(
+            string text = null,
             IEnumerable<string> indices = null,
             IEnumerable<DefaultSortField> sortFields = null,
             IEnumerable<DefaultReturnField> returnFields = null,
@@ -380,6 +383,7 @@ namespace seaq
         {
             Indices = indices?.ToArray() ?? Array.Empty<string>();
             _filterFields = filterFields;
+            Text = text;
             _sortFields = sortFields;
             _returnFields = returnFields;
             _bucketFields = bucketFields;
