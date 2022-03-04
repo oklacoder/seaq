@@ -1567,6 +1567,10 @@ namespace seaq
         {
             await DeleteAsync(idx);
         }
+        //private async Task RefreshInternalStore()
+        //{
+        //    var indices = 
+        //}
 
     }
 }

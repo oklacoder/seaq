@@ -97,7 +97,35 @@ namespace SEAQ.Tests
             Assert.Equal(t0, indexAs_cluster);
             Assert.Equal(t0, indexAs_resp);
         }
+        [Fact]
+        public async void CreateClusterIncludesIndexAsIndices()
+        {
+            const string method = "CreateClusterIncludesIndexAsIndices";
 
+            var clusterArgs = GetArgs(method);
+            var cluster = await Cluster.CreateAsync(clusterArgs);
+
+            var type = typeof(TestDoc1).FullName;
+            var t0 = typeof(TestDoc).FullName;
+
+            var c0 = new IndexConfig(t0, t0);
+            _ = await cluster.CreateIndexAsync(c0);
+
+            var config = new IndexConfig(type, type, indexAsType: t0);
+            var resp = await cluster.CreateIndexAsync(config);
+
+            Assert.NotNull(resp);
+
+            var cluster2 = await Cluster.CreateAsync(clusterArgs);
+
+            var c1Count = cluster.Indices.Count();
+            var c2Count = cluster2.Indices.Count();
+
+            DecomissionCluster(cluster);
+            DecomissionCluster(cluster2);
+
+            Assert.Equal(c1Count, c2Count);
+        }
         [Fact]
         public async void CanCreateIndex_WithIndexAsType_FailsWhenMappingTypeDoesntExist()
         {
