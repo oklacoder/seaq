@@ -32,6 +32,9 @@ namespace SEAQ.Tests
             var async_sync = cluster.CanPing();
             var async_async = await cluster.CanPingAsync();
 
+            DecomissionCluster(cluster);
+            DecomissionCluster(clusterAsync);
+
             Assert.True(async_sync);
             Assert.True(async_async);
             Assert.True(sync_sync);
@@ -55,13 +58,81 @@ namespace SEAQ.Tests
 
             var hasAlias = _client.Cat.Aliases(x => x.Name(test_alias));
 
-            var delResp = await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.True(exists);
             Assert.True(existsByType);
             Assert.True(hasAlias.IsValid);
             Assert.NotEmpty(hasAlias.Records);
+        }
+        [Fact]
+        public async void CanCreateIndex_WithIndexAsType()
+        {
+            const string method = "CanCreateIndex";
+            const string test_alias = "test_alias";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc1).FullName;
+            var t0 = typeof(TestDoc).FullName;
+
+            var c0 = new IndexConfig(t0, t0);
+            _ = await cluster.CreateIndexAsync(c0);
+
+            var config = new IndexConfig(type, type, new[] { test_alias, test_alias }, indexAsType: t0);
+            var resp = await cluster.CreateIndexAsync(config);
+
+            Assert.NotNull(resp);
+
+            var exists = cluster.Indices.Any(x => x.Name == config.Name);
+            var existsByType = cluster.IndicesByType[type]?.Any();
+
+            var indexAs_cluster = cluster.Indices.FirstOrDefault(x => x.Name.Equals(resp.Name)).IndexAsType;
+            var indexAs_resp = resp.IndexAsType;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(exists);
+            Assert.True(existsByType);
+            Assert.Equal(t0, indexAs_cluster);
+            Assert.Equal(t0, indexAs_resp);
+        }
+
+        [Fact]
+        public async void CanCreateIndex_WithIndexAsType_FailsWhenMappingTypeDoesntExist()
+        {
+            const string method = "CanCreateIndex";
+            const string test_alias = "test_alias";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc1).FullName;
+            var t0 = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type, new[] { test_alias, test_alias }, indexAsType: t0);
+            var resp = await cluster.CreateIndexAsync(config);
+
+            DecomissionCluster(cluster);
+
+            Assert.Null(resp);
+        }
+        [Fact]
+        public async void CanCreateIndex_WithIndexAsType_FailsWhenDocTypeDoesntImplementMappingType()
+        {
+            const string method = "CanCreateIndex";
+            const string test_alias = "test_alias";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc1).FullName;
+            var t0 = typeof(TestDoc2).FullName;
+
+            var config0 = new IndexConfig(t0, t0, new[] { test_alias, test_alias });
+            var resp0 = await cluster.CreateIndexAsync(config0);
+            var config = new IndexConfig(type, type, new[] { test_alias, test_alias }, indexAsType: t0);
+            var resp = await cluster.CreateIndexAsync(config);
+
+            DecomissionCluster(cluster);
+
+            Assert.Null(resp);
         }
 
         [Fact]
@@ -83,6 +154,40 @@ namespace SEAQ.Tests
 
             var stillExists = cluster.Indices.Any(x => x.Name == config.Name);
             var stillExistsByType = cluster.IndicesByType[type]?.Any();
+
+            DecomissionCluster(cluster);
+
+            Assert.NotNull(resp);
+            Assert.True(exists);
+            Assert.True(existsByType);
+            Assert.True(delResp);
+            Assert.False(stillExists);
+            Assert.False(stillExistsByType);
+        }
+        [Fact]
+        public async void DeleteIndex_DeletesDependantIndices()
+        {
+            const string method = "DeleteIndex_DeletesDependantIndices";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type0 = typeof(TestDoc).FullName;
+            var type = typeof(TestDoc1).FullName;
+
+            var config0 = new IndexConfig(type0, type0);
+            var resp0 = await cluster.CreateIndexAsync(config0);
+            var config = new IndexConfig(type, type, indexAsType: type0);
+            var resp = await cluster.CreateIndexAsync(config);
+
+            var exists = cluster.Indices.Any(x => x.Name == config.Name);
+            var existsByType = cluster.IndicesByType[type]?.Any();
+
+            //delete it here
+            var delResp = await cluster.DeleteIndexAsync(config0.Name);
+
+            var stillExists = cluster.Indices.Any(x => x.Name == config.Name);
+            var stillExistsByType = cluster.IndicesByType[type]?.Any();
+
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.True(exists);
@@ -108,7 +213,7 @@ namespace SEAQ.Tests
 
             var resp = await cluster.CommitAsync(doc);
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.True(resp);
         }
@@ -119,21 +224,26 @@ namespace SEAQ.Tests
             var cluster = await Cluster.CreateAsync(GetArgs(method));
 
             var type = typeof(TestDoc1).FullName;
+            var t0 = typeof(TestDoc).FullName;
 
+            var c0 = new IndexConfig(t0,t0);
+            var idx0 = await cluster.CreateIndexAsync(c0);
+            Assert.NotNull(idx0);
             var config = new IndexConfig(type, type, indexAsType: typeof(TestDoc).FullName);
-            await cluster.CreateIndexAsync(config);
+            var idx = await cluster.CreateIndexAsync(config);
+            Assert.NotNull(idx);
 
             var doc = GetFakeDocs<TestDoc1>(1).FirstOrDefault();
 
             var resp = await cluster.CommitAsync(doc);
 
-            var exists = cluster.Query<TestDoc>(new SimpleQuery<TestDoc>(new SimpleQueryCriteria<TestDoc>("")));
+            var exists = _client.Search<TestDoc1>(x => x.Index(idx0.Name).Query(q => q.MatchAll()));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.True(resp);
             Assert.NotNull(exists);
-            Assert.NotEmpty(exists.Results);
+            Assert.NotEmpty(exists.Documents);
         }
         [Fact]
         public async void CanIndexOneDocument_Untyped()
@@ -150,7 +260,7 @@ namespace SEAQ.Tests
 
             var resp = await cluster.CommitAsync(doc as object);
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.True(resp);
         }
@@ -169,7 +279,7 @@ namespace SEAQ.Tests
 
             var resp = await cluster.CommitAsync(doc as object);
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.False(resp);
         }
@@ -187,7 +297,7 @@ namespace SEAQ.Tests
 
             var resp = await cluster.CommitAsync(doc);
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.True(resp);
         }
@@ -204,6 +314,8 @@ namespace SEAQ.Tests
             var doc = GetFakeDocs<TestDoc>(1).FirstOrDefault();
 
             var resp = await cluster.CommitAsync(doc);
+
+            DecomissionCluster(cluster);
 
             Assert.False(resp);
         }
@@ -223,9 +335,59 @@ namespace SEAQ.Tests
 
             var resp = await cluster.CommitAsync(docs);
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.True(resp);
+        }
+        [Fact]
+        public async void CanIndex100Documents_AsOtherType()
+        {
+            const string method = "CanIndex100Documents";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+            var type1 = typeof(TestDoc1).FullName;
+
+            var config0 = new IndexConfig(type, type);
+            var idx0 = await cluster.CreateIndexAsync(config0);
+            var config1 = new IndexConfig(type1, type1, indexAsType: type);
+            var idx1 = await cluster.CreateIndexAsync(config1);
+
+            var docs = GetFakeDocs<TestDoc1>(100);
+
+            var resp = await cluster.CommitAsync(docs);
+            var exists = _client.Search<TestDoc1>(x => x.Index(idx0.Name).Query(q => q.MatchAll()));
+
+            DecomissionCluster(cluster);
+
+            Assert.True(resp);
+            Assert.NotNull(exists);
+            Assert.NotEmpty(exists.Documents);
+        }
+        [Fact]
+        public async void CanIndex100Documents_Untyped_AsOtherType()
+        {
+            const string method = "CanIndex100Documents";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+            var type1 = typeof(TestDoc1).FullName;
+
+            var config0 = new IndexConfig(type, type);
+            var idx0 = await cluster.CreateIndexAsync(config0);
+            var config1 = new IndexConfig(type1, type1, indexAsType: type);
+            var idx1 = await cluster.CreateIndexAsync(config1);
+
+            var docs = GetFakeDocs<TestDoc1>(100);
+
+            var resp = await cluster.CommitAsync(docs.Select(x => x as object));
+            var exists = _client.Search<TestDoc1>(x => x.Index(idx0.Name).Query(q => q.MatchAll()));
+
+            DecomissionCluster(cluster);
+
+            Assert.True(resp);
+            Assert.NotNull(exists);
+            Assert.NotEmpty(exists.Documents);
         }
         [Fact]
         public async void CanIndex100Documents_Untyped()
@@ -242,7 +404,7 @@ namespace SEAQ.Tests
 
             var resp = await cluster.CommitAsync(docs.Select(x => x as object));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.True(resp);
         }
@@ -262,7 +424,7 @@ namespace SEAQ.Tests
 
             var resp = await cluster.CommitAsync(docs.Select(x => x as object));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.False(resp);
         }
@@ -281,7 +443,7 @@ namespace SEAQ.Tests
 
             var resp = await cluster.CommitAsync(docs);
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.True(resp);
         }
@@ -303,8 +465,7 @@ namespace SEAQ.Tests
             var exists = cluster.Indices.Any(x => x.Name == name2);
             var existsByType = cluster.IndicesByType[type]?.Any(x => x.Name.Equals(name2));
 
-            await cluster.DeleteIndexAsync(config.Name);
-            await cluster.DeleteIndexAsync(name2);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.Equal(resp.Name, name2);
@@ -339,8 +500,7 @@ namespace SEAQ.Tests
             var exists = cluster.Indices.Any(x => x.Name == name2);
             var existsByType = cluster.IndicesByType[type]?.Any(x => x.Name.Equals(name2));
 
-            await cluster.DeleteIndexAsync(config.Name);
-            await cluster.DeleteIndexAsync(name2);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.Equal(resp.Name, name2);
@@ -362,7 +522,7 @@ namespace SEAQ.Tests
             var exists = cluster.Indices.Any(x => x.Name == resp.Name);
             var existsByType = cluster.IndicesByType[resp.DocumentType]?.Any();
 
-            var delResp = await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.True(exists);
@@ -393,7 +553,7 @@ namespace SEAQ.Tests
 
             var actual = resp.Fields.FirstOrDefault(x => x.Name.Equals(f.Name))?.Label;
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.Equal(testLabel, actual);
@@ -418,7 +578,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.NotNull(idx);
@@ -443,7 +603,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.Equal(resp.IsDeprecated, idx.IsDeprecated);
@@ -468,7 +628,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.False(idx.IsDeprecated);
@@ -492,7 +652,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.True(idx.ForceRefreshOnDocumentCommit);
@@ -514,7 +674,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.False(idx.ForceRefreshOnDocumentCommit);
@@ -536,7 +696,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.True(idx.IsHidden);
@@ -558,7 +718,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.False(idx.IsHidden);
@@ -580,7 +740,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.True(idx.ReturnInGlobalSearch);
@@ -602,7 +762,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.False(idx.ReturnInGlobalSearch);
@@ -624,7 +784,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.Equal(resp.ObjectLabel, idx.ObjectLabel);
@@ -646,7 +806,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.Equal(resp.ObjectLabelPlural, idx.ObjectLabelPlural);
@@ -668,7 +828,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.Equal(resp.PrimaryField, idx.PrimaryField);
@@ -690,7 +850,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.Equal(resp.PrimaryFieldLabel, idx.PrimaryFieldLabel);
@@ -712,7 +872,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.Equal(resp.SecondaryField, idx.SecondaryField);
@@ -734,7 +894,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.Equal(resp.SecondaryFieldLabel, idx.SecondaryFieldLabel);
@@ -760,7 +920,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.NotNull(idx);
@@ -796,7 +956,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp);
             Assert.NotNull(idx);
@@ -830,7 +990,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp2);
             Assert.NotNull(idx);
@@ -875,7 +1035,7 @@ namespace SEAQ.Tests
 
             var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.NotNull(resp2);
             Assert.NotNull(idx);
@@ -911,9 +1071,67 @@ namespace SEAQ.Tests
 
             var resp = await cluster.DeleteAsync(toDelete);
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.True(resp);
+        }
+        [Fact]
+        public async void CanDelete1Document_IndexAsType()
+        {
+            const string method = "CanDelete1Document";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type0 = typeof(TestDoc).FullName;
+            var type = typeof(TestDoc1).FullName;
+
+            var config0 = new IndexConfig(type0, type0);
+            var r = await cluster.CreateIndexAsync(config0);
+            var config = new IndexConfig(type, type, indexAsType: type0);
+            await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs<TestDoc1>(100).ToList();
+
+            await cluster.CommitAsync(docs);
+
+            var toDelete = docs.ElementAt(5);
+
+            var resp = await cluster.DeleteAsync(toDelete);
+
+            var stillExists = _client.Search<TestDoc1>(x => x.Index(r.Name).Query(q => q.Ids(i => i.Values(toDelete.Id))));
+
+            DecomissionCluster(cluster);
+
+            Assert.True(resp);
+            Assert.Empty(stillExists.Documents);
+        }
+        [Fact]
+        public async void CanDelete1Document_Untyped_IndexAsType()
+        {
+            const string method = "CanDelete1Document";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type0 = typeof(TestDoc).FullName;
+            var type = typeof(TestDoc1).FullName;
+
+            var config0 = new IndexConfig(type0, type0);
+            var r = await cluster.CreateIndexAsync(config0);
+            var config = new IndexConfig(type, type, indexAsType: type0);
+            await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs<TestDoc1>(100).ToList();
+
+            await cluster.CommitAsync(docs);
+            var toDelete = docs.ElementAt(5);
+            var obj = toDelete as object;
+
+            var resp = await cluster.DeleteAsync(obj);
+
+            var stillExists = _client.Search<TestDoc1>(x => x.Index(r.Name).Query(q => q.Ids(i => i.Values(toDelete.Id))));
+
+            DecomissionCluster(cluster);
+
+            Assert.True(resp);
+            Assert.Empty(stillExists.Documents);
         }
         //delete single doc
         [Fact]
@@ -935,7 +1153,7 @@ namespace SEAQ.Tests
 
             var resp = await cluster.DeleteAsync(toDelete);
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.True(resp);
         }
@@ -959,9 +1177,67 @@ namespace SEAQ.Tests
 
             var resp = await cluster.DeleteAsync(toDelete);
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.True(resp);
+        }
+        [Fact]
+        public async void CanDelete5Documents_IndexAsType()
+        {
+            const string method = "CanDelete5Documents";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type0 = typeof(TestDoc).FullName;
+            var type = typeof(TestDoc1).FullName;
+
+            var config0 = new IndexConfig(type0, type0);
+            var r = await cluster.CreateIndexAsync(config0);
+            var config = new IndexConfig(type, type, indexAsType: type0);
+            await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs<TestDoc1>(100).ToList();
+
+            await cluster.CommitAsync(docs);
+
+            var toDelete = docs.Take(5);
+
+            var resp = await cluster.DeleteAsync(toDelete);
+
+            var stillExists = _client.Search<TestDoc1>(x => x.Index(r.Name).Query(q => q.Ids(i => i.Values(toDelete.Select(p => p.Id)))));
+
+            DecomissionCluster(cluster);
+
+            Assert.True(resp);
+            Assert.Empty(stillExists.Documents);
+        }
+        [Fact]
+        public async void CanDelete5Documents_Untyped_IndexAsType()
+        {
+            const string method = "CanDelete5Documents";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type0 = typeof(TestDoc).FullName;
+            var type = typeof(TestDoc1).FullName;
+
+            var config0 = new IndexConfig(type0, type0);
+            var r = await cluster.CreateIndexAsync(config0);
+            var config = new IndexConfig(type, type, indexAsType: type0);
+            await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs<TestDoc1>(100).ToList();
+
+            await cluster.CommitAsync(docs);
+
+            var toDelete = docs.Take(5);
+
+            var resp = await cluster.DeleteAsync(toDelete.Select(x => x as object));
+
+            var stillExists = _client.Search<TestDoc1>(x => x.Index(r.Name).Query(q => q.Ids(i => i.Values(toDelete.Select(p => p.Id)))));
+
+            DecomissionCluster(cluster);
+
+            Assert.True(resp);
+            Assert.Empty(stillExists.Documents);
         }
         [Fact]
         public async void CanDelete5Documents_Untyped()
@@ -982,7 +1258,7 @@ namespace SEAQ.Tests
 
             var resp = await cluster.DeleteAsync(toDelete);
 
-            await cluster.DeleteIndexAsync(config.Name);
+            DecomissionCluster(cluster);
 
             Assert.True(resp);
         }

@@ -202,6 +202,75 @@ namespace SEAQ.Tests
             //Assert.True(hasValues2);
         }
         //works correctly
+        ///can query based on "IndexAsType" setting
+
+        [Fact]
+        public async void CanQueryIndexWithIndexAsTypeSetting()
+        {
+            //TODO
+            const string method = "CanQueryIndexWithIndexAsTypeSetting";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var idxArgs0 = new IndexConfig(
+                typeof(TestDoc).FullName,
+                typeof(TestDoc).FullName);
+            var idx0 = await cluster.CreateIndexAsync(idxArgs0);
+            var idxArgs = new IndexConfig(
+                typeof(TestDoc1).FullName,
+                typeof(TestDoc1).FullName,
+                indexAsType: typeof(TestDoc).FullName);
+            var idx = await cluster.CreateIndexAsync(idxArgs);
+
+            var docs = GetFakeDocs<TestDoc1>();
+            cluster.Commit(docs);
+
+            var criteria = new SimpleQueryCriteria<TestDoc1>();
+            var query = new SimpleQuery<TestDoc1>(criteria);
+
+            var resp = cluster.Query(query);
+
+            DecomissionCluster(cluster);
+
+            Assert.NotNull(resp);
+            Assert.NotNull(resp.Results);
+            Assert.NotEmpty(resp.Results);
+            var t = typeof(TestDoc1);
+            resp.Results.ToList().ForEach(x => Assert.IsType(t, x.Document));
+        }
+        [Fact]
+        public async void CanQueryIndexWithIndexAsTypeSetting_Untyped()
+        {
+            //TODO
+            const string method = "CanQueryIndexWithIndexAsTypeSetting";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var idxArgs0 = new IndexConfig(
+                typeof(TestDoc).FullName,
+                typeof(TestDoc).FullName);
+            var idx0 = await cluster.CreateIndexAsync(idxArgs0);
+            var idxArgs = new IndexConfig(
+                typeof(TestDoc1).FullName,
+                typeof(TestDoc1).FullName,
+                indexAsType: typeof(TestDoc).FullName);
+            var idx = await cluster.CreateIndexAsync(idxArgs);
+
+            var docs = GetFakeDocs<TestDoc1>();
+            cluster.Commit(docs);
+
+            var criteria = new SimpleQueryCriteria(typeof(TestDoc1).FullName);
+            var query = new SimpleQuery(criteria);
+
+            var resp = cluster.Query<ISeaqQueryResults>(query);
+
+            DecomissionCluster(cluster);
+
+            Assert.NotNull(resp);
+            Assert.NotNull(resp.Results);
+            Assert.NotEmpty(resp.Results);
+            var t = typeof(TestDoc1);
+            resp.Results.ToList().ForEach(x => Assert.IsType(t, x.Document));
+        }
+
         ///includes message for deprecated
         [Fact]
         public async void IncludesMessagesWhenTargetingDeprecatedIndices()

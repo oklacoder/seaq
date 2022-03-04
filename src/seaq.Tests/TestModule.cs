@@ -99,6 +99,7 @@ namespace SEAQ.Tests
             var props = obj.GetType().GetProperties().Where(x => !Constants.Fields.AlwaysReturnedFields.Contains(x.Name));
 
             foreach (var p in props.Where(x =>
+                !x.Name.Equals(nameof(BaseDocument.IndexAsType)) && //this field can be null.  let it be null. ignore it.
                 fields.Any(z =>
                     z.Equals(x.Name, StringComparison.OrdinalIgnoreCase))))
             {
@@ -114,6 +115,7 @@ namespace SEAQ.Tests
             var props = obj.GetType().GetProperties().Where(x => !Constants.Fields.AlwaysReturnedFields.Contains(x.Name));
 
             foreach (var p in props.Where(x =>
+                !x.Name.Equals(nameof(BaseDocument.IndexAsType)) && //this field can be null.  let it be null. ignore it.
                  fields.Any(z =>
                      z.Equals(x.Name, StringComparison.OrdinalIgnoreCase))))
             {
@@ -129,6 +131,7 @@ namespace SEAQ.Tests
             var props = obj.GetType().GetProperties().Where(x => !Constants.Fields.AlwaysReturnedFields.Contains(x.Name));
 
             foreach (var p in props.Where(x =>
+                !x.Name.Equals(nameof(BaseDocument.IndexAsType)) && //this field can be null.  let it be null. ignore it.
                  fields.Any(z =>
                      !z.Equals(x.Name, StringComparison.OrdinalIgnoreCase))))
             {
@@ -136,6 +139,7 @@ namespace SEAQ.Tests
                 res = res && p.IsPropertyEmpty(val);
             }
             foreach (var p in props.Where(x =>
+                !x.Name.Equals(nameof(BaseDocument.IndexAsType)) && //this field can be null.  let it be null. ignore it.
                  fields.Any(z =>
                      z.Equals(x.Name, StringComparison.OrdinalIgnoreCase))))
             {
@@ -154,6 +158,7 @@ namespace SEAQ.Tests
                 return false;
 
             foreach (var p in props.Where(x =>
+                !x.Name.Equals(nameof(BaseDocument.IndexAsType)) && //this field can be null.  let it be null. ignore it.
                  fields.Any(z =>
                      !z.Equals(x.Name, StringComparison.OrdinalIgnoreCase))))
             {
@@ -161,6 +166,7 @@ namespace SEAQ.Tests
                 res = res && p.IsPropertyEmpty(val);
             }
             foreach (var p in props.Where(x =>
+                !x.Name.Equals(nameof(BaseDocument.IndexAsType)) && //this field can be null.  let it be null. ignore it.
                  fields.Any(z =>
                      z.Equals(x.Name, StringComparison.OrdinalIgnoreCase))))
             {
@@ -171,5 +177,11 @@ namespace SEAQ.Tests
             return res;
         }
 
+
+        protected static void DecomissionCluster(Cluster cluster)
+        {
+            foreach (var idx in cluster.Indices)
+                cluster.DeleteIndex(idx.Name);
+        }
     }
 }

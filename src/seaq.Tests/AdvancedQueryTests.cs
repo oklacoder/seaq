@@ -565,6 +565,75 @@ namespace SEAQ.Tests
         }
 
         //works correctly
+        ///can query based on "IndexAsType" setting
+
+        [Fact]
+        public async void CanQueryIndexWithIndexAsTypeSetting()
+        {
+            //TODO
+            const string method = "CanQueryIndexWithIndexAsTypeSetting";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var idxArgs0 = new IndexConfig(
+                typeof(TestDoc).FullName,
+                typeof(TestDoc).FullName);
+            var idx0 = await cluster.CreateIndexAsync(idxArgs0);
+            var idxArgs = new IndexConfig(
+                typeof(TestDoc1).FullName,
+                typeof(TestDoc1).FullName,
+                indexAsType: typeof(TestDoc).FullName);
+            var idx = await cluster.CreateIndexAsync(idxArgs);
+
+            var docs = GetFakeDocs<TestDoc1>();
+            cluster.Commit(docs);
+
+            var criteria = new AdvancedQueryCriteria<TestDoc1>();
+            var query = new AdvancedQuery<TestDoc1>(criteria);
+
+            var resp = cluster.Query(query);
+
+            DecomissionCluster(cluster);
+
+            Assert.NotNull(resp);
+            Assert.NotNull(resp.Results);
+            Assert.NotEmpty(resp.Results);
+            var t = typeof(TestDoc1);
+            resp.Results.ToList().ForEach(x => Assert.IsType(t, x.Document));
+        }
+        [Fact]
+        public async void CanQueryIndexWithIndexAsTypeSetting_Untyped()
+        {
+            //TODO
+            const string method = "CanQueryIndexWithIndexAsTypeSetting";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var idxArgs0 = new IndexConfig(
+                typeof(TestDoc).FullName,
+                typeof(TestDoc).FullName);
+            var idx0 = await cluster.CreateIndexAsync(idxArgs0);
+            var idxArgs = new IndexConfig(
+                typeof(TestDoc1).FullName,
+                typeof(TestDoc1).FullName,
+                indexAsType: typeof(TestDoc).FullName);
+            var idx = await cluster.CreateIndexAsync(idxArgs);
+
+            var docs = GetFakeDocs<TestDoc1>();
+            cluster.Commit(docs);
+
+            var criteria = new AdvancedQueryCriteria(typeof(TestDoc1).FullName);
+            var query = new AdvancedQuery(criteria);
+
+            var resp = cluster.Query<ISeaqQueryResults>(query);
+
+            DecomissionCluster(cluster);
+
+            Assert.NotNull(resp);
+            Assert.NotNull(resp.Results);
+            Assert.NotEmpty(resp.Results);
+            var t = typeof(TestDoc1);
+            resp.Results.ToList().ForEach(x => Assert.IsType(t, x.Document));
+        }
+
         ///includes message for deprecated
         [Fact]
         public async void IncludesMessagesWhenTargetingDeprecatedIndices()
@@ -600,10 +669,7 @@ namespace SEAQ.Tests
                 criteria2);
             var results = await cluster.QueryAsync<AdvancedQueryResults>(query2);
 
-            foreach (var i in cluster.Indices)
-            {
-                await cluster.DeleteIndexAsync(i.Name);
-            }
+            DecomissionCluster(cluster);
 
             Assert.NotNull(results);
             Assert.NotEmpty(results.Messages);
@@ -652,11 +718,7 @@ namespace SEAQ.Tests
                 criteria2);
             var results = await cluster.QueryAsync<AdvancedQueryResults>(query2);
 
-
-            foreach (var i in cluster.Indices)
-            {
-                await cluster.DeleteIndexAsync(i.Name);
-            }
+            DecomissionCluster(cluster);
 
             Assert.NotNull(results);
             Assert.All(results.Results, x => x.Index.Equals(idx2.Name));
@@ -704,11 +766,7 @@ namespace SEAQ.Tests
                 criteria2);
             var results = await cluster.QueryAsync<AdvancedQueryResults>(query2);
 
-
-            foreach (var i in cluster.Indices)
-            {
-                await cluster.DeleteIndexAsync(i.Name);
-            }
+            DecomissionCluster(cluster);
 
             Assert.NotNull(results);
             Assert.All(results.Results, x => x.Index.Equals(idx2.Name));

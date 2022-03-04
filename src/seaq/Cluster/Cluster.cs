@@ -170,6 +170,7 @@ namespace seaq
             IndexConfig config)
         {
             Log.Debug("Attempting to create index {0}", config.Name);
+
             if (!config.Name.Equals(config.Name.ToLowerInvariant()))
             {
                 var oldName = config.Name;
@@ -203,6 +204,52 @@ namespace seaq
                 await Task.CompletedTask;
                 return null;
             }
+
+            if (!string.IsNullOrWhiteSpace(config.IndexAsType))
+            {
+                var any = IndicesByType[config.IndexAsType];
+                if (any?.Any() is not true)
+                {
+                    Log.Error("Cannot create an index with an {0} mapping of {1} since no index with type {1} exists on the cluster",
+                        nameof(IndexConfig.IndexAsType), config.IndexAsType, config.IndexAsType);
+                    return null;
+                }
+                var t0 = SearchableTypes.FirstOrDefault(x => x.FullName.Equals(config.IndexAsType, StringComparison.OrdinalIgnoreCase));
+                var t = SearchableTypes.FirstOrDefault(x => x.FullName.Equals(config.DocumentType, StringComparison.OrdinalIgnoreCase));
+                if (t0 == null)
+                {
+                    //can't
+                    Log.Error($"Couldn't find specified {nameof(Index.IndexAsType)} of {t0.Name} across loaded assemblies.  " +
+                        $"Make sure you've referenced it prior to initializing your seaq cluster to ensure that" +
+                        $"the runtime has loaded it.");
+                    return null;
+                }
+                if (t == null)
+                {
+                    //can't
+                    Log.Error($"Couldn't find specified {nameof(Index.DocumentType)} of {t.Name} across loaded assemblies.  " +
+                        $"Make sure you've referenced it prior to initializing your seaq cluster to ensure that" +
+                        $"the runtime has loaded it.");
+                    return null;
+                }
+                if (!t.IsSubclassOf(t0))
+                {
+                    //still can't
+                    Log.Error($"When specifying {nameof(Index.IndexAsType)}, the provided {nameof(Index.DocumentType)} must be a subclass of the specified {nameof(Index.IndexAsType)}");
+                    Log.Error($"{t.FullName} does not implement {t0.FullName} as required.");
+                    return null;
+                }
+
+                //we do this dance  *specifically and explicitly* to avoid creating an index on the server,
+                //because oversharding is bad mmmkay.
+                //with that in mind, we short-circuit the creation process here.
+                var idx = new Index(config);
+                idx.Fields = any.First().Fields;
+                _indices.Add(idx.Name, idx);
+                await SaveToInternalStore(idx);
+                return idx;
+            }
+
             var result = await _client.Indices.CreateAsync(config.Name, desc => desc.Extend(config, type));
 
             if (!result.IsValid)
@@ -238,14 +285,16 @@ namespace seaq
 
         public bool DeleteIndex(
             string indexName,
-            bool bypassCache = false)
+            bool bypassCache = false,
+            bool preserveDependentIndices = false)
         {
             return DeleteIndexAsync(indexName, bypassCache).Result;
         }
 
         public async Task<bool> DeleteIndexAsync(
             string indexName,
-            bool bypassCache = false)
+            bool bypassCache = false,
+            bool preserveDependentIndices = false)
         {
             Log.Debug("Deleting index {0}", indexName);
 
@@ -255,7 +304,7 @@ namespace seaq
                 await Task.CompletedTask;
                 return false;
             }
-
+            
             var req = new DeleteIndexDescriptor(Nest.Indices.Index(indexName));
 
             var result = await _client.Indices.DeleteAsync(req);
@@ -271,6 +320,12 @@ namespace seaq
             }
 
             var idx = _indices[indexName];
+            if (preserveDependentIndices is not true)
+            {
+                var dependants = Indices.Where(x => x?.IndexAsType?.Equals(idx?.DocumentType) is true);
+                foreach (var dependant in dependants)
+                    _indices.Remove(dependant.Name);
+            }
             if (_indices.Remove(indexName))
             {
                 await DeleteFromInternalStore(idx);
@@ -347,20 +402,20 @@ namespace seaq
                 else
                 {
                     Log.Warning("No index found for document with type {0}, but cluster settings allow for automatic index creation.", document.GetType().FullName);
-                    var indexConfig = new IndexConfig(document.GetType().FullName, document.GetType().FullName);
+                    var indexConfig = new IndexConfig(document.GetType().FullName, document.GetType().FullName, indexAsType: document.IndexAsType);
                     idx = await CreateIndexAsync(indexConfig);
                 }
             }
-
-            Log.Verbose("Attempting to index document {0} to index {1}", document.Id, idx.Name);
+            var idxTarget = IndicesByType[idx.IndexAsType].FirstOrDefault()?.Name ?? idx.Name;
+            Log.Verbose("Attempting to index document {0} to index {1}", document.Id, idxTarget);
             var res = await _client.IndexAsync(
                 document,
                 x => x
-                    .Index(Nest.Indices.Index(idx.Name))
+                    .Index(Nest.Indices.Index(idxTarget))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
                         ? Refresh.True
                         : Refresh.False));
-            Log.Verbose("Index operation complete for document {0} to index {1}", document.Id, idx.Name);
+            Log.Verbose("Index operation complete for document {0} to index {1}", document.Id, idxTarget);
 
             if (res.IsValid is not true)
             {
@@ -386,7 +441,7 @@ namespace seaq
         {
 
             var bulk = new BulkDescriptor();
-
+            Dictionary<string, string> idx_as_type_cache = new Dictionary<string, string>();
             foreach(var document in documents)
             {
 
@@ -395,9 +450,17 @@ namespace seaq
                     Log.Warning("Could not identify index for provided document {0}", document.Id);
                     return false;
                 }
-
+                var idxTarget = idx.Name;
+                if (!string.IsNullOrWhiteSpace(idx.IndexAsType))
+                {
+                    if (!idx_as_type_cache.TryGetValue(idx.Name, out idxTarget))
+                    {
+                        idxTarget = IndicesByType[idx.IndexAsType].FirstOrDefault()?.Name ?? idx.Name;
+                        idx_as_type_cache[idx.Name] = idxTarget;
+                    }
+                }
                 bulk.Index<object>(x => x
-                    .Index(idx.Name)
+                    .Index(idxTarget)
                     .Id(document.Id)
                     .Document(document))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
@@ -504,7 +567,7 @@ namespace seaq
         public async Task<bool> CommitAsync(IEnumerable<object> documents)
         {
             var bulk = new BulkDescriptor();
-
+            Dictionary<string, string> idx_as_type_cache = new Dictionary<string, string>();
             foreach (var document in documents)
             {
                 if (!document.GetType().IsAssignableTo(typeof(BaseDocument)))
@@ -524,8 +587,17 @@ namespace seaq
                     return false;
                 }
 
+                var idxTarget = idx.Name;
+                if (!string.IsNullOrWhiteSpace(idx.IndexAsType))
+                {
+                    if (!idx_as_type_cache.TryGetValue(idx.Name, out idxTarget))
+                    {
+                        idxTarget = IndicesByType[idx.IndexAsType].FirstOrDefault()?.Name ?? idx.Name;
+                        idx_as_type_cache[idx.Name] = idxTarget;
+                    }
+                }
                 bulk.Index<object>(x => x
-                    .Index(idx.Name)
+                    .Index(idxTarget)
                     .Id(doc.Id)
                     .Document(document))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
@@ -1026,10 +1098,11 @@ namespace seaq
 
             Log.Verbose("Attempting to delete document {0} from index {1}", document.Id, idx.Name);
 
+            var idxTarget = IndicesByType[idx.IndexAsType].FirstOrDefault()?.Name ?? idx.Name;
             var resp = await _client.DeleteAsync<T>(
                 document.Id, 
                 x => x
-                    .Index(Nest.Indices.Index(idx.Name))
+                    .Index(Nest.Indices.Index(idxTarget))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
                         ? Refresh.True
                         : Refresh.False));
@@ -1042,19 +1115,19 @@ namespace seaq
                 if (resp.ApiCall.HttpStatusCode == 404)
                 {
                     const string msg = @"Could not find document {0} on index {1}";
-                    Log.Warning(msg, document.Id, idx.Name);
+                    Log.Warning(msg, document.Id, idxTarget);
                     return false;
                 }
                 else
                 {
                     const string msg = @"Could not delete document {0} from index {1}, and could not recover from error.  Review logs and try again.";
-                    Log.Error(msg, document.Id, idx.Name);
+                    Log.Error(msg, document.Id, idxTarget);
                     Log.Error(resp?.ServerError?.Error?.Reason);
                     Log.Error(resp?.OriginalException.Message);
                     Log.Error(resp?.OriginalException.StackTrace);
 
                     throw new InvalidOperationException(
-                        string.Format(msg, document.Id, idx.Name));
+                        string.Format(msg, document.Id, idxTarget));
                 }
             }
 
@@ -1069,7 +1142,7 @@ namespace seaq
             where T : BaseDocument
         {
             var bulk = new BulkDescriptor();
-
+            Dictionary<string, string> idx_as_type_cache = new Dictionary<string, string>();
             foreach (var document in documents)
             {
 
@@ -1078,9 +1151,18 @@ namespace seaq
                     Log.Warning("Could not identify index for provided document {0}", document.Id);
                     return false;
                 }
+                var idxTarget = idx.Name;
+                if (!string.IsNullOrWhiteSpace(idx.IndexAsType))
+                {
+                    if (!idx_as_type_cache.TryGetValue(idx.Name, out idxTarget))
+                    {
+                        idxTarget = IndicesByType[idx.IndexAsType].FirstOrDefault()?.Name ?? idx.Name;
+                        idx_as_type_cache[idx.Name] = idxTarget;
+                    }
+                }
 
                 bulk.Delete<BaseDocument>(x => x
-                    .Index(idx.Name)
+                    .Index(idxTarget)
                     .Id(document.Id)
                     .Document(document))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
@@ -1159,15 +1241,16 @@ namespace seaq
 
             Log.Verbose("Attempting to delete document {0} from index {1}", doc.Id, idx.Name);
 
+            var idxTarget = IndicesByType[idx.IndexAsType].FirstOrDefault()?.Name ?? idx.Name;
             var resp = await _client.DeleteAsync<BaseDocument>(
                 doc.Id,
                 x => x
-                    .Index(Nest.Indices.Index(idx.Name))
+                    .Index(Nest.Indices.Index(idxTarget))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
                         ? Refresh.True
                         : Refresh.False));
 
-            Log.Verbose("Delete operation complete for document {0} on index {1}", doc.Id, idx.Name);
+            Log.Verbose("Delete operation complete for document {0} on index {1}", doc.Id, idxTarget);
 
 
             if (resp.IsValid is not true)
@@ -1175,19 +1258,19 @@ namespace seaq
                 if (resp.ApiCall.HttpStatusCode == 404)
                 {
                     const string msg = @"Could not find document {0} on index {1}";
-                    Log.Warning(msg, doc.Id, idx.Name);
+                    Log.Warning(msg, doc.Id, idxTarget);
                     return false;
                 }
                 else
                 {
                     const string msg = @"Could not delete document {0} from index {1}, and could not recover from error.  Review logs and try again.";
-                    Log.Error(msg, doc.Id, idx.Name);
+                    Log.Error(msg, doc.Id, idxTarget);
                     Log.Error(resp?.ServerError?.Error?.Reason);
                     Log.Error(resp?.OriginalException.Message);
                     Log.Error(resp?.OriginalException.StackTrace);
 
                     throw new InvalidOperationException(
-                        string.Format(msg, doc.Id, idx.Name));
+                        string.Format(msg, doc.Id, idxTarget));
                 }
             }
 
@@ -1200,7 +1283,7 @@ namespace seaq
         public async Task<bool> DeleteAsync(IEnumerable<object> documents)
         {
             var bulk = new BulkDescriptor();
-
+            Dictionary<string, string> idx_as_type_cache = new Dictionary<string, string>();
             foreach (var document in documents)
             {
                 if (!document.GetType().IsAssignableTo(typeof(BaseDocument)))
@@ -1220,8 +1303,17 @@ namespace seaq
                     return false;
                 }
 
+                var idxTarget = idx.Name;
+                if (!string.IsNullOrWhiteSpace(idx.IndexAsType))
+                {
+                    if (!idx_as_type_cache.TryGetValue(idx.Name, out idxTarget))
+                    {
+                        idxTarget = IndicesByType[idx.IndexAsType].FirstOrDefault()?.Name ?? idx.Name;
+                        idx_as_type_cache[idx.Name] = idxTarget;
+                    }
+                }
                 bulk.Delete<BaseDocument>(x => x
-                    .Index(idx.Name)
+                    .Index(idxTarget)
                     .Id(doc.Id)
                     .Document(doc))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
@@ -1285,7 +1377,7 @@ namespace seaq
                 Log.Error(msg);
                 throw new ArgumentNullException(string.Format(msg));
             }
-            Log.Verbose("Executing sync query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices));
+            Log.Verbose("Executing sync query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices ?? Array.Empty<string>()));
 
             query.Criteria.ApplyClusterSettings(this);
 
