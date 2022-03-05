@@ -186,7 +186,13 @@ namespace seaq
                 .SelectMany(x =>
                     new[] { x }.Concat(x.Fields));
 
-            _bucketFields = flat.Where(x => x.IsFilterable is true).Select(x => new DefaultBucketField(x.Name));
+            _bucketFields = flat
+                .Where(x => x.IsFilterable is true)
+                .SelectMany(x =>
+                    x.HasKeywordField is true ?
+                    x.AllKeywordFields.Select(z => new DefaultBucketField(z)) :
+                    new[] { new DefaultBucketField(x.Name) }
+                );
         }
 
         public AdvancedQueryCriteria(
@@ -399,7 +405,13 @@ namespace seaq
                 .SelectMany(x =>
                     new[] { x }.Concat(x.Fields));
 
-            _bucketFields = flat.Where(x => x.IsFilterable is true).Select(x => new DefaultBucketField(x.Name));
+            _bucketFields = flat
+                .Where(x => x.IsFilterable is true)
+                .SelectMany(x =>
+                    x.HasKeywordField is true ?
+                    x.AllKeywordFields.Select(z => new DefaultBucketField(z)) :
+                    new[] { new DefaultBucketField(x.Name) }
+                );
         }
 
         public AdvancedQueryCriteria(
