@@ -16,42 +16,42 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "type")]
         [JsonPropertyName("type")]
-        public string Type { get; init; }
+        public string Type { get; private set; }
 
         /// <summary>
         /// Query text
         /// </summary>
         [DataMember(Name = "text")]
         [JsonPropertyName("text")]
-        public string Text { get; init; }
+        public string Text { get; private set; }
 
         /// <summary>
         /// Specify which indices to query.  If empty or null, query will default to the default index for the provided type.
         /// </summary>
         [DataMember(Name = "indices")]
         [JsonPropertyName("indices")]
-        public string[] Indices { get; protected set; }
+        public string[] Indices { get; private set; }
 
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
         /// </summary>
         [DataMember(Name = "skip")]
         [JsonPropertyName("skip")]
-        public int? Skip { get; init; }
+        public int? Skip { get; private set; }
 
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
         /// </summary>
         [DataMember(Name = "take")]
         [JsonPropertyName("take")]
-        public int? Take { get; init; }
+        public int? Take { get; private set; }
 
         /// <summary>
         /// Collection of SortField objects used to order the query results
         /// </summary>
         [DataMember(Name = "sortFields")]
         [JsonPropertyName("sortFields")]
-        protected IEnumerable<DefaultSortField> _sortFields { get; init; }
+        private IEnumerable<DefaultSortField> _sortFields { get; set; }
         public IEnumerable<ISortField> SortFields => _sortFields;
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "returnFields")]
         [JsonPropertyName("returnFields")]
-        protected IEnumerable<DefaultReturnField> _returnFields { get; private set; }
+        private IEnumerable<DefaultReturnField> _returnFields { get; set; }
         public IEnumerable<IReturnField> ReturnFields => _returnFields;
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "bucketFields")]
         [JsonPropertyName("bucketFields")]
-        protected IEnumerable<DefaultBucketField> _bucketFields { get; init; }
+        private IEnumerable<DefaultBucketField> _bucketFields { get; set; }
         public IEnumerable<IBucketField> BucketFields => _bucketFields;
 
         /// <summary>
@@ -75,23 +75,24 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "boostedFields")]
         [JsonPropertyName("boostedFields")]
-        public IEnumerable<string> BoostedFields { get; protected set; } = new string[] { "*" };
+        public IEnumerable<string> BoostedFields { get; private set; } = new string[] { "*" };
 
         /// <summary>
         /// Indexes targeted by this query that are marked as "deprecated" on the containing cluster
         /// </summary>
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
-        public IEnumerable<string> DeprecatedIndexTargets { get; protected set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
 
         public void ApplyClusterSettings(Cluster cluster)
         {
             ApplyClusterIndices(cluster);
             ApplyQueryBoosts(cluster.Indices);
             ApplyDefaultSourceFilter(cluster);
+            ApplyDefaultBuckets(cluster);
         }
 
-        public void ApplyClusterIndices(Cluster cluster)
+        internal void ApplyClusterIndices(Cluster cluster)
         {
             if (Indices?.Any() is true)
             {
@@ -135,22 +136,7 @@ namespace seaq
                     $"Ensure that either an index exists on your seaq cluster fo this type, or that you have specified an explicit type in your query definition.");
             }
         }
-        public void ApplyDefaultSourceFilter(Cluster cluster)
-        {
-            var indices = cluster.Indices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
-
-            if (_returnFields?.Any() is true)
-                return;
-
-            var flat = indices
-                .SelectMany(x =>
-                    x.Fields.Where(x => x.IsIncludedField is true || x.HasIncludedField is true))
-                .SelectMany(x =>
-                    new[] { x }.Concat(x.Fields));
-
-            _returnFields = flat.Where(x => x.IsIncludedField is true).Select(x => new DefaultReturnField(x.Name));
-        }
-        public void ApplyQueryBoosts(IEnumerable<Index> indices)
+        internal void ApplyQueryBoosts(IEnumerable<Index> indices)
         {
             List<string> fields = new List<string>() { "*" };
 
@@ -165,6 +151,38 @@ namespace seaq
 
             BoostedFields = fields.Distinct();
         }
+        internal void ApplyDefaultSourceFilter(Cluster cluster)
+        {
+            if (_returnFields?.Any() is true)
+                return;
+
+            var indices = cluster.Indices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
+
+            var flat = indices
+                .SelectMany(x =>
+                    x.Fields.Where(x => x.IsIncludedField is true || x.HasIncludedField is true))
+                .SelectMany(x =>
+                    new[] { x }.Concat(x.Fields));
+
+            _returnFields = flat.Where(x => x.IsIncludedField is true).Select(x => new DefaultReturnField(x.Name));
+        }
+        internal void ApplyDefaultBuckets(Cluster cluster)
+        {
+            if (_bucketFields?.Any() is true)
+                return;
+
+            var indices = cluster.Indices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
+
+            var flat = indices
+                .SelectMany(x =>
+                    x.Fields.Where(x => x.IsFilterable is true || x.HasFilterField is true))
+                .SelectMany(x =>
+                    new[] { x }.Concat(x.Fields));
+
+            _bucketFields = flat.Where(x => x.IsFilterable is true).Select(x => new DefaultBucketField(x.Name));
+        }
+
+
         public SimpleQueryCriteria(
             string type,
             string text = null,
@@ -217,35 +235,35 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "text")]
         [JsonPropertyName("text")]
-        public string Text { get; init; }
+        public string Text { get; private set; }
 
         /// <summary>
         /// Specify which indices to query.  If empty or null, query will default to the default index for the provided type.
         /// </summary>
         [DataMember(Name = "indices")]
         [JsonPropertyName("indices")]
-        public string[] Indices { get; protected set; }
+        public string[] Indices { get; private set; }
 
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
         /// </summary>
         [DataMember(Name = "skip")]
         [JsonPropertyName("skip")]
-        public int? Skip { get; init; }
+        public int? Skip { get; private set; }
 
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
         /// </summary>
         [DataMember(Name = "take")]
         [JsonPropertyName("take")]
-        public int? Take { get; init; }
+        public int? Take { get; private set; }
 
         /// <summary>
         /// Collection of SortField objects used to order the query results
         /// </summary>
         [DataMember(Name = "sortFields")]
         [JsonPropertyName("sortFields")]
-        protected IEnumerable<DefaultSortField> _sortFields { get; init; }
+        private IEnumerable<DefaultSortField> _sortFields { get; set; }
         public IEnumerable<ISortField> SortFields => _sortFields;
 
         /// <summary>
@@ -253,7 +271,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "returnFields")]
         [JsonPropertyName("returnFields")]
-        protected IEnumerable<DefaultReturnField> _returnFields { get; private set; }
+        private IEnumerable<DefaultReturnField> _returnFields { get; set; }
         public IEnumerable<IReturnField> ReturnFields => _returnFields;
 
         /// <summary>
@@ -261,7 +279,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "bucketFields")]
         [JsonPropertyName("bucketFields")]
-        protected IEnumerable<DefaultBucketField> _bucketFields { get; init; }
+        private IEnumerable<DefaultBucketField> _bucketFields { get; set; }
         public IEnumerable<IBucketField> BucketFields => _bucketFields;
 
         /// <summary>
@@ -269,23 +287,24 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "boostedFields")]
         [JsonPropertyName("boostedFields")]
-        public IEnumerable<string> BoostedFields { get; protected set; } = new string[] { "*" };
+        public IEnumerable<string> BoostedFields { get; private set; } = new string[] { "*" };
 
         /// <summary>
         /// Indexes targeted by this query that are marked as "deprecated" on the containing cluster
         /// </summary>
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
-        public IEnumerable<string> DeprecatedIndexTargets { get; protected set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
 
         public void ApplyClusterSettings(Cluster cluster)
         {
             ApplyClusterIndices(cluster);
             ApplyQueryBoosts(cluster.Indices);
             ApplyDefaultSourceFilter(cluster);
+            ApplyDefaultBuckets(cluster);
         }
 
-        public virtual void ApplyClusterIndices(Cluster cluster)
+        internal void ApplyClusterIndices(Cluster cluster)
         {
             if (Indices?.Any() is true)
             {
@@ -329,23 +348,7 @@ namespace seaq
                     $"Ensure that either an index exists on your seaq cluster fo this type, or that you have specified an explicit type in your query definition.");
             }
         }
-
-        public void ApplyDefaultSourceFilter(Cluster cluster)
-        {
-            var indices = cluster.Indices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
-
-            if (_returnFields?.Any() is true)
-                return;
-
-            var flat = indices
-                .SelectMany(x =>
-                    x.Fields.Where(x => x.IsIncludedField is true || x.HasIncludedField is true))
-                .SelectMany(x =>
-                    new[] { x }.Concat(x.Fields));
-
-            _returnFields = flat.Where(x => x.IsIncludedField is true).Select(x => new DefaultReturnField(x.Name));
-        }
-        public void ApplyQueryBoosts(IEnumerable<Index> indices)
+        internal void ApplyQueryBoosts(IEnumerable<Index> indices)
         {
             List<string> fields = new List<string>() { "*" };
 
@@ -359,6 +362,36 @@ namespace seaq
             }
 
             BoostedFields = fields.Distinct();
+        }
+        internal void ApplyDefaultSourceFilter(Cluster cluster)
+        {
+            if (_returnFields?.Any() is true)
+                return;
+
+            var indices = cluster.Indices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
+
+            var flat = indices
+                .SelectMany(x =>
+                    x.Fields.Where(x => x.IsIncludedField is true || x.HasIncludedField is true))
+                .SelectMany(x =>
+                    new[] { x }.Concat(x.Fields));
+
+            _returnFields = flat.Where(x => x.IsIncludedField is true).Select(x => new DefaultReturnField(x.Name));
+        }
+        internal void ApplyDefaultBuckets(Cluster cluster)
+        {
+            if (_bucketFields?.Any() is true)
+                return;
+
+            var indices = cluster.Indices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
+
+            var flat = indices
+                .SelectMany(x =>
+                    x.Fields.Where(x => x.IsFilterable is true || x.HasFilterField is true))
+                .SelectMany(x =>
+                    new[] { x }.Concat(x.Fields));
+
+            _bucketFields = flat.Where(x => x.IsFilterable is true).Select(x => new DefaultBucketField(x.Name));
         }
 
         public SimpleQueryCriteria() { }

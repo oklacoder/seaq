@@ -1521,7 +1521,9 @@ namespace seaq
             }
             else
             {
-                return typeof(BaseDocument);
+                var t = typeof(BaseDocument);
+                Log.Warning("Type {0} could not be found on the cluster - falling back to type {1}", typeFullName, t.FullName);
+                return t;
             }
         }
         private static ElasticClient BuildClient(
