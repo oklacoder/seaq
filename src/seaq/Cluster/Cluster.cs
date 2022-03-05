@@ -1432,7 +1432,7 @@ namespace seaq
             {
                 var indexName = document.IndexName?.FormatIndexName(ClusterScope);
                 if (!string.IsNullOrWhiteSpace(indexName))
-                    _indices.TryGetValue(indexName, out index);
+                    resp = _indices.TryGetValue(indexName, out index);
             }
 
             if (resp is not true)
