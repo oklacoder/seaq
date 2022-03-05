@@ -67,7 +67,7 @@ namespace seaq
         public DateTime? CacheRefreshedUtc { get; private set; } = null;
 
         public bool AllowAutomaticIndexCreation { get; private set; }
-        public string InternalStoreIndex => $"{ClusterScope}_{IndexNameUtilities.FormatIndexName(typeof(Index))}";
+        public string InternalStoreIndex => IndexNameUtilities.FormatIndexName(typeof(Index), ClusterScope);
 
         private Dictionary<string, Index> _indices;
         private Dictionary<string, Type> _searchableTypes;
@@ -180,26 +180,8 @@ namespace seaq
         {
             Log.Debug("Attempting to create index {0}", config.Name);
 
-            if (!config.Name.Equals(config.Name.ToLowerInvariant()))
-            {
-                var oldName = config.Name;
-                var newName = IndexNameUtilities.FormatIndexName(config.Name);
-
-                config.Name = newName;
-
-                Log.Warning("Provided index name ({0}) was not all lowercase as required - index name coerced to {1}", oldName, newName);
-            }
-
-            if (!config.Name.StartsWith(ClusterScope, StringComparison.OrdinalIgnoreCase))
-            {
-                var oldName = config.Name;
-                var newName = string.Join(Constants.Indices.NamePartSeparator, ClusterScope, config.Name);
-
-                config.Name = newName;
-
-                Log.Warning("Provided index name ({0}) did not begin with cluster's scope as required - index name coerced to {1}", oldName, newName);
-            }
-
+            config.Name = config.Name.FormatIndexName(ClusterScope);
+            
             if (_indices.ContainsKey(config.Name))
             {
                 Log.Warning("Couldn't create index {0} - an index with that name already exists in cluster cache.", config.Name);
@@ -1444,15 +1426,13 @@ namespace seaq
         private bool TryGetIndexForDocument<T>(T document, out Index index)
             where T : IDocument
         {
-
             var resp = _indices.TryGetValue(document.IndexName ?? "", out index);
 
-
-            if (document?.IndexName?.StartsWith(ClusterScope) is not true)
+            if (!resp)
             {
-                var index_name_adj = string.Join(Constants.Indices.NamePartSeparator, ClusterScope, document.IndexName);
-                Log.Debug("Provided index name {0} doesn't begin with ClusterScope {1} as expected.  Coerced name to {2} to match expectations", document.IndexName, ClusterScope, index_name_adj);
-                resp = _indices.TryGetValue(index_name_adj ?? "", out index);
+                var indexName = document.IndexName?.FormatIndexName(ClusterScope);
+                if (!string.IsNullOrWhiteSpace(indexName))
+                    _indices.TryGetValue(indexName, out index);
             }
 
             if (resp is not true)
