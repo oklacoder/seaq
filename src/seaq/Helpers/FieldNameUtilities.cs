@@ -27,6 +27,15 @@ namespace seaq
                 propertyName,
                 Constants.Fields.SortField);
         }
+        public static string GetElasticAggregatablePropertyName(
+            Type type,
+            string propertyName)
+        {
+            return GetElasticPropertyName(
+                type,
+                propertyName,
+                Constants.Fields.KeywordField);
+        }
 
         public static string GetElasticPropertyNameWithoutSuffix(
             Type type,
