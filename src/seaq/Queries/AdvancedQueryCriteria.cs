@@ -171,7 +171,11 @@ namespace seaq
                 .SelectMany(x =>
                     new[] { x }.Concat(x.Fields));
 
-            _returnFields = flat.Where(x => x.IsIncludedField is true).Select(x => new DefaultReturnField(x.Name));
+            _returnFields = flat
+                .Where(x => x.IsIncludedField is true)
+                .SelectMany(x =>
+                    x.FieldTree?
+                        .Select(z => new DefaultReturnField(z)));
         }
         internal void ApplyDefaultBuckets(Cluster cluster)
         {
@@ -390,7 +394,11 @@ namespace seaq
                 .SelectMany(x => 
                     new[] { x }.Concat(x.Fields));
 
-            _returnFields = flat.Where(x => x.IsIncludedField is true).Select(x => new DefaultReturnField(x.Name));
+            _returnFields = flat
+                .Where(x => x.IsIncludedField is true)
+                .SelectMany(x => 
+                    x.FieldTree?
+                        .Select(z => new DefaultReturnField(z)));
         }
         internal void ApplyDefaultBuckets(Cluster cluster)
         {
