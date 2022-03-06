@@ -222,7 +222,7 @@ namespace SEAQ.Tests
             var idx = await cluster.CreateIndexAsync(idxArgs);
 
             var docs = GetFakeDocs<TestDoc1>();
-            cluster.Commit(docs);
+            await cluster.CommitAsync(docs);
 
             var criteria = new SimpleQueryCriteria<TestDoc1>();
             var query = new SimpleQuery<TestDoc1>(criteria);

@@ -196,74 +196,17 @@ namespace seaq
                 return null;
             }
 
-            if (!string.IsNullOrWhiteSpace(config.IndexAsType))
+            var index =
+                string.IsNullOrWhiteSpace(config.IndexAsType) ?
+                await CreateIndexAsIndex(config, type) :
+                await CreateIndexAsAlias(config);
+
+            if (index == null)
             {
-                var any = IndicesByType[config.IndexAsType];
-                if (any?.Any() is not true)
-                {
-                    Log.Error("Cannot create an index with an {0} mapping of {1} since no index with type {1} exists on the cluster",
-                        nameof(IndexConfig.IndexAsType), config.IndexAsType, config.IndexAsType);
-                    return null;
-                }
-                var t0 = SearchableTypes.FirstOrDefault(x => x.FullName.Equals(config.IndexAsType, StringComparison.OrdinalIgnoreCase));
-                var t = SearchableTypes.FirstOrDefault(x => x.FullName.Equals(config.DocumentType, StringComparison.OrdinalIgnoreCase));
-                if (t0 == null)
-                {
-                    //can't
-                    Log.Error($"Couldn't find specified {nameof(Index.IndexAsType)} of {t0.Name} across loaded assemblies.  " +
-                        $"Make sure you've referenced it prior to initializing your seaq cluster to ensure that" +
-                        $"the runtime has loaded it.");
-                    return null;
-                }
-                if (t == null)
-                {
-                    //can't
-                    Log.Error($"Couldn't find specified {nameof(Index.DocumentType)} of {t.Name} across loaded assemblies.  " +
-                        $"Make sure you've referenced it prior to initializing your seaq cluster to ensure that" +
-                        $"the runtime has loaded it.");
-                    return null;
-                }
-                if (!t.IsSubclassOf(t0))
-                {
-                    //still can't
-                    Log.Error($"When specifying {nameof(Index.IndexAsType)}, the provided {nameof(Index.DocumentType)} must be a subclass of the specified {nameof(Index.IndexAsType)}");
-                    Log.Error($"{t.FullName} does not implement {t0.FullName} as required.");
-                    return null;
-                }
-
-                //we do this dance  *specifically and explicitly* to avoid creating an index on the server,
-                //because oversharding is bad mmmkay.
-                //with that in mind, we short-circuit the creation process here.
-                var idx = new Index(config);
-                idx.Fields = any.First().Fields;
-                _indices.Add(idx.Name, idx);
-                await SaveToInternalStore(idx);
-                return idx;
-            }
-
-            var result = await _client.Indices.CreateAsync(config.Name, desc => desc.Extend(config, type));
-
-            if (!result.IsValid)
-            {
-                Log.Error("Could not successfully create requested index {0}", config.Name);
-                Log.Error(result.ServerError?.Error?.Reason);
-                Log.Error(result.OriginalException.Message);
-                Log.Error(result.OriginalException.StackTrace);
-                await Task.CompletedTask;
+                Log.Error("Index {0} creation reported success, but could not retrieve index definition from server.  This cannot be automatically resolved - suggest handling with index cache refresh.", config.Name);
                 return null;
             }
 
-            Log.Debug("Index {0} created successfully", config.Name);
-
-            var server_index = _client.Indices.Get(config.Name)?.Indices?.FirstOrDefault();
-
-            if (!server_index.HasValue)
-            {
-                Log.Error("Index {0} creation reported success, but could not retrieve index definition from server.  This cannot be automatically resolved - suggest handling with index cache refresh.", config.Name);
-                throw new InvalidOperationException(string.Format("Index {0} creation reported success, but could not retrieve index definition from server.  This cannot be automatically resolved - suggest handling with index cache refresh.", config.Name));
-            }
-
-            var index = Index.Create(server_index.Value);
 
             _indices.Add(index.Name, index);
 
@@ -289,34 +232,53 @@ namespace seaq
         {
             Log.Debug("Deleting index {0}", indexName);
 
-            if (!_indices.ContainsKey(indexName) && bypassCache is not true)
+            if (!_indices.TryGetValue(indexName, out var idx) && bypassCache is not true)
             {
                 Log.Warning("Delete index failed - {0} is not present in cluster cache.", indexName);
                 await Task.CompletedTask;
                 return false;
             }
+            if (string.IsNullOrWhiteSpace(idx.IndexAsType))
+            {
+                var req = new DeleteIndexDescriptor(Nest.Indices.Index(indexName));
+
+                var result = await _client.Indices.DeleteAsync(req);
+
+                if (!result.IsValid)
+                {
+                    Log.Error("Could not successfully delete index {0}", indexName);
+                    Log.Error(result?.ServerError?.Error.Reason);
+                    Log.Error(result?.OriginalException?.Message);
+                    Log.Error(result?.OriginalException?.StackTrace);
+                    return false;
+                }
+                if (preserveDependentIndices is not true)
+                {
+                    var dependants = Indices.Where(x => x?.IndexAsType?.Equals(idx?.DocumentType) is true);
+                    foreach (var dependant in dependants)
+                        _indices.Remove(dependant.Name);
+                }
+            }
+            else
+            {
+                var parent = IndicesByType[idx.IndexAsType];
+                if (parent?.Any() is not true)
+                {
+                    Log.Error("Could not delete index {0}.  Its value {1} for {2} did not successfully map to an existing index.", idx.Name, idx.IndexAsType, nameof(Index.IndexAsType));
+                    return false;
+                }
+                var req = new DeleteAliasDescriptor(Nest.Indices.Index(parent.Select(x => x.Name)), idx.Name);
+                var result = await _client.Indices.DeleteAliasAsync(req);
+                if (result.IsValid is not true)
+                {
+                    Log.Error("Could not successfully delete index {0}", indexName);
+                    Log.Error(result?.ServerError?.Error.Reason);
+                    Log.Error(result?.OriginalException?.Message);
+                    Log.Error(result?.OriginalException?.StackTrace);
+                    return false;
+                }
+            }
             
-            var req = new DeleteIndexDescriptor(Nest.Indices.Index(indexName));
-
-            var result = await _client.Indices.DeleteAsync(req);
-
-            if (!result.IsValid)
-            {
-                Log.Error("Could not successfully delete index {0}", indexName);
-                Log.Error(result.ServerError?.Error.Reason);
-                Log.Error(result.OriginalException.Message);
-                Log.Error(result.OriginalException.StackTrace);
-                await Task.CompletedTask;
-                return false;
-            }
-
-            var idx = _indices[indexName];
-            if (preserveDependentIndices is not true)
-            {
-                var dependants = Indices.Where(x => x?.IndexAsType?.Equals(idx?.DocumentType) is true);
-                foreach (var dependant in dependants)
-                    _indices.Remove(dependant.Name);
-            }
             if (_indices.Remove(indexName))
             {
                 await DeleteFromInternalStore(idx);
@@ -397,16 +359,15 @@ namespace seaq
                     idx = await CreateIndexAsync(indexConfig);
                 }
             }
-            var idxTarget = IndicesByType[idx.IndexAsType].FirstOrDefault()?.Name ?? idx.Name;
-            Log.Verbose("Attempting to index document {0} to index {1}", document.Id, idxTarget);
+            Log.Verbose("Attempting to index document {0} to index {1}", document.Id, idx.Name);
             var res = await _client.IndexAsync(
                 document,
                 x => x
-                    .Index(Nest.Indices.Index(idxTarget))
+                    .Index(idx.Name)
                     .Refresh(idx.ForceRefreshOnDocumentCommit
                         ? Refresh.True
                         : Refresh.False));
-            Log.Verbose("Index operation complete for document {0} to index {1}", document.Id, idxTarget);
+            Log.Verbose("Index operation complete for document {0} to index {1}", document.Id, idx.Name);
 
             if (res.IsValid is not true)
             {
@@ -441,17 +402,8 @@ namespace seaq
                     Log.Warning("Could not identify index for provided document {0}", document.Id);
                     return false;
                 }
-                var idxTarget = idx.Name;
-                if (!string.IsNullOrWhiteSpace(idx.IndexAsType))
-                {
-                    if (!idx_as_type_cache.TryGetValue(idx.Name, out idxTarget))
-                    {
-                        idxTarget = IndicesByType[idx.IndexAsType].FirstOrDefault()?.Name ?? idx.Name;
-                        idx_as_type_cache[idx.Name] = idxTarget;
-                    }
-                }
                 bulk.Index<object>(x => x
-                    .Index(idxTarget)
+                    .Index(idx.Name)
                     .Id(document.Id)
                     .Document(document))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
@@ -531,7 +483,7 @@ namespace seaq
             var res = await _client.IndexAsync(
                 doc,
                 x => x
-                    .Index(Nest.Indices.Index(idx.Name))
+                    .Index(idx.Name)
                     .Refresh(idx.ForceRefreshOnDocumentCommit
                         ? Refresh.True
                         : Refresh.False));
@@ -578,17 +530,8 @@ namespace seaq
                     return false;
                 }
 
-                var idxTarget = idx.Name;
-                if (!string.IsNullOrWhiteSpace(idx.IndexAsType))
-                {
-                    if (!idx_as_type_cache.TryGetValue(idx.Name, out idxTarget))
-                    {
-                        idxTarget = IndicesByType[idx.IndexAsType].FirstOrDefault()?.Name ?? idx.Name;
-                        idx_as_type_cache[idx.Name] = idxTarget;
-                    }
-                }
                 bulk.Index<object>(x => x
-                    .Index(idxTarget)
+                    .Index(idx.Name)
                     .Id(doc.Id)
                     .Document(document))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
@@ -600,7 +543,7 @@ namespace seaq
 
             var resp = await _client.BulkAsync(bulk);
 
-            //There are issues with cross-version compatability and error detection on bulk methods - many successful index ops report unknown errors.
+            //There are issues with cross-version compatability and error detection on bulk methods - many successful index ops report unknown/empty errors.
             //Taking a simpler, more naive path towards success detection until a new release of the client that functions correctly.
 
             //Log.Verbose("Bulk index attempt complete with {0} errors.", resp.ItemsWithErrors.Count());
@@ -640,19 +583,7 @@ namespace seaq
         }
         public async Task<Index> GetIndexDefinitionAsync(string indexName)
         {
-            var query = new GetIndexRequest(Nest.Indices.Index(indexName));
-            var resp = await _client.Indices
-                .GetAsync(query);
-
-            if (resp.IsValid is not true)
-            {
-                Log.Error("Could not retrieve index definition.");
-                Log.Error(resp.ServerError?.Error?.Reason);
-                Log.Error(resp.OriginalException.Message);
-                Log.Error(resp.OriginalException.StackTrace);
-            }
-
-            return resp.Indices.Select(Index.Create).FirstOrDefault();
+            return await BuildIndexDefinitionFromServer(indexName);
         }
 
         //update index schema
@@ -704,16 +635,7 @@ namespace seaq
                 throw new InvalidOperationException(string.Format(msg, index.Name));
             }
 
-            var server_index = _client.Indices.Get(index.Name)?.Indices?.FirstOrDefault();
-
-            if (!server_index.HasValue)
-            {
-                const string msg = @"Index {0} mapping update reported success, but could not retrieve index definition from server.  This cannot be automatically resolved - suggest handling with index cache refresh.";
-                Log.Error(msg, index.Name);
-                throw new InvalidOperationException(string.Format(msg, index.Name));
-            }
-
-            index = Index.Create(server_index.Value);
+            index = await BuildIndexDefinitionFromServer(index.Name);
 
             _indices[index.Name] = index;
 
@@ -1422,6 +1344,98 @@ namespace seaq
             return await query.ExecuteAsync(_client) as TResp;
         }
 
+        private Type TryGetSearchType(
+            string typeFullName)
+        {
+            if (string.IsNullOrEmpty(typeFullName)) return null;
+            if (_searchableTypes.TryGetValue(typeFullName, out var type))
+            {
+                return type;
+            }
+            else
+            {
+                var t = typeof(BaseDocument);
+                Log.Warning("Type {0} could not be found on the cluster - falling back to type {1}", typeFullName, t.FullName);
+                return t;
+            }
+        }
+        private static ElasticClient BuildClient(
+            ClusterArgs args,
+            ISeaqElasticsearchSerializer serializer)
+        {
+            var pool = new SingleNodeConnectionPool(
+                new Uri(args.Url));
+
+            var settings = new ConnectionSettings(
+                pool,
+                (a, b) => serializer);
+
+            if (args.EnableVersionCompatabilityHeader is true)
+                settings.EnableApiVersioningHeader();
+
+            if (!string.IsNullOrWhiteSpace(args.Username) && !string.IsNullOrWhiteSpace(args.Password))
+            {
+                settings.BasicAuthentication(args.Username, args.Password);
+                ///this is the great big hammer to break out when things aren't working - 
+                ///it bypasses certificate validation entirely, which is necessary for local self-signed certs,
+                ///but can be a GIANT security risk otherwise.  Only used for debugging for a reason.
+#if DEBUG
+                Log.Debug("DEBUG mode enabled.  Ignoring server certificate validation and enabling additional Elasticsearch debug messages.");
+                settings.ServerCertificateValidationCallback((a, b, c, d) => true);
+                settings.EnableDebugMode();
+#endif
+            }
+            if (args.BypassCertificateValidation)
+            {
+                Log.Warning("Bypassing SSL Certificate Validation.  This is necessary for self-signed and other untrusted certificates, but can pose a large security risk.  Make sure that this is intentional.");
+                settings.ServerCertificateValidationCallback((a, b, c, d) => true);
+            }
+
+            return new ElasticClient(settings);
+        }
+        
+        private async Task HydrateInternalStore()
+        {
+            await CommitAsync(_indices.Values);
+        }
+        private async Task DeleteInternalStore()
+        {
+            await DeleteIndexAsync(typeof(seaq.Index).FullName);
+        }
+        private async Task SaveToInternalStore(Index idx)
+        {
+            await CommitAsync(idx);
+        }
+        private async Task DeleteFromInternalStore(Index idx)
+        {
+            await DeleteAsync(idx);
+        }
+        private async Task RefreshFromInternalStore()
+        {
+            const int pageSize = 1000;
+            var cnt = await _client.CountAsync<Index>(x => x.Index(InternalStoreIndex));
+            var pages = Math.Ceiling(cnt.Count / (double)pageSize);
+
+            for (var i = 0; i < pages; i++)
+            {
+                var resp = await _client.SearchAsync<Index>(x => x.Index(InternalStoreIndex).MatchAll()
+                    .Sort(z => z
+                        .Ascending(FieldNameUtilities.GetElasticSortPropertyName(typeof(Index), nameof(Index.Name))))
+                    .Skip(i * pageSize)
+                    .Size(pageSize));
+                if (resp.IsValid)
+                {
+                    if (_indices?.Any() is not true)
+                        _indices = new Dictionary<string, Index>();
+                    resp.Documents.ToList().ForEach(x =>
+                    {
+                        if (!_indices.ContainsKey(x.Name))
+                            _indices[x.Name] = x;
+                    });
+                }
+            }
+
+        }
 
         private bool TryGetIndexForDocument<T>(T document, out Index index)
             where T : IDocument
@@ -1492,98 +1506,122 @@ namespace seaq
             Log.Verbose("Event handlers configured.");
         }
 
-        private Type TryGetSearchType(
-            string typeFullName)
+        private async Task<Index> BuildIndexDefinitionFromServer(
+            string indexName)
         {
-            if (_searchableTypes.TryGetValue(typeFullName, out var type))
+            if (string.IsNullOrWhiteSpace(indexName))
             {
-                return type;
+                Log.Error("Could not successfully build index definition from server - param {0} is required.", nameof(indexName));
+                return null;
             }
-            else
-            {
-                var t = typeof(BaseDocument);
-                Log.Warning("Type {0} could not be found on the cluster - falling back to type {1}", typeFullName, t.FullName);
-                return t;
-            }
-        }
-        private static ElasticClient BuildClient(
-            ClusterArgs args,
-            ISeaqElasticsearchSerializer serializer)
-        {
-            var pool = new SingleNodeConnectionPool(
-                new Uri(args.Url));
+            var resp = await _client.Indices.GetAsync(indexName);
 
-            var settings = new ConnectionSettings(
-                pool,
-                (a, b) => serializer);
 
-            if (args.EnableVersionCompatabilityHeader is true)
-                settings.EnableApiVersioningHeader();
-
-            if (!string.IsNullOrWhiteSpace(args.Username) && !string.IsNullOrWhiteSpace(args.Password))
+            if (resp.IsValid is not true)
             {
-                settings.BasicAuthentication(args.Username, args.Password);
-                ///this is the great big hammer to break out when things aren't working - 
-                ///it bypasses certificate validation entirely, which is necessary for local self-signed certs,
-                ///but can be a GIANT security risk otherwise.  Only used for debugging for a reason.
-#if DEBUG
-                Log.Debug("DEBUG mode enabled.  Ignoring server certificate validation and enabling additional Elasticsearch debug messages.");
-                settings.ServerCertificateValidationCallback((a, b, c, d) => true);
-                settings.EnableDebugMode();
-#endif
-            }
-            if (args.BypassCertificateValidation)
-            {
-                Log.Warning("Bypassing SSL Certificate Validation.  This is necessary for self-signed and other untrusted certificates, but can pose a large security risk.  Make sure that this is intentional.");
-                settings.ServerCertificateValidationCallback((a, b, c, d) => true);
+                Log.Error("Could not retrieve index definition.");
+                Log.Error(resp?.ServerError?.Error?.Reason);
+                Log.Error(resp?.OriginalException?.Message);
+                Log.Error(resp?.OriginalException?.StackTrace);
+                return null;
             }
 
-            return new ElasticClient(settings);
+            var server_index = resp?.Indices?.FirstOrDefault();
+            return Index.Create(server_index.Value);
         }
-    
-    
-        private async Task HydrateInternalStore()
-        {
-            await CommitAsync(_indices.Values);
-        }
-        private async Task DeleteInternalStore()
-        {
-            await DeleteIndexAsync(typeof(seaq.Index).FullName);
-        }
-        private async Task SaveToInternalStore(Index idx)
-        {
-            await CommitAsync(idx);
-        }
-        private async Task DeleteFromInternalStore(Index idx)
-        {
-            await DeleteAsync(idx);
-        }
-        private async Task RefreshFromInternalStore()
-        {
-            const int pageSize = 1000;
-            var cnt = await _client.CountAsync<Index>(x => x.Index(InternalStoreIndex));
-            var pages = Math.Ceiling(cnt.Count / (double)pageSize);
 
-            for (var i = 0; i < pages; i++)
+        private async Task<Index> CreateIndexAsIndex(
+            IndexConfig config,
+            Type type)
+        {
+            var result = await _client.Indices.CreateAsync(config.Name, desc => desc.Extend(config, type));
+
+            if (!result.IsValid)
             {
-                var resp = await _client.SearchAsync<Index>(x => x.Index(InternalStoreIndex).MatchAll()
-                    .Sort(z => z
-                        .Ascending(FieldNameUtilities.GetElasticSortPropertyName(typeof(Index), nameof(Index.Name))))
-                    .Skip(i * pageSize)
-                    .Size(pageSize));
-                if (resp.IsValid)
-                {
-                    if (_indices?.Any() is not true)
-                        _indices = new Dictionary<string, Index>();
-                    resp.Documents.ToList().ForEach(x =>
-                    {
-                        if (!_indices.ContainsKey(x.Name))
-                            _indices[x.Name] = x;
-                    });
-                }
+                Log.Error("Could not successfully create requested index {0}", config.Name);
+                Log.Error(result?.ServerError?.Error?.Reason);
+                Log.Error(result?.OriginalException?.Message);
+                Log.Error(result?.OriginalException?.StackTrace);
+                await Task.CompletedTask;
+                return null;
             }
 
+            Log.Debug("Index {0} created successfully", config.Name);
+            return await BuildIndexDefinitionFromServer(config.Name);
         }
+        private async Task<Index> CreateIndexAsAlias(
+            IndexConfig config)
+        {
+            var any = IndicesByType[config.IndexAsType].FirstOrDefault();
+            if (any == null)
+            {
+                Log.Error("Cannot create an index with an {0} mapping of {1} since no index with type {1} exists on the cluster",
+                    nameof(IndexConfig.IndexAsType), config.IndexAsType, config.IndexAsType);
+                return null;
+            }
+            var t0 = SearchableTypes.FirstOrDefault(x => x.FullName.Equals(config.IndexAsType, StringComparison.OrdinalIgnoreCase));
+            var t = SearchableTypes.FirstOrDefault(x => x.FullName.Equals(config.DocumentType, StringComparison.OrdinalIgnoreCase));
+            if (t0 == null)
+            {
+                //can't
+                Log.Error($"Couldn't find specified {nameof(Index.IndexAsType)} of {t0.Name} across loaded assemblies.  " +
+                    $"Make sure you've referenced it prior to initializing your seaq cluster to ensure that" +
+                    $"the runtime has loaded it.");
+                return null;
+            }
+            if (t == null)
+            {
+                //can't
+                Log.Error($"Couldn't find specified {nameof(Index.DocumentType)} of {t.Name} across loaded assemblies.  " +
+                    $"Make sure you've referenced it prior to initializing your seaq cluster to ensure that" +
+                    $"the runtime has loaded it.");
+                return null;
+            }
+            if (!t.IsSubclassOf(t0))
+            {
+                //still can't
+                Log.Error($"When specifying {nameof(Index.IndexAsType)}, the provided {nameof(Index.DocumentType)} must be a subclass of the specified {nameof(Index.IndexAsType)}");
+                Log.Error($"{t.FullName} does not implement {t0.FullName} as required.");
+                return null;
+            }
 
+            //we do this dance  *specifically and explicitly* to avoid creating an index on the server,
+            //because oversharding is bad mmmkay.
+            //with that in mind, we short-circuit the creation process here.
+
+            var field = FieldNameUtilities.GetElasticAggregatablePropertyName(typeof(BaseDocument), nameof(BaseDocument.Type));
+            var aResp = await _client.Indices.PutAliasAsync(
+                any.Name, 
+                config.Name,
+                f => f
+                    .IsWriteIndex()
+                    .Filter<BaseDocument>(f => f
+                        .Term(t => t
+                            .Field(field)
+                            .Value(config.DocumentType))));
+
+            if (aResp.IsValid is not true)
+            {
+                Log.Error("Could not successfully create requested index {0}", config.Name);
+                Log.Error(aResp?.ServerError?.Error?.Reason);
+                Log.Error(aResp?.OriginalException?.Message);
+                Log.Error(aResp?.OriginalException?.StackTrace);
+                await Task.CompletedTask;
+                return null;
+            }
+            var resp = await BuildIndexDefinitionFromServer(config.Name);
+            //adjust this.  a get index mapping op that targets an alias returns the underlying index,
+            //complete with original (and wrong, for these purposes) index name
+            
+            if (resp == null)
+            {
+                Log.Error("Unknown error occurred when creating index {0} as alias.  The create operation reported success, but the definition could not be retrieved.", config.Name);
+                return null;
+            }
+
+            var index = new Index(config);
+            index.Fields = resp.Fields;
+            return index;
+        }
     }
 }

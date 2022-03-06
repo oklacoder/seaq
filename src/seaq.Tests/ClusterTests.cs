@@ -79,10 +79,11 @@ namespace SEAQ.Tests
             var c0 = new IndexConfig(t0, t0);
             _ = await cluster.CreateIndexAsync(c0);
 
-            var config = new IndexConfig(type, type, new[] { test_alias, test_alias }, indexAsType: t0);
+            var config = new IndexConfig(type, type, indexAsType: t0);
             var resp = await cluster.CreateIndexAsync(config);
 
             Assert.NotNull(resp);
+            Assert.NotNull(resp.IndexAsType);
 
             var exists = cluster.Indices.Any(x => x.Name == config.Name);
             var existsByType = cluster.IndicesByType[type]?.Any();
@@ -211,6 +212,38 @@ namespace SEAQ.Tests
 
             //delete it here
             var delResp = await cluster.DeleteIndexAsync(config0.Name);
+
+            var stillExists = cluster.Indices.Any(x => x.Name == config.Name);
+            var stillExistsByType = cluster.IndicesByType[type]?.Any();
+
+            DecomissionCluster(cluster);
+
+            Assert.NotNull(resp);
+            Assert.True(exists);
+            Assert.True(existsByType);
+            Assert.True(delResp);
+            Assert.False(stillExists);
+            Assert.False(stillExistsByType);
+        }
+        [Fact]
+        public async void DeleteIndex_DeletesIndexAsTypeIndex()
+        {
+            const string method = "DeleteIndex_DeletesIndexAsTypeIndex";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type0 = typeof(TestDoc).FullName;
+            var type = typeof(TestDoc1).FullName;
+
+            var config0 = new IndexConfig(type0, type0);
+            var resp0 = await cluster.CreateIndexAsync(config0);
+            var config = new IndexConfig(type, type, indexAsType: type0);
+            var resp = await cluster.CreateIndexAsync(config);
+
+            var exists = cluster.Indices.Any(x => x.Name == config.Name);
+            var existsByType = cluster.IndicesByType[type]?.Any();
+
+            //delete it here
+            var delResp = await cluster.DeleteIndexAsync(config.Name);
 
             var stillExists = cluster.Indices.Any(x => x.Name == config.Name);
             var stillExistsByType = cluster.IndicesByType[type]?.Any();
