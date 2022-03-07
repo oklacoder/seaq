@@ -20,6 +20,8 @@ namespace seaq
         public event EventHandler IndexCacheInitialized;
         public event EventHandler IndexCacheRefreshed;
         public event EventHandler IndexCacheRefreshing;
+        public event EventHandler IndexCacheSettingsRefreshed;
+        public event EventHandler IndexCacheSettingsRefreshing;
 
         public string ClusterScope { get; set; }
 
@@ -160,11 +162,19 @@ namespace seaq
             foreach (var v in vals)
                 _indices[v.Name] = v;
             
-            await RefreshFromInternalStore();
 
             await HydrateInternalStore();
 
             IndexCacheRefreshed?.Invoke(this, null);
+        }
+
+        public async Task RefreshIndexSettings()
+        {
+            IndexCacheSettingsRefreshing?.Invoke(this, null);
+
+            await RefreshFromInternalStore();
+
+            IndexCacheSettingsRefreshed?.Invoke(this, null);
         }
 
         //add index
