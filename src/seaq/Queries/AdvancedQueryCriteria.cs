@@ -134,9 +134,9 @@ namespace seaq
         }
         internal void ApplyQueryBoosts(IEnumerable<Index> indices)
         {
-            List<string> fields = new List<string>();
+            List<string> fields = new List<string>() { "*" };
 
-            foreach(var idx in indices)
+            foreach (var idx in indices)
             {
                 if (Indices.Contains(idx.Name))
                 {
@@ -218,9 +218,8 @@ namespace seaq
                 .Index(Indices)
                 .Skip(Skip ?? 0)
                 .Take(Take ?? 10)
-                .Fields(f => f.Fields(BoostedFields?.ToArray()))
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<BaseDocument>())
-                .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields))
+                .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields, boostFields: BoostedFields))
                 .Source(t => ReturnFields.GetSourceFilterDescriptor<BaseDocument>())
                 .Sort(s => SortFields.GetSortDescriptor<BaseDocument>());
 
@@ -349,7 +348,7 @@ namespace seaq
         }
         internal void ApplyQueryBoosts(IEnumerable<Index> indices)
         {
-            List<string> fields = new List<string>();
+            List<string> fields = new List<string>() { "*" };
 
             foreach (var idx in indices)
             {
@@ -359,8 +358,6 @@ namespace seaq
                     fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields));
                 }
             }
-            if (fields?.Any() is not true)
-                fields.Add("id^1");
 
             BoostedFields = fields.Distinct();
         }
@@ -431,11 +428,10 @@ namespace seaq
                 .Index(Indices)
                 .Skip(Skip ?? 0)
                 .Take(Take ?? 10)
-                .Fields(f => f.Fields(BoostedFields?.ToArray()))
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<T>())
-                .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields))
-                .Source(t => ReturnFields.GetSourceFilterDescriptor<T>())                
-                .Sort(s => SortFields.GetSortDescriptor<T>());
+                .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields, boostFields: BoostedFields))
+                .Source(t => ReturnFields.GetSourceFilterDescriptor<T>())
+                .Sort(s => SortFields.GetSortDescriptor<BaseDocument>());
 
             return s;
         }

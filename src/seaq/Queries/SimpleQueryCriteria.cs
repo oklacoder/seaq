@@ -127,7 +127,7 @@ namespace seaq
         }
         internal void ApplyQueryBoosts(IEnumerable<Index> indices)
         {
-            List<string> fields = new List<string>();
+            List<string> fields = new List<string>() { "*" };
 
             foreach (var idx in indices)
             {
@@ -217,11 +217,10 @@ namespace seaq
                 .Index(Indices)
                 .Skip(Skip ?? 0)
                 .Take(Take ?? 10)
-                .Fields(f => f.Fields(BoostedFields.ToArray()))
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<BaseDocument>())
                 .Source(t => ReturnFields.GetSourceFilterDescriptor<BaseDocument>())
                 .Sort(x => SortFields.GetSortDescriptor<BaseDocument>())
-                .Query(x => x.GetQueryContainerDescriptor(Text));
+                .Query(x => x.GetQueryContainerDescriptor(Text, boostFields: BoostedFields));
 
             return res;
         }
@@ -340,7 +339,7 @@ namespace seaq
         }
         internal void ApplyQueryBoosts(IEnumerable<Index> indices)
         {
-            List<string> fields = new List<string>();
+            List<string> fields = new List<string>() { "*" };
 
             foreach (var idx in indices)
             {
@@ -421,11 +420,10 @@ namespace seaq
                 .Index(Indices)
                 .Skip(Skip ?? 0)
                 .Take(Take ?? 10)
-                .Fields(f => f.Fields(BoostedFields?.ToArray()))
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<T>())
                 .Source(t => ReturnFields.GetSourceFilterDescriptor<T>())
                 .Sort(x => SortFields.GetSortDescriptor<T>())
-                .Query(x => x.GetQueryContainerDescriptor(Text));
+                .Query(x => x.GetQueryContainerDescriptor(Text, boostFields: BoostedFields));
 
             return res;
         }
