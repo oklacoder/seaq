@@ -1323,5 +1323,121 @@ namespace SEAQ.Tests
 
             Assert.True(resp);
         }
+
+        //can query created things
+
+        [Fact]
+        public async void CanQuery()
+        {
+            const string method = "CanQuery";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs<TestDoc>(100);
+
+            await cluster.CommitAsync(docs);
+
+            var qargs = new SimpleQueryCriteria<TestDoc>(docs.First().StringValue);
+            var q = new SimpleQuery<TestDoc>(qargs);
+
+            var resp = await cluster.QueryAsync(q);
+
+            DecomissionCluster(cluster);
+
+            Assert.NotNull(resp);
+            Assert.NotNull(resp.Results);
+            Assert.NotEmpty(resp.Results);
+        }
+        [Fact]
+        public async void CanQuery_CaseInsensitive_Upper()
+        {
+            const string method = "CanQuery_CaseInsensitive";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs<TestDoc>(100);
+
+            await cluster.CommitAsync(docs);
+
+            var qargs = new SimpleQueryCriteria<TestDoc>(docs.First().StringValue.ToUpper());
+            var q = new SimpleQuery<TestDoc>(qargs);
+
+            var resp = await cluster.QueryAsync(q);
+
+            DecomissionCluster(cluster);
+
+            Assert.NotNull(resp);
+            Assert.NotNull(resp.Results);
+            Assert.NotEmpty(resp.Results);
+        }
+        [Fact]
+        public async void CanQuery_CaseInsensitive_Lower()
+        {
+            const string method = "CanQuery_CaseInsensitive";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs<TestDoc>(100);
+
+            await cluster.CommitAsync(docs);
+
+            var qargs = new SimpleQueryCriteria<TestDoc>(docs.First().StringValue.ToLower());
+            var q = new SimpleQuery<TestDoc>(qargs);
+
+            var resp = await cluster.QueryAsync(q);
+
+            DecomissionCluster(cluster);
+
+            Assert.NotNull(resp);
+            Assert.NotNull(resp.Results);
+            Assert.NotEmpty(resp.Results);
+        }
+        [Fact]
+        public async void CanQuery_CaseInsensitive_Spongebob()
+        {
+            const string method = "CanQuery_CaseInsensitive";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs<TestDoc>(100);
+
+            await cluster.CommitAsync(docs);
+
+            IEnumerable<string> sillyLetters = new List<string>();
+            var val = docs.First().StringValue;
+
+            sillyLetters = val.ToArray().Select((l, i) =>
+            {
+                return i % 2 == 0 ? l.ToString().ToUpper() : l.ToString().ToLower();
+            });            
+            var queryVal = string.Join("",  sillyLetters);
+
+            var qargs = new SimpleQueryCriteria<TestDoc>(queryVal);
+            var q = new SimpleQuery<TestDoc>(qargs);
+
+            var resp = await cluster.QueryAsync(q);
+
+            DecomissionCluster(cluster);
+
+            Assert.NotNull(resp);
+            Assert.NotNull(resp.Results);
+            Assert.NotEmpty(resp.Results);
+        }
     }
 }

@@ -156,6 +156,7 @@ namespace seaq
                         .MultiMatch(mm => mm
                             .Query($"{query ?? ""}")
                             .Type(TextQueryType.PhrasePrefix)
+                            .ZeroTermsQuery(ZeroTermsQuery.All)
                             .Fields(f => f
                                 .Fields(boostFields?.ToArray() ?? new[] { "*" }))
                         ))
@@ -167,6 +168,7 @@ namespace seaq
                     MultiMatch(mm => mm
                         .Query($"{query ?? ""}")
                         .Type(TextQueryType.PhrasePrefix)
+                        .ZeroTermsQuery(ZeroTermsQuery.All)
                         .Fields(f => f.Fields(boostFields?.ToArray() ?? new[] { "*" })));
             }
             return desc;
