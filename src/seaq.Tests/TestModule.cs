@@ -70,14 +70,14 @@ namespace SEAQ.Tests
         {
             var childFaker = new Faker<TestChild>()
                 .RuleFor(x => x.ChildId, f => f.Random.Guid())
-                .RuleFor(x => x.StringValue, f => f.Random.Utf16String())
+                .RuleFor(x => x.StringValue, f => f.Lorem.Word())
                 .RuleFor(x => x.IntValue, f => f.Random.Int())
                 .RuleFor(x => x.DoubleValue, f => f.Random.Double())
                 .RuleFor(x => x.DecimalValue, f => f.Random.Decimal())
                 .RuleFor(x => x.DateValue, f => f.Date.Recent());
             var faker = new Faker<T>()
                 .RuleFor(x => x.DocId, f => f.Random.Guid())
-                .RuleFor(x => x.StringValue, f => f.Random.Utf16String())
+                .RuleFor(x => x.StringValue, f => f.Lorem.Word())
                 .RuleFor(x => x.IntValue, f => f.Random.Int())
                 .RuleFor(x => x.DoubleValue, f => f.Random.Double())
                 .RuleFor(x => x.DecimalValue, f => f.Random.Decimal())

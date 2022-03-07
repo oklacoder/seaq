@@ -70,9 +70,10 @@ namespace seaq
         private static AnalyzersDescriptor GetDefaultTextAnalyzer(
             AnalyzersDescriptor analyzersDescriptor)
         {
-            return analyzersDescriptor.Custom(
-                Constants.Tokenizers.Letter,
-                c => c.Tokenizer(Constants.Tokenizers.Letter));
+            return analyzersDescriptor
+                .Custom(
+                    Constants.Tokenizers.Letter,
+                    c => c.Filters("classic", "lowercase", "uppercase", "stop", "word_delimiter_graph").Tokenizer(Constants.Tokenizers.Letter));
         }
 
         private static TypeMappingDescriptor<object> GetTypeMappingDescriptor(
