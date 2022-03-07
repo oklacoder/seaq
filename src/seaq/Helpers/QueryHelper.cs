@@ -144,19 +144,30 @@ namespace seaq
         public static QueryContainerDescriptor<T> GetQueryContainerDescriptor<T>(
             this QueryContainerDescriptor<T> desc,
             string query,
-            IEnumerable<IFilterField> fields = null)
+            IEnumerable<IFilterField> fields = null,
+            IEnumerable<string> boostFields = null)
             where T : BaseDocument
         {
 
             if (fields?.Any() is true)
             {
                 desc.Bool(b => b
-                    .Must(s => s.QueryString(q => q.Query($"{query ?? ""}*").DefaultField("*")))
+                    .Must(s => s
+                        .MultiMatch(mm => mm
+                            .Query($"{query ?? ""}")
+                            .Type(TextQueryType.PhrasePrefix)
+                            .Fields(f => f
+                                .Fields(boostFields?.ToArray() ?? new[] { "*" }))
+                        ))
                     .Filter(fields?.GetQueryDesctiptor<T>()));
             }
             else
             {
-                desc.QueryString(q => q.Query($"{query ?? ""}*").DefaultField("*"));
+                desc.
+                    MultiMatch(mm => mm
+                        .Query($"{query ?? ""}")
+                        .Type(TextQueryType.PhrasePrefix)
+                        .Fields(f => f.Fields(boostFields?.ToArray() ?? new[] { "*" })));
             }
             return desc;
         }

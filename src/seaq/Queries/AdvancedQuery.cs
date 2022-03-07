@@ -58,8 +58,6 @@ namespace seaq
         {
             var query = _criteria.GetSearchDescriptor();
 
-            var json = client.RequestResponseSerializer.SerializeToString(query, SerializationFormatting.Indented);
-
             var results = client.Search<T>(query);
 
             return new AdvancedQueryResults<T>(results, _criteria.DeprecatedIndexTargets);
