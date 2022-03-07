@@ -217,10 +217,10 @@ namespace seaq
                 .Index(Indices)
                 .Skip(Skip ?? 0)
                 .Take(Take ?? 10)
+                .Fields(f => f.Fields(BoostedFields.ToArray()))
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<BaseDocument>())
                 .Source(t => ReturnFields.GetSourceFilterDescriptor<BaseDocument>())
                 .Sort(x => SortFields.GetSortDescriptor<BaseDocument>())
-                .Fields(f => f.Fields(BoostedFields.ToArray()))
                 .Query(x => x.GetQueryContainerDescriptor(Text));
 
             return res;
@@ -421,6 +421,7 @@ namespace seaq
                 .Index(Indices)
                 .Skip(Skip ?? 0)
                 .Take(Take ?? 10)
+                .Fields(f => f.Fields(BoostedFields?.ToArray()))
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<T>())
                 .Source(t => ReturnFields.GetSourceFilterDescriptor<T>())
                 .Sort(x => SortFields.GetSortDescriptor<T>())
