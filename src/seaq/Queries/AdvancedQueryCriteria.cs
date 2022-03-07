@@ -125,19 +125,7 @@ namespace seaq
             }
             DeprecatedIndexTargets = idx.Where(x => x.IsDeprecated).Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
             Indices = idx.Select(x => x.Name).ToArray();
-            //Indices = idx
-            //    .Select(x =>
-            //    {
-            //        //it really feels like this needs more than this, but i can't put my finger on what
-            //        if (string.IsNullOrWhiteSpace(x.IndexAsType))
-            //            return x.Name;
 
-            //        var byType = cluster.IndicesByType[x.IndexAsType];
-            //        if (byType?.Any() is not true)
-            //            throw new InvalidOperationException($"Index {x.Name} expects to query index of type {x.IndexAsType}, but no index exists on the cluster matching to that type.");
-            //        return byType?.FirstOrDefault()?.Name;
-            //    })
-            //    .ToArray();
             if (Indices?.Any() is not true)
             {
                 throw new InvalidOperationException($"No indices could be identified for type {Type}.  Query could not be processed.  " +
@@ -146,7 +134,7 @@ namespace seaq
         }
         internal void ApplyQueryBoosts(IEnumerable<Index> indices)
         {
-            List<string> fields = new List<string>() { "*" };
+            List<string> fields = new List<string>();
 
             foreach(var idx in indices)
             {
@@ -156,6 +144,8 @@ namespace seaq
                     fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields));
                 }
             }
+            if (fields?.Any() is not true)
+                fields.Add("id^1");
 
             BoostedFields = fields.Distinct();
         }
@@ -348,20 +338,8 @@ namespace seaq
                 DeprecatedIndexTargets = idx.Where(x => x.IsDeprecated).Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
                 idx = idx.Where(x => x.IsHidden is not true);
             }
-            Indices = idx.Select(x => x.Name).ToArray();
-            //Indices = idx
-            //    .Select(x =>
-            //    {
-            //        //it really feels like this needs more than this, but i can't put my finger on what
-            //        if (string.IsNullOrWhiteSpace(x.IndexAsType))
-            //            return x.Name;
 
-            //        var byType = cluster.IndicesByType[x.IndexAsType];
-            //        if (byType?.Any() is not true)
-            //            throw new InvalidOperationException($"Index {x.Name} expects to query index of type {x.IndexAsType}, but no index exists on the cluster matching to that type.");
-            //        return byType?.FirstOrDefault()?.Name;
-            //    })
-            //    .ToArray();
+            Indices = idx.Select(x => x.Name).ToArray();
             if (Indices?.Any() is not true)
             {
                 throw new InvalidOperationException($"No indices could be identified for type {typeof(T).FullName}.  Query could not be processed.  " +
@@ -370,7 +348,7 @@ namespace seaq
         }
         internal void ApplyQueryBoosts(IEnumerable<Index> indices)
         {
-            List<string> fields = new List<string>() { "*" };
+            List<string> fields = new List<string>();
 
             foreach (var idx in indices)
             {
@@ -380,6 +358,8 @@ namespace seaq
                     fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields));
                 }
             }
+            if (fields?.Any() is not true)
+                fields.Add("id^1");
 
             BoostedFields = fields.Distinct();
         }
