@@ -1439,8 +1439,7 @@ namespace seaq
                         _indices = new Dictionary<string, Index>();
                     resp.Documents.ToList().ForEach(x =>
                     {
-                        if (!_indices.ContainsKey(x.Name))
-                            _indices[x.Name] = x;
+                        _indices[x.Name] = x;
                     });
                 }
             }
