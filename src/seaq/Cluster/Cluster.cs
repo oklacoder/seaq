@@ -359,12 +359,12 @@ namespace seaq
             {
                 if (!AllowAutomaticIndexCreation)
                 {
-                    Log.Warning("Could not identify index for provided document {0} and cluster settings do not allow for automatic index creation.", document.Id);
+                    Log.Information("Could not identify index for provided document {0} and cluster settings do not allow for automatic index creation.", document.Id);
                     return false;
                 }
                 else
                 {
-                    Log.Warning("No index found for document with type {0}, but cluster settings allow for automatic index creation.", document.GetType().FullName);
+                    Log.Information("No index found for document with type {0}, but cluster settings allow for automatic index creation.", document.GetType().FullName);
                     var indexConfig = new IndexConfig(document.GetType().FullName, document.GetType().FullName, indexAsType: document.IndexAsType);
                     idx = await CreateIndexAsync(indexConfig);
                 }
@@ -646,6 +646,8 @@ namespace seaq
             }
 
             index = await BuildIndexDefinitionFromServer(index.Name);
+
+            await SaveToInternalStore(index);
 
             _indices[index.Name] = index;
 

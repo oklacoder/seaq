@@ -29,7 +29,7 @@ namespace seaq
                 var oldName = indexName;
                 indexName = indexName.ToLowerInvariant();
 
-                Log.Warning("Provided index name ({0}) was not all lowercase as required - index name coerced to {1}", oldName, indexName);
+                Log.Information("Provided index name ({0}) was not all lowercase as required - index name coerced to {1}", oldName, indexName);
             }
             return indexName;
         }
@@ -42,7 +42,7 @@ namespace seaq
                 var oldName = indexName;
                 indexName = string.Join(Constants.Indices.NamePartSeparator, clusterScope, indexName);
 
-                Log.Warning("Provided index name ({0}) did not begin with cluster's scope as required - index name coerced to {1}", oldName, indexName);
+                Log.Information("Provided index name ({0}) did not begin with cluster's scope as required - index name coerced to {1}", oldName, indexName);
             }
             return indexName;
         }
