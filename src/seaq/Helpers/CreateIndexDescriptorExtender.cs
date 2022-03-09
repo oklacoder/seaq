@@ -72,8 +72,8 @@ namespace seaq
         {
             return analyzersDescriptor
                 .Custom(
-                    Constants.Tokenizers.Letter,
-                    c => c.Filters("classic", "lowercase", "uppercase", "stop", "word_delimiter_graph").Tokenizer(Constants.Tokenizers.Letter));
+                    Constants.Tokenizers.Classic,
+                    c => c.Filters("classic", "lowercase", "uppercase", "stop", "word_delimiter_graph").Tokenizer(Constants.Tokenizers.Classic));
         }
 
         private static TypeMappingDescriptor<object> GetTypeMappingDescriptor(
