@@ -17,7 +17,7 @@ namespace seaq
                     .Normalizer(Constants.Normalizers.Lowercase);
 
             type.Fields.Add(Constants.Fields.SortField, sort);
-            type.Analyzer = Constants.Tokenizers.Letter;
+            type.Analyzer = Constants.Tokenizers.Classic;
 
             base.Visit(type, propertyInfo, attribute);
         }

@@ -18,6 +18,8 @@ namespace seaq
         public static class Tokenizers
         {
             public const string Letter = "letter";
+            public const string Standard = "standard";
+            public const string Classic = "classic";
         }
 
         public class Clusters
