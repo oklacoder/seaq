@@ -22,6 +22,11 @@ namespace SEAQ.Tests
         public DateTime? DateValue { get; set; }
         public TestChild ObjectProperty { get; set; }
         public IEnumerable<TestChild> CollectionProperty { get; set; }
+
+        public TestDoc()
+        {
+
+        }
     }
 
     public class TestDoc1 :

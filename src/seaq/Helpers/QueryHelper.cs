@@ -155,7 +155,7 @@ namespace seaq
                     .Must(s => s
                         .MultiMatch(mm => mm
                             .Query($"{query ?? ""}")
-                            .Type(TextQueryType.PhrasePrefix)
+                            .Type(TextQueryType.BoolPrefix)
                             .ZeroTermsQuery(ZeroTermsQuery.All)
                             .Fields(f => f
                                 .Fields(boostFields?.ToArray() ?? new[] { "*" }))
@@ -167,9 +167,25 @@ namespace seaq
                 desc.
                     MultiMatch(mm => mm
                         .Query($"{query ?? ""}")
-                        .Type(TextQueryType.PhrasePrefix)
+                        .Type(TextQueryType.BoolPrefix)
                         .ZeroTermsQuery(ZeroTermsQuery.All)
-                        .Fields(f => f.Fields(boostFields?.ToArray() ?? new[] { "*" })));
+                        .Fields(f => f
+                            .Fields(boostFields?.ToArray() ?? new[] { "*" })));
+
+                //desc
+                //    .QueryString(mm => mm
+                //        .Query($"{query?.Trim() ?? ""}")
+                //        .AnalyzeWildcard(true)
+                //        .Lenient()
+                //        .Strict(false)
+                //        .Fields(f => f.Fields(boostFields?.ToArray() ?? new[] { "*" })));
+
+                //desc.
+                //    MultiMatch(mm => mm
+                //        .Query($"{query ?? ""}")
+                //        .Type(TextQueryType.PhrasePrefix)
+                //        .ZeroTermsQuery(ZeroTermsQuery.All)
+                //        .Fields(f => f.Fields(boostFields?.ToArray() ?? new[] { "*" })));
             }
             return desc;
         }
