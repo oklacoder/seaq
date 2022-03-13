@@ -171,21 +171,6 @@ namespace seaq
                         .ZeroTermsQuery(ZeroTermsQuery.All)
                         .Fields(f => f
                             .Fields(boostFields?.ToArray() ?? new[] { "*" })));
-
-                //desc
-                //    .QueryString(mm => mm
-                //        .Query($"{query?.Trim() ?? ""}")
-                //        .AnalyzeWildcard(true)
-                //        .Lenient()
-                //        .Strict(false)
-                //        .Fields(f => f.Fields(boostFields?.ToArray() ?? new[] { "*" })));
-
-                //desc.
-                //    MultiMatch(mm => mm
-                //        .Query($"{query ?? ""}")
-                //        .Type(TextQueryType.PhrasePrefix)
-                //        .ZeroTermsQuery(ZeroTermsQuery.All)
-                //        .Fields(f => f.Fields(boostFields?.ToArray() ?? new[] { "*" })));
             }
             return desc;
         }
