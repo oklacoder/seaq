@@ -60,6 +60,8 @@ namespace seaq
             public const string SortField = "sort";
             public const string KeywordField = "keyword";
             public static IEnumerable<string> AlwaysReturnedFields => new string[] { nameof(BaseDocument.Id), nameof(BaseDocument.IndexName), nameof(BaseDocument.Type) };
+            public static IEnumerable<string> ExcludeFromQueryMatching => new string[] { nameof(BaseDocument.Id), nameof(BaseDocument.IndexName), nameof(BaseDocument.Type) };
+
             public static IEnumerable<string> NestReservedFieldNames => new string[] { 
                 "after_key",
                 "_as_string",
