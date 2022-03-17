@@ -1,4 +1,5 @@
 ﻿using Nest;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,6 +91,51 @@ namespace seaq
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
         public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
+
+        public AdvancedQueryCriteria() { }
+        public AdvancedQueryCriteria(
+            string text = null,
+            string type = null,
+            IEnumerable<string> indices = null,
+            IEnumerable<DefaultSortField> sortFields = null,
+            IEnumerable<DefaultReturnField> returnFields = null,
+            IEnumerable<DefaultFilterField> filterFields = null,
+            IEnumerable<DefaultBucketField> bucketFields = null,
+            int? skip = null,
+            int? take = null)
+        {
+            Type = type;
+            Text = text;
+            Indices = indices?.ToArray() ?? Array.Empty<string>();
+            _filterFields = filterFields;
+            _sortFields = sortFields;
+            _returnFields = returnFields;
+            _bucketFields = bucketFields;
+            Skip = skip;
+            Take = take;
+        }
+
+        public SearchDescriptor<BaseDocument> GetSearchDescriptor()
+        {
+            var s = new SearchDescriptor<BaseDocument>()
+                .Index(Indices)
+                .Skip(Skip ?? 0)
+                .Take(Take ?? 10)
+                .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<BaseDocument>())
+                .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields, boostFields: BoostedFields))
+                .Source(t => ReturnFields.GetSourceFilterDescriptor<BaseDocument>())
+                .Sort(s => SortFields.GetSortDescriptor<BaseDocument>());
+
+            return s;
+        }
+
+        public void UpdatePaging(
+            int skip,
+            int take)
+        {
+            this.Skip = skip;
+            this.Take = take;
+        }
 
         public void ApplyClusterSettings(Cluster cluster)
         {
@@ -190,41 +236,6 @@ namespace seaq
                 );
         }
 
-        public AdvancedQueryCriteria(
-            string text = null,
-            string type = null,
-            IEnumerable<string> indices = null,
-            IEnumerable<DefaultSortField> sortFields = null,
-            IEnumerable<DefaultReturnField> returnFields = null,
-            IEnumerable<DefaultFilterField> filterFields = null,
-            IEnumerable<DefaultBucketField> bucketFields = null,
-            int? skip = null,
-            int? take = null) 
-        {
-            Type = type;
-            Text = text;
-            Indices = indices?.ToArray() ?? Array.Empty<string>();
-            _filterFields = filterFields;
-            _sortFields = sortFields;
-            _returnFields = returnFields;
-            _bucketFields = bucketFields;
-            Skip = skip;
-            Take = take;
-        }
-
-        public SearchDescriptor<BaseDocument> GetSearchDescriptor()
-        {
-            var s = new SearchDescriptor<BaseDocument>()
-                .Index(Indices)
-                .Skip(Skip ?? 0)
-                .Take(Take ?? 10)
-                .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<BaseDocument>())
-                .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields, boostFields: BoostedFields))
-                .Source(t => ReturnFields.GetSourceFilterDescriptor<BaseDocument>())
-                .Sort(s => SortFields.GetSortDescriptor<BaseDocument>());
-
-            return s;
-        }
     }
 
     public class AdvancedQueryCriteria<T> :
@@ -304,6 +315,49 @@ namespace seaq
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
         public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
+
+        public AdvancedQueryCriteria() { }
+        public AdvancedQueryCriteria(
+            string text = null,
+            IEnumerable<string> indices = null,
+            IEnumerable<DefaultSortField> sortFields = null,
+            IEnumerable<DefaultReturnField> returnFields = null,
+            IEnumerable<DefaultFilterField> filterFields = null,
+            IEnumerable<DefaultBucketField> bucketFields = null,
+            int? skip = null,
+            int? take = null)
+        {
+            Indices = indices?.ToArray() ?? Array.Empty<string>();
+            _filterFields = filterFields;
+            Text = text;
+            _sortFields = sortFields;
+            _returnFields = returnFields;
+            _bucketFields = bucketFields;
+            Skip = skip;
+            Take = take;
+        }
+
+        public SearchDescriptor<T> GetSearchDescriptor()
+        {
+            var s = new SearchDescriptor<T>()
+                .Index(Indices)
+                .Skip(Skip ?? 0)
+                .Take(Take ?? 10)
+                .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<T>())
+                .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields, boostFields: BoostedFields))
+                .Source(t => ReturnFields.GetSourceFilterDescriptor<T>())
+                .Sort(s => SortFields.GetSortDescriptor<BaseDocument>());
+
+            return s;
+        }
+
+        public void UpdatePaging(
+            int skip,
+            int take)
+        {
+            this.Skip = skip;
+            this.Take = take;
+        }
 
         public void ApplyClusterSettings(Cluster cluster)
         {
@@ -402,38 +456,5 @@ namespace seaq
                 );
         }
 
-        public AdvancedQueryCriteria(
-            string text = null,
-            IEnumerable<string> indices = null,
-            IEnumerable<DefaultSortField> sortFields = null,
-            IEnumerable<DefaultReturnField> returnFields = null,
-            IEnumerable<DefaultFilterField> filterFields = null,
-            IEnumerable<DefaultBucketField> bucketFields = null,
-            int? skip = null,
-            int? take = null)
-        {
-            Indices = indices?.ToArray() ?? Array.Empty<string>();
-            _filterFields = filterFields;
-            Text = text;
-            _sortFields = sortFields;
-            _returnFields = returnFields;
-            _bucketFields = bucketFields;
-            Skip = skip;
-            Take = take;
-        }
-
-        public SearchDescriptor<T> GetSearchDescriptor()
-        {
-            var s = new SearchDescriptor<T>()
-                .Index(Indices)
-                .Skip(Skip ?? 0)
-                .Take(Take ?? 10)
-                .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<T>())
-                .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields, boostFields: BoostedFields))
-                .Source(t => ReturnFields.GetSourceFilterDescriptor<T>())
-                .Sort(s => SortFields.GetSortDescriptor<BaseDocument>());
-
-            return s;
-        }
     }
 }
