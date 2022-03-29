@@ -85,6 +85,7 @@ namespace seaq
         public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
 
         public SimpleQueryCriteria() { }
+        [JsonConstructor]
         public SimpleQueryCriteria(
             string type = null,
             string text = null,
@@ -306,6 +307,7 @@ namespace seaq
         public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
 
         public SimpleQueryCriteria() { }
+        [JsonConstructor]
         public SimpleQueryCriteria(
             string text,
             string[] indices = null,
