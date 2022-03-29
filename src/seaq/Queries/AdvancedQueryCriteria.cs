@@ -93,7 +93,9 @@ namespace seaq
         public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
 
         public AdvancedQueryCriteria() { }
-        [JsonConstructor]
+
+        [System.Text.Json.Serialization.JsonConstructor]
+        [Newtonsoft.Json.JsonConstructor]
         public AdvancedQueryCriteria(
             string text = null,
             string type = null,
@@ -318,7 +320,9 @@ namespace seaq
         public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
 
         public AdvancedQueryCriteria() { }
-        [JsonConstructor]
+
+        [System.Text.Json.Serialization.JsonConstructor]
+        [Newtonsoft.Json.JsonConstructor]
         public AdvancedQueryCriteria(
             string text = null,
             IEnumerable<string> indices = null,
