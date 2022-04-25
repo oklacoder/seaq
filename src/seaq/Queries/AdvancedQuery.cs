@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Elasticsearch.Net;
+using Serilog;
 
 namespace seaq
 {
@@ -33,6 +34,21 @@ namespace seaq
         public async Task<AdvancedQueryResults> ExecuteAsync(Nest.ElasticClient client)
         {
             var results = await client.SearchAsync<BaseDocument>(_criteria.GetSearchDescriptor());
+
+            if (results.IsValid is not true)
+            {
+                Log.Error("Error processing query:");
+                Log.Error(results.DebugInformation);
+                if (results.OriginalException is not null)
+                {
+                    Log.Error(results.OriginalException.Message);
+                    Log.Error(results.OriginalException.StackTrace);
+                }
+                if (results.ServerError?.Error?.Reason is not null)
+                {
+                    Log.Error(results.ServerError?.Error?.Reason);
+                }
+            }
 
             return new AdvancedQueryResults(results, _criteria.DeprecatedIndexTargets);
         }
@@ -71,6 +87,21 @@ namespace seaq
         public async Task<AdvancedQueryResults<T>> ExecuteAsync(Nest.ElasticClient client)
         {
             var results = await client.SearchAsync<T>(_criteria.GetSearchDescriptor());
+
+            if (results.IsValid is not true)
+            {
+                Log.Error("Error processing query:");
+                Log.Error(results.DebugInformation);
+                if (results.OriginalException is not null)
+                {
+                    Log.Error(results.OriginalException.Message);
+                    Log.Error(results.OriginalException.StackTrace);
+                }
+                if (results.ServerError?.Error?.Reason is not null)
+                {
+                    Log.Error(results.ServerError?.Error?.Reason);
+                }
+            }
 
             return new AdvancedQueryResults<T>(results, _criteria.DeprecatedIndexTargets);
         }

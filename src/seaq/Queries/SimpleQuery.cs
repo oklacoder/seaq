@@ -36,6 +36,21 @@ namespace seaq
 
             var results = await client.SearchAsync<BaseDocument>(query);
 
+            if (results.IsValid is not true)
+            {
+                Log.Error("Error processing query:");
+                Log.Error(results.DebugInformation);
+                if (results.OriginalException is not null)
+                {
+                    Log.Error(results.OriginalException.Message);
+                    Log.Error(results.OriginalException.StackTrace);
+                }
+                if (results.ServerError?.Error?.Reason is not null)
+                {
+                    Log.Error(results.ServerError?.Error?.Reason);
+                }
+            }
+
             return new SimpleQueryResults(results, _criteria.DeprecatedIndexTargets);
         }
 
@@ -80,6 +95,21 @@ namespace seaq
                 client.RequestResponseSerializer.SerializeToString(query));
 
             var results = await client.SearchAsync<T>(query);
+
+            if (results.IsValid is not true)
+            {
+                Log.Error("Error processing query:");
+                Log.Error(results.DebugInformation);
+                if (results.OriginalException is not null)
+                {
+                    Log.Error(results.OriginalException.Message);
+                    Log.Error(results.OriginalException.StackTrace);
+                }
+                if (results.ServerError?.Error?.Reason is not null)
+                {
+                    Log.Error(results.ServerError?.Error?.Reason);
+                }
+            }
 
             return new SimpleQueryResults<T>(results, _criteria.DeprecatedIndexTargets);
         }
