@@ -19,6 +19,14 @@ jobs:
     name: Build
     runs-on: windows-latest
     steps:
+      - name: setup dotnet5
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.201
+      - name: setup dotnet6
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.100
       - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
@@ -52,5 +60,5 @@ jobs:
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"oklacoder_seaq" /o:"oklacoder" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
-          .\dotnet build src/$PROJECT_NAME.sln --configuration $ENV -p:Version=$VERSION
+          dotnet build src/$PROJECT_NAME.sln --configuration $ENV -p:Version=$VERSION
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
