@@ -5,6 +5,15 @@ on:
       - develop
   pull_request:
     types: [opened, synchronize, reopened]
+env:
+  ENV: Debug
+  PROJECT_ROOT: 'seaq'
+  PROJECT_NAME: 'seaq'
+  SEMVER: '0.2.1'
+  SUFFIX: 'beta'
+  BRANCH: ''
+  VERSION: ''
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 jobs:
   build:
     name: Build
@@ -43,5 +52,5 @@ jobs:
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"oklacoder_seaq" /o:"oklacoder" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
-          <insert_your_build_command>
+          .\dotnet build src/$PROJECT_NAME.sln --configuration $ENV -p:Version=$VERSION
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
