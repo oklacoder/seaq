@@ -60,5 +60,6 @@ jobs:
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"oklacoder_seaq" /o:"oklacoder" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
-          dotnet build src/$PROJECT_NAME.sln --configuration $ENV -p:Version=$VERSION
+          # dotnet build src/$PROJECT_NAME.sln --configuration $ENV -p:Version=$VERSION
+          echo ls
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
