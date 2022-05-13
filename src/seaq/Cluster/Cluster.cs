@@ -190,6 +190,11 @@ namespace seaq
         {
             Log.Debug("Attempting to create index {0}", config.Name);
 
+            if (string.IsNullOrWhiteSpace(config.Name))
+            {
+                throw new InvalidOperationException($"Cannot create index - no {nameof(config.Name)} was provided.");
+            }
+
             config.Name = config.Name.FormatIndexName(ClusterScope);
             
             if (_indices.ContainsKey(config.Name))
@@ -355,19 +360,10 @@ namespace seaq
         public async Task<bool> CommitAsync<T>(T document)
             where T : class, IDocument
         {
-            if (!TryGetIndexForDocument(document, out var idx))
+            if (!TryGetOrCreateIndexForDocument(document, out var idx))
             {
-                if (!AllowAutomaticIndexCreation)
-                {
-                    Log.Information("Could not identify index for provided document {0} and cluster settings do not allow for automatic index creation.", document.Id);
-                    return false;
-                }
-                else
-                {
-                    Log.Information("No index found for document with type {0}, but cluster settings allow for automatic index creation.", document.GetType().FullName);
-                    var indexConfig = new IndexConfig(document.GetType().FullName, document.GetType().FullName, indexAsType: document.IndexAsType);
-                    idx = await CreateIndexAsync(indexConfig);
-                }
+                Log.Information("Could not identify index for provided document {0} and cluster settings do not allow for automatic index creation.", document.Id);
+                return false;
             }
             Log.Verbose("Attempting to index document {0} to index {1}", document.Id, idx.Name);
             var res = await _client.IndexAsync(
@@ -407,7 +403,7 @@ namespace seaq
             foreach(var document in documents)
             {
 
-                if (!TryGetIndexForDocument(document, out var idx))
+                if (!TryGetOrCreateIndexForDocument(document, out var idx))
                 {
                     Log.Warning("Could not identify index for provided document {0}", document.Id);
                     return false;
@@ -474,19 +470,10 @@ namespace seaq
                 Log.Warning("Provided document of type {0} could not be cast as {1}.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
                 return false;
             }
-            if (!TryGetIndexForDocument(doc, out var idx))
+            if (!TryGetOrCreateIndexForDocument(doc, out var idx))
             {
-                if (!AllowAutomaticIndexCreation)
-                {
-                    Log.Warning("Could not identify index for provided document {0} and cluster settings do not allow for automatic index creation.", doc.Id);
-                    return false;
-                }
-                else
-                {
-                    Log.Warning("No index found for document with type {0}, but cluster settings allow for automatic index creation.", doc.GetType().FullName);
-                    var indexConfig = new IndexConfig(doc.GetType().FullName, doc.GetType().FullName);
-                    idx = await CreateIndexAsync(indexConfig);
-                }
+                Log.Warning("Could not identify index for provided document {0} and cluster settings do not allow for automatic index creation.", doc.Id);
+                return false;
             }
 
             Log.Verbose("Attempting to index document {0} to index {1}", doc.Id, idx.Name);
@@ -534,7 +521,7 @@ namespace seaq
                     Log.Warning("Provided document of type {0} could not be cast as {1}.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
                     return false;
                 }
-                if (!TryGetIndexForDocument(doc, out var idx))
+                if (!TryGetOrCreateIndexForDocument(doc, out var idx))
                 {
                     Log.Warning("Could not identify index for provided document {0}", doc.Id);
                     return false;
@@ -1446,6 +1433,29 @@ namespace seaq
                 }
             }
 
+        }
+
+        private bool TryGetOrCreateIndexForDocument<T>(T document, out Index index)
+            where T : IDocument
+        {
+            if (TryGetIndexForDocument(document, out index))
+            {
+                return true;
+            }
+            else
+            {
+                if (AllowAutomaticIndexCreation is not true)
+                {
+                    return false;
+                }
+                else
+                {
+                    Log.Warning("No index found for document with type {0}, but cluster settings allow for automatic index creation.", document.GetType().FullName);
+                    var indexConfig = new IndexConfig(document.IndexName, document.Type, indexAsType: document.IndexAsType);
+                    index = CreateIndex(indexConfig);
+                    return index != null;
+                }
+            }
         }
 
         private bool TryGetIndexForDocument<T>(T document, out Index index)

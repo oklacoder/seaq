@@ -8,9 +8,9 @@ namespace SEAQ.Tests
         BaseDocument
     {
         public override string Id => DocId.ToString();
-               
-        public override string IndexName { get; set; }
-               
+
+        public override string IndexName => GetType().FullName;
+
         public override string Type => GetType().FullName;
 
         public Guid DocId { get; set; }

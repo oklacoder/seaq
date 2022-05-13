@@ -352,8 +352,6 @@ namespace SEAQ.Tests
 
             var type = typeof(TestDoc).FullName;
 
-            var config = new IndexConfig(type, type);
-
             var doc = GetFakeDocs<TestDoc>(1).FirstOrDefault();
 
             var resp = await cluster.CommitAsync(doc);
