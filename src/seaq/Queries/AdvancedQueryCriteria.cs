@@ -91,6 +91,12 @@ namespace seaq
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
         public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
+        /// <summary>
+        /// Override cluster settings for boosted/return fields, giving full preference to the values provided in the provided Criteria object
+        /// </summary>
+        [DataMember(Name = "overrideClusterSettings")]
+        [JsonPropertyName("overrideClusterSettings")]
+        public bool OverrideClusterSettings { get; }
 
         public AdvancedQueryCriteria() { }
 
@@ -105,7 +111,8 @@ namespace seaq
             IEnumerable<DefaultFilterField> filterFields = null,
             IEnumerable<DefaultBucketField> bucketFields = null,
             int? skip = null,
-            int? take = null)
+            int? take = null,
+            bool overrideClusterSettings = false)
         {
             Type = type;
             Text = text;
@@ -116,6 +123,7 @@ namespace seaq
             _bucketFields = bucketFields;
             Skip = skip;
             Take = take;
+            OverrideClusterSettings = overrideClusterSettings;
         }
 
         public SearchDescriptor<BaseDocument> GetSearchDescriptor()
@@ -143,9 +151,12 @@ namespace seaq
         public void ApplyClusterSettings(Cluster cluster)
         {
             ApplyClusterIndices(cluster);
-            ApplyQueryBoosts(cluster.Indices);
-            ApplyDefaultSourceFilter(cluster);
-            ApplyDefaultBuckets(cluster);
+            if (OverrideClusterSettings is not true)
+            {
+                ApplyQueryBoosts(cluster.Indices);
+                ApplyDefaultSourceFilter(cluster);
+                ApplyDefaultBuckets(cluster);
+            }
         }
 
         internal void ApplyClusterIndices(Cluster cluster)
@@ -318,7 +329,12 @@ namespace seaq
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
         public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
-
+        /// <summary>
+        /// Override cluster settings for boosted/return fields, giving full preference to the values provided in the provided Criteria object
+        /// </summary>
+        [DataMember(Name = "overrideClusterSettings")]
+        [JsonPropertyName("overrideClusterSettings")]
+        public bool OverrideClusterSettings { get; }
         public AdvancedQueryCriteria() { }
 
         [System.Text.Json.Serialization.JsonConstructor]
@@ -331,7 +347,8 @@ namespace seaq
             IEnumerable<DefaultFilterField> filterFields = null,
             IEnumerable<DefaultBucketField> bucketFields = null,
             int? skip = null,
-            int? take = null)
+            int? take = null,
+            bool overrideClusterSettings = false)
         {
             Indices = indices?.ToArray() ?? Array.Empty<string>();
             _filterFields = filterFields;
@@ -341,6 +358,7 @@ namespace seaq
             _bucketFields = bucketFields;
             Skip = skip;
             Take = take;
+            OverrideClusterSettings = overrideClusterSettings;
         }
 
         public SearchDescriptor<T> GetSearchDescriptor()
@@ -368,9 +386,12 @@ namespace seaq
         public void ApplyClusterSettings(Cluster cluster)
         {
             ApplyClusterIndices(cluster);
-            ApplyQueryBoosts(cluster.Indices);
-            ApplyDefaultSourceFilter(cluster);
-            ApplyDefaultBuckets(cluster);
+            if (OverrideClusterSettings is not true)
+            {
+                ApplyQueryBoosts(cluster.Indices);
+                ApplyDefaultSourceFilter(cluster);
+                ApplyDefaultBuckets(cluster);
+            }
         }
 
         internal void ApplyClusterIndices(Cluster cluster)

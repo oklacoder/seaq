@@ -83,7 +83,12 @@ namespace seaq
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
         public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
-
+        /// <summary>
+        /// Override cluster settings for boosted/return fields, giving full preference to the values provided in the provided Criteria object
+        /// </summary>
+        [DataMember(Name = "overrideClusterSettings")]
+        [JsonPropertyName("overrideClusterSettings")]
+        public bool OverrideClusterSettings { get; }
         public SimpleQueryCriteria() { }
 
         [System.Text.Json.Serialization.JsonConstructor]
@@ -96,7 +101,8 @@ namespace seaq
             int? take = null,
             IEnumerable<DefaultSortField> sortFields = null,
             IEnumerable<DefaultBucketField> bucketFields = null,
-            IEnumerable<DefaultReturnField> returnFields = null)
+            IEnumerable<DefaultReturnField> returnFields = null,
+            bool overrideClusterSettings = false)
         {
             Type = type;
             Text = text;
@@ -106,6 +112,7 @@ namespace seaq
             _sortFields = sortFields;
             _bucketFields = bucketFields;
             _returnFields = returnFields;
+            OverrideClusterSettings = overrideClusterSettings;
         }
 
         public SimpleQueryCriteria<T> GetAsTyped<T>()
@@ -140,9 +147,12 @@ namespace seaq
         public void ApplyClusterSettings(Cluster cluster)
         {
             ApplyClusterIndices(cluster);
-            ApplyQueryBoosts(cluster.Indices);
-            ApplyDefaultSourceFilter(cluster);
-            ApplyDefaultBuckets(cluster);
+            if (OverrideClusterSettings is not true)
+            {
+                ApplyQueryBoosts(cluster.Indices);
+                ApplyDefaultSourceFilter(cluster);
+                ApplyDefaultBuckets(cluster);
+            }
         }
 
         internal void ApplyClusterIndices(Cluster cluster)
@@ -307,7 +317,12 @@ namespace seaq
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
         public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
-
+        /// <summary>
+        /// Override cluster settings for boosted/return fields, giving full preference to the values provided in the provided Criteria object
+        /// </summary>
+        [DataMember(Name = "overrideClusterSettings")]
+        [JsonPropertyName("overrideClusterSettings")]
+        public bool OverrideClusterSettings { get; }
         public SimpleQueryCriteria() { }
 
         [System.Text.Json.Serialization.JsonConstructor]
@@ -319,7 +334,8 @@ namespace seaq
             int? take = null,
             IEnumerable<DefaultSortField> sortFields = null,
             IEnumerable<DefaultBucketField> bucketFields = null,
-            IEnumerable<DefaultReturnField> returnFields = null)
+            IEnumerable<DefaultReturnField> returnFields = null,
+            bool overrideClusterSettings = false)
         {
             Text = text;
             Indices = indices ?? Array.Empty<string>();
@@ -328,6 +344,7 @@ namespace seaq
             _sortFields = sortFields;
             _bucketFields = bucketFields;
             _returnFields = returnFields;
+            OverrideClusterSettings = overrideClusterSettings;
         }
 
         public SearchDescriptor<T> GetSearchDescriptor()
@@ -355,9 +372,12 @@ namespace seaq
         public void ApplyClusterSettings(Cluster cluster)
         {
             ApplyClusterIndices(cluster);
-            ApplyQueryBoosts(cluster.Indices);
-            ApplyDefaultSourceFilter(cluster);
-            ApplyDefaultBuckets(cluster);
+            if (OverrideClusterSettings is not true)
+            {
+                ApplyQueryBoosts(cluster.Indices);
+                ApplyDefaultSourceFilter(cluster);
+                ApplyDefaultBuckets(cluster);
+            }
         }
 
         internal void ApplyClusterIndices(Cluster cluster)

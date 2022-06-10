@@ -39,6 +39,10 @@ namespace seaq
         /// Collection of strings used to control which fields are used to calculate score boosting
         /// </summary>
         IEnumerable<string> BoostedFields { get; }
+        /// <summary>
+        /// Override cluster settings for boosted/return fields, giving full preference to the values provided in the provided Criteria object
+        /// </summary>
+        public bool OverrideClusterSettings { get; }
     }
     public interface ISeaqQueryCriteria<T>
         where T : BaseDocument
@@ -73,5 +77,9 @@ namespace seaq
         /// Collection of strings used to control which fields are used to calculate score boosting
         /// </summary>
         IEnumerable<string> BoostedFields { get; }
+        /// <summary>
+        /// Override cluster settings for boosted/return fields, giving full preference to the values provided in the provided Criteria object
+        /// </summary>
+        public bool OverrideClusterSettings { get; }
     }
 }
