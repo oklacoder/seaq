@@ -1,7 +1,7 @@
 ﻿namespace seaq
 {
     public class NotEqualComparator :
-        DefaultComparator
+        BaseComparator
     {
         const string _display = "Not Equal";
         const string _value = "notEqual";

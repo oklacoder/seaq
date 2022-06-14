@@ -1,7 +1,7 @@
 ﻿namespace seaq
 {
     public class PartialPhraseComparator :
-        DefaultComparator
+        BaseComparator
     {
         const string _display = "Partial Phrase";
         const string _value = "partialPhrase";

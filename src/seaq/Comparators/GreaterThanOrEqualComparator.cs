@@ -1,7 +1,7 @@
 ﻿namespace seaq
 {
     public class GreaterThanOrEqualComparator :
-        DefaultComparator
+        BaseComparator
     {
         const string _display = "Greater Than Or Equal";
         const string _value = "gte";

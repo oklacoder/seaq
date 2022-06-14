@@ -1,7 +1,7 @@
 ﻿namespace seaq
 {
     public class BetweenComparator :
-        DefaultComparator
+        BaseComparator
     {
         const string _display = "Between";
         const string _value = "between";

@@ -1,7 +1,7 @@
 ﻿namespace seaq
 {
     public class NotAnyWordComparator :
-        DefaultComparator
+        BaseComparator
     {
         const string _display = "Not Any Words";
         const string _value = "notAnyWord";

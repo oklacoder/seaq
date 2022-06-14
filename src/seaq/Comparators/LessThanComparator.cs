@@ -1,7 +1,7 @@
 ﻿namespace seaq
 {
     public class LessThanComparator :
-        DefaultComparator
+        BaseComparator
     {
         const string _display = "Less Than";
         const string _value = "lt";

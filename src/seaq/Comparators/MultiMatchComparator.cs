@@ -1,7 +1,7 @@
 ﻿namespace seaq
 {
     public class MultiMatchComparator :
-        DefaultComparator
+        BaseComparator
     {
         const string _display = "Multi Match";
         const string _value = "multiMatch";

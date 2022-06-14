@@ -1,7 +1,7 @@
 ﻿namespace seaq
 {
     public class FullPhraseComparator :
-        DefaultComparator
+        BaseComparator
     {
         const string _display = "Match Full Phrase";
         const string _value = "full";

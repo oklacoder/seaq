@@ -4,6 +4,27 @@ using System.Linq;
 
 namespace seaq
 {
+    public abstract class BaseComparator :
+        IComparator
+    {
+        private string _Display;
+        private string _Value;
+
+        public string Value => _Value;
+        public string Display => _Display;
+        public BaseComparator()
+        {
+
+        }
+        public BaseComparator(
+            string display,
+            string value)
+        {
+            _Display = display;
+            _Value = value;
+        }
+    }
+
     public class DefaultComparator :
         IComparator
     {
@@ -37,7 +58,7 @@ namespace seaq
         public static NotEqualComparator NotEqual { get; } = new NotEqualComparator();
         public static PartialPhraseComparator PartialPhrase { get; } = new PartialPhraseComparator();
 
-        public static IEnumerable<DefaultComparator> DefaultComparators = new DefaultComparator[]
+        public static IEnumerable<BaseComparator> DefaultComparators = new BaseComparator[]
         {
             AnyWord,
             Between,

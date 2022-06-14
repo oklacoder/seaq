@@ -1,7 +1,7 @@
 ﻿namespace seaq
 {
     public class AnyWordComparator :
-        DefaultComparator
+        BaseComparator
     {
         const string _display = "Match Any Word";
         const string _value = "anyWord";
