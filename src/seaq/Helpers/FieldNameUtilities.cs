@@ -97,6 +97,35 @@ namespace seaq
 
             return types;
         }
+        public static IEnumerable<Type> GetAllAggregations()
+        {
+            var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            var implements =
+                allAssemblies
+                    .SelectMany(p =>
+                    {
+                        try
+                        {
+                            return p.GetTypes();
+                        }
+                        catch (ReflectionTypeLoadException e)
+                        {
+                            return e.Types.Where(x => x != null);
+                        }
+                    })
+                    .Where(p => typeof(IAggregation).IsAssignableFrom(p))
+                    .Select(p => p.Assembly);
+
+            var types =
+                implements
+                    .SelectMany(x => x.GetTypes())
+                    .Where(x => typeof(IAggregation).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
+                    .Distinct()
+                    .ToList();
+
+            return types;
+        }
         
         public static string ToCamelCase(this string input)
         {

@@ -1,0 +1,258 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace seaq.Tests
+{
+    public class AggregationQueryTests :
+        TestModule
+    {
+        public AggregationQueryTests(
+            ITestOutputHelper testOutput) :
+            base(testOutput)
+        {
+
+        }
+
+        [Fact]
+        public async void AggregationQuery_CanExecute()
+        {
+            const string name = "AggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            var cache = new DefaultAggregationCache();
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(cache.AverageAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+        }
+        [Fact]
+        public async void AggregationField_ThrowsOnEmptyFieldName()
+        {
+            const string name = "AggregationField_FailsOnEmptyFieldName";
+            Assert.Throws<ArgumentNullException>(() => new DefaultAggregationField(""));
+        }
+        [Fact]
+        public async void AggregationRequest_ThrowsOnUnknownAggregationName()
+        {
+            const string name = "AggregationRequest_FailsOnEmptyFieldName";
+            var cluster = Cluster.Create(GetArgs(name));
+            var cache = new DefaultAggregationCache();
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest("blurg", new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+
+            Assert.Throws<KeyNotFoundException>(() => cluster.Query(query));
+        }
+        [Fact]
+        public async void AggregationRequest_ThrowsOnEmptyAggregationName()
+        {
+            const string name = "AggregationRequest_FailsOnEmptyFieldName";
+            
+            Assert.Throws<ArgumentNullException>(() => new DefaultAggregationRequest("", new DefaultAggregationField("taxful_total_price")));
+        }
+        [Fact]
+        public async void AverageAggregationQuery_CanExecute()
+        {
+            const string name = "AverageAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            var cache = new DefaultAggregationCache();
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(cache.AverageAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as AverageAggregationResult;
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotNull(r.Value);
+            Assert.IsType<double>(r.Value);
+        }
+        [Fact]
+        public async void MinAggregationQuery_CanExecute()
+        {
+            const string name = "MinAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            var cache = new DefaultAggregationCache();
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(cache.MinAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as MinAggregationResult;
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotNull(r.Value);
+            Assert.IsType<double>(r.Value);
+        }
+        [Fact]
+        public async void MaxAggregationQuery_CanExecute()
+        {
+            const string name = "MaxAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            var cache = new DefaultAggregationCache();
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(cache.MaxAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as MaxAggregationResult;
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotNull(r.Value);
+            Assert.IsType<double>(r.Value);
+        }
+        [Fact]
+        public async void SumAggregationQuery_CanExecute()
+        {
+            const string name = "SumAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            var cache = new DefaultAggregationCache();
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(cache.SumAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as SumAggregationResult;
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotNull(r.Value);
+            Assert.IsType<double>(r.Value);
+        }
+        [Fact]
+        public async void PercentilesAggregationQuery_CanExecute()
+        {
+            const string name = "PercentilesAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            var cache = new DefaultAggregationCache();
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(cache.PercentilesAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as PercentilesAggregationResult;
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotEmpty(r.Percentiles);
+        }
+        [Fact]
+        public async void StatsAggregationQuery_CanExecute()
+        {
+            const string name = "StatsAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            var cache = new DefaultAggregationCache();
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(cache.StatsAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as StatsAggregationResult;
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+
+            Assert.NotNull(r.Average);
+            Assert.IsType<double>(r.Average);
+            Assert.NotNull(r.Count);
+            Assert.IsType<double>(r.Count);
+            Assert.NotNull(r.Max);
+            Assert.IsType<double>(r.Max);
+            Assert.NotNull(r.Min);
+            Assert.IsType<double>(r.Min);
+            Assert.NotNull(r.Sum);
+            Assert.IsType<double>(r.Sum);
+        }
+        [Fact]
+        public async void StatsAggregationQuery_FailsOnNonNumeric()
+        {
+            const string name = "StatsAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            var cache = new DefaultAggregationCache();
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(cache.StatsAggregation.Name, new DefaultAggregationField("day_of_week")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            
+            Assert.True(results != null);
+            Assert.NotEmpty(results.Messages);
+            Assert.Equal(-1, results.Total);
+            Assert.Null(results.AggregationResults);
+            Assert.Null(results.Results);
+        }
+        [Fact]
+        public async void TermsAggregationQuery_CanExecute()
+        {
+            const string name = "TermsAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            var cache = new DefaultAggregationCache();
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(cache.TermsAggregation.Name, new DefaultAggregationField("day_of_week")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as TermsAggregationResult;
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotEmpty(r.Buckets);
+        }
+    }
+}

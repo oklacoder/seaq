@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace SEAQ.Tests
+namespace seaq.Tests
 {
     public class SampleResult1 :
         SampleResult
