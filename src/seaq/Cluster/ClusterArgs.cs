@@ -10,6 +10,7 @@
         public ISeaqElasticsearchSerializer Serializer { get; } = null;
         public bool AllowAutomaticIndexCreation { get; }
         public bool EnableVersionCompatabilityHeader { get; }
+        public IAggregationCache AggregationCache { get; }
 
         public ClusterArgs(
             string clusterScope,
@@ -19,7 +20,8 @@
             bool bypassCertificateValidation = false,
             ISeaqElasticsearchSerializer serializer = null,
             bool allowAutomaticIndexCreation = true, 
-            bool enableVersionCompatabilityHeader = true)
+            bool enableVersionCompatabilityHeader = true,
+            IAggregationCache aggregationCache = null)
         {
             ClusterScope = clusterScope;
             Url = url;
@@ -29,6 +31,7 @@
             Serializer = serializer;
             AllowAutomaticIndexCreation = allowAutomaticIndexCreation;
             EnableVersionCompatabilityHeader = enableVersionCompatabilityHeader;
+            aggregationCache = aggregationCache;
         }
     }
 }

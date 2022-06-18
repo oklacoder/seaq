@@ -4,7 +4,7 @@ using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SEAQ.Tests
+namespace seaq.Tests
 {
     public class AdvancedQueryTests :
         TestModule

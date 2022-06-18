@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit.Abstractions;
 
-namespace SEAQ.Tests
+namespace seaq.Tests
 {
     public class TestModule
     {

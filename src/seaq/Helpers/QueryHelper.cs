@@ -83,6 +83,41 @@ namespace seaq
             return sf;
         }
 
+        public static AggregationContainerDescriptor<T> GetAggregationsContainer<T>(
+            this IEnumerable<IAggregationRequest> aggs,
+            IAggregationCache aggCache)
+            where T : BaseDocument
+        {
+            var res = new AggregationContainerDescriptor<T>();
+
+            if (aggs == null) 
+                return res;
+
+            foreach(var a in aggs)
+            {
+                a.ApplyAggregationDescriptor(res, aggCache);
+            }
+
+            return res;
+        }
+        public static IEnumerable<IAggregationResult> BuildAggregationsResult<T>(
+            this Nest.AggregateDictionary aggs,
+            AggregationQueryCriteria<T> criteria)
+            where T : BaseDocument
+        {
+            var res = new List<IAggregationResult>();
+            if (aggs != null)
+            {
+                foreach(var a in aggs.Keys)
+                {
+                    var r = criteria._aggregationCache.BuildAggregationResult(a, aggs);
+                    if (res != null)
+                        res.Add(r);
+                }                
+            }
+            return res;
+        }
+
         public static AggregationContainerDescriptor<T> GetBucketAggreagationDescriptor<T>(
             this IEnumerable<IBucketField> fields)
             where T : BaseDocument

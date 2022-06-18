@@ -163,6 +163,10 @@ namespace seaq
         /// Total query results before paging applied
         /// </summary>
         long Total { get; }
+        /// <summary>
+        /// Additional information about this query execution
+        /// </summary>
+        public IEnumerable<string> Messages { get; }
     }
     public interface ISeaqQueryResults<T>
         where T : BaseDocument
@@ -179,5 +183,9 @@ namespace seaq
         /// Total query results before paging applied
         /// </summary>
         long Total { get; }
+        /// <summary>
+        /// Additional information about this query execution
+        /// </summary>
+        public IEnumerable<string> Messages { get; }
     }
 }

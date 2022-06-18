@@ -63,6 +63,11 @@ namespace seaq
         /// </summary>
         public IEnumerable<Type> SearchableTypes => _searchableTypes.Values;
 
+        /// <summary>
+        /// Used to build aggregations requested by queries
+        /// </summary>
+        public IAggregationCache AggregationCache { get; private set; } = new DefaultAggregationCache();
+
         public bool IsCacheInitializing { get; private set; } = false;
         public DateTime? CacheInitializedUtc { get; private set; } = null;
         public bool IsCacheRefreshing { get; private set; } = false;
@@ -102,6 +107,7 @@ namespace seaq
             ClusterScope = args.ClusterScope;
             AllowAutomaticIndexCreation = args.AllowAutomaticIndexCreation;
             _serializer = args.Serializer ?? new DefaultSeaqElasticsearchSerializer((x) => TryGetSearchType(x));
+            AggregationCache = args.AggregationCache ?? new DefaultAggregationCache();
 
             _client = BuildClient(args, _serializer);
 

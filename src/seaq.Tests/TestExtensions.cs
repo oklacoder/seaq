@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace SEAQ.Tests
+namespace seaq.Tests
 {
     public static class TestExtensions
     {

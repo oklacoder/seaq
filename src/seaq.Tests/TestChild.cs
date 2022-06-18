@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SEAQ.Tests
+namespace seaq.Tests
 {
     public class TestChild
     {

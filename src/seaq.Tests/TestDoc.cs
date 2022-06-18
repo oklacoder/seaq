@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SEAQ.Tests
+namespace seaq.Tests
 {
     public class TestDoc :
         BaseDocument
