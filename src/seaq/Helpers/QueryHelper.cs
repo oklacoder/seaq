@@ -117,6 +117,22 @@ namespace seaq
             }
             return res;
         }
+        public static IEnumerable<IAggregationResult> BuildAggregationsResult(
+            this Nest.AggregateDictionary aggs,
+            AggregationQueryCriteria criteria)
+        {
+            var res = new List<IAggregationResult>();
+            if (aggs != null)
+            {
+                foreach(var a in aggs.Keys)
+                {
+                    var r = criteria._aggregationCache.BuildAggregationResult(a, aggs);
+                    if (res != null)
+                        res.Add(r);
+                }                
+            }
+            return res;
+        }
 
         public static AggregationContainerDescriptor<T> GetBucketAggreagationDescriptor<T>(
             this IEnumerable<IBucketField> fields)
