@@ -67,12 +67,12 @@ namespace seaq
         public virtual Dictionary<string, IAggregation> AggregationsDictionary { get; private set; } = new Dictionary<string, IAggregation>();
         public IEnumerable<IAggregation> Aggregations => AggregationsDictionary.Values;
 
-        public AverageAggregation AverageAggregation => new AverageAggregation();
-        public MaxAggregation MaxAggregation => new MaxAggregation();
-        public MinAggregation MinAggregation => new MinAggregation();
-        public PercentilesAggregation PercentilesAggregation => new PercentilesAggregation();
-        public StatsAggregation StatsAggregation => new StatsAggregation();
-        public SumAggregation SumAggregation => new SumAggregation();
-        public TermsAggregation TermsAggregation => new TermsAggregation();
+        public static AverageAggregation AverageAggregation { get; } = new AverageAggregation();
+        public static MaxAggregation MaxAggregation { get; } = new MaxAggregation();
+        public static MinAggregation MinAggregation { get; } = new MinAggregation();
+        public static PercentilesAggregation PercentilesAggregation { get; } = new PercentilesAggregation();
+        public static StatsAggregation StatsAggregation { get; } = new StatsAggregation();
+        public static SumAggregation SumAggregation { get; } = new SumAggregation();
+        public static TermsAggregation TermsAggregation { get; } = new TermsAggregation();
     }
 }

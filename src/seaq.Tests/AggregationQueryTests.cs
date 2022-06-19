@@ -24,14 +24,16 @@ namespace seaq.Tests
             const string name = "AggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.AverageAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.AverageAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -42,15 +44,17 @@ namespace seaq.Tests
             const string name = "AggregationQuery_CanExecute_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.AverageAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.AverageAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -66,7 +70,7 @@ namespace seaq.Tests
         {
             const string name = "AggregationRequest_FailsOnEmptyFieldName";
             var cluster = Cluster.Create(GetArgs(name));
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
@@ -75,13 +79,15 @@ namespace seaq.Tests
             var query = new AggregationQuery<SampleResult>(criteria);
 
             Assert.Throws<KeyNotFoundException>(() => cluster.Query(query));
+
+            DecomissionCluster(cluster);
         }
         [Fact]
         public async void AggregationRequest_ThrowsOnUnknownAggregationName_Untyped()
         {
             const string name = "AggregationRequest_ThrowsOnUnknownAggregationName_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(SampleResult).FullName,
@@ -91,6 +97,9 @@ namespace seaq.Tests
             var query = new AggregationQuery(criteria);
 
             Assert.Throws<KeyNotFoundException>(() => cluster.Query<ISeaqQueryResults>(query));
+
+            DecomissionCluster(cluster);
+
         }
         [Fact]
         public async void AggregationRequest_ThrowsOnEmptyAggregationName()
@@ -105,16 +114,18 @@ namespace seaq.Tests
             const string name = "AverageAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.AverageAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.AverageAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
 
             var r = results.AggregationResults.First() as AverageAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -128,17 +139,19 @@ namespace seaq.Tests
             const string name = "AverageAggregationQuery_CanExecute_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.AverageAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.AverageAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
 
             var r = results.AggregationResults.First() as AverageAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -152,14 +165,16 @@ namespace seaq.Tests
             const string name = "StatsAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.AverageAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.AverageAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            DecomissionCluster(cluster);
 
 
             Assert.True(results != null);
@@ -174,15 +189,17 @@ namespace seaq.Tests
             const string name = "AverageAggregationQuery_FailsOnNonNumeric_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(BaseDocument).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.AverageAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.AverageAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
+
+            DecomissionCluster(cluster);
 
 
             Assert.True(results != null);
@@ -199,16 +216,18 @@ namespace seaq.Tests
             const string name = "MinAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.MinAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.MinAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
 
             var r = results.AggregationResults.First() as MinAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -222,17 +241,19 @@ namespace seaq.Tests
             const string name = "MinAggregationQuery_CanExecute_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.MinAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.MinAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
 
             var r = results.AggregationResults.First() as MinAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -246,14 +267,16 @@ namespace seaq.Tests
             const string name = "StatsAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.MinAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.MinAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            DecomissionCluster(cluster);
 
 
             Assert.True(results != null);
@@ -268,15 +291,17 @@ namespace seaq.Tests
             const string name = "MinAggregationQuery_FailsOnNonNumeric_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(BaseDocument).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.MinAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.MinAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
+
+            DecomissionCluster(cluster);
 
 
             Assert.True(results != null);
@@ -293,16 +318,18 @@ namespace seaq.Tests
             const string name = "MaxAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.MaxAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.MaxAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
 
             var r = results.AggregationResults.First() as MaxAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -316,17 +343,19 @@ namespace seaq.Tests
             const string name = "MaxAggregationQuery_CanExecute_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.MaxAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.MaxAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
 
             var r = results.AggregationResults.First() as MaxAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -340,14 +369,16 @@ namespace seaq.Tests
             const string name = "StatsAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.MaxAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.MaxAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            DecomissionCluster(cluster);
 
 
             Assert.True(results != null);
@@ -362,15 +393,17 @@ namespace seaq.Tests
             const string name = "MaxAggregationQuery_FailsOnNonNumeric_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(BaseDocument).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.MaxAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.MaxAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
+
+            DecomissionCluster(cluster);
 
 
             Assert.True(results != null);
@@ -386,16 +419,18 @@ namespace seaq.Tests
             const string name = "SumAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.SumAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.SumAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
 
             var r = results.AggregationResults.First() as SumAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -409,17 +444,19 @@ namespace seaq.Tests
             const string name = "SumAggregationQuery_CanExecute_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.SumAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.SumAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
 
             var r = results.AggregationResults.First() as SumAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -433,14 +470,16 @@ namespace seaq.Tests
             const string name = "StatsAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.SumAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.SumAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            DecomissionCluster(cluster);
 
 
             Assert.True(results != null);
@@ -455,15 +494,17 @@ namespace seaq.Tests
             const string name = "SumAggregationQuery_FailsOnNonNumeric_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(BaseDocument).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.SumAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.SumAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
+
+            DecomissionCluster(cluster);
 
 
             Assert.True(results != null);
@@ -480,16 +521,18 @@ namespace seaq.Tests
             const string name = "PercentilesAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.PercentilesAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.PercentilesAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
 
             var r = results.AggregationResults.First() as PercentilesAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -502,17 +545,19 @@ namespace seaq.Tests
             const string name = "PercentilesAggregationQuery_CanExecute_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.PercentilesAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.PercentilesAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
 
             var r = results.AggregationResults.First() as PercentilesAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -525,14 +570,16 @@ namespace seaq.Tests
             const string name = "StatsAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.PercentilesAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.PercentilesAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            DecomissionCluster(cluster);
 
 
             Assert.True(results != null);
@@ -547,15 +594,17 @@ namespace seaq.Tests
             const string name = "PercentilesAggregationQuery_FailsOnNonNumeric_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(BaseDocument).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.PercentilesAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.PercentilesAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
+
+            DecomissionCluster(cluster);
 
 
             Assert.True(results != null);
@@ -572,16 +621,18 @@ namespace seaq.Tests
             const string name = "StatsAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.StatsAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.StatsAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
 
             var r = results.AggregationResults.First() as StatsAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -604,17 +655,19 @@ namespace seaq.Tests
             const string name = "StatsAggregationQuery_CanExecute_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.StatsAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.StatsAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
 
             var r = results.AggregationResults.First() as StatsAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -637,16 +690,18 @@ namespace seaq.Tests
             const string name = "StatsAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.StatsAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.StatsAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
 
-            
+            DecomissionCluster(cluster);
+
+
             Assert.True(results != null);
             Assert.NotEmpty(results.Messages);
             Assert.Equal(-1, results.Total);
@@ -659,17 +714,19 @@ namespace seaq.Tests
             const string name = "StatsAggregationQuery_FailsOnNonNumeric_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(BaseDocument).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.StatsAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.StatsAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
 
-            
+            DecomissionCluster(cluster);
+
+
             Assert.True(results != null);
             Assert.NotEmpty(results.Messages);
             Assert.Equal(-1, results.Total);
@@ -682,16 +739,18 @@ namespace seaq.Tests
             const string name = "TermsAggregationQuery_CanExecute";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria<SampleResult>(
                 null,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.TermsAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.TermsAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery<SampleResult>(criteria);
             var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
 
             var r = results.AggregationResults.First() as TermsAggregationResult;
+
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
@@ -704,17 +763,19 @@ namespace seaq.Tests
             const string name = "TermsAggregationQuery_CanExecute_Untyped";
             var cluster = Cluster.Create(GetArgs(name));
 
-            var cache = new DefaultAggregationCache();
+            
             var criteria = new AggregationQueryCriteria(
                 null,
                 typeof(SampleResult).FullName,
                 SampleIndices,
-                aggregationRequests: new[] { new DefaultAggregationRequest(cache.TermsAggregation.Name, new DefaultAggregationField("day_of_week")) });
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.TermsAggregation.Name, new DefaultAggregationField("day_of_week")) });
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
 
             var r = results.AggregationResults.First() as TermsAggregationResult;
+            
+            DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
