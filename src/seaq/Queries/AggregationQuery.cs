@@ -27,10 +27,15 @@ namespace seaq
             return new AggregationQueryResults(results, _criteria);
         }
 
-        public Task<ISeaqQueryResults> ExecuteAsync(
+        public async Task<ISeaqQueryResults> ExecuteAsync(
             ElasticClient client)
         {
-            throw new NotImplementedException();
+
+            var query = _criteria.GetSearchDescriptor();
+
+            var results = await client.SearchAsync<BaseDocument>(query);
+
+            return new AggregationQueryResults(results, _criteria);
         }
     }
     public class AggregationQuery<T> :
@@ -57,10 +62,15 @@ namespace seaq
             return new AggregationQueryResults<T>(results, _criteria);
         }
 
-        public Task<ISeaqQueryResults<T>> ExecuteAsync(
+        public async Task<ISeaqQueryResults<T>> ExecuteAsync(
             ElasticClient client)
         {
-            throw new NotImplementedException();
+
+            var query = _criteria.GetSearchDescriptor();
+
+            var results = await client.SearchAsync<T>(query);
+
+            return new AggregationQueryResults<T>(results, _criteria);
         }
     }
 }
