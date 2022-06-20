@@ -14,7 +14,7 @@ namespace seaq
         /// <summary>
         /// Specify which indices to query.  If empty or null, query will default to the default index for the provided type.
         /// </summary>
-        public string[] Indices { get; }
+        public IEnumerable<string> Indices { get; }
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
         /// </summary>
@@ -52,7 +52,7 @@ namespace seaq
         /// <summary>
         /// Specify which indices to query.  If empty or null, query will default to the default index for the provided type.
         /// </summary>
-        public string[] Indices { get; }
+        public IEnumerable<string> Indices { get; }
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
         /// </summary>

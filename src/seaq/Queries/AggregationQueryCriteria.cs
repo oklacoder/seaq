@@ -28,7 +28,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "indices")]
         [JsonPropertyName("indices")]
-        public string[] Indices { get; private set; }
+        public IEnumerable<string> Indices { get; private set; }
 
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
@@ -92,7 +92,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
-        public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Array.Empty<string>();
         /// <summary>
         /// Override cluster settings for boosted/return fields, giving full preference to the values provided in the provided Criteria object
         /// </summary>
@@ -111,7 +111,7 @@ namespace seaq
         {
             Text = text;
             Type = type;
-            Indices = indices?.ToArray() ?? Array.Empty<string>();
+            Indices = indices ?? Array.Empty<string>();
             _filterFields = filterFields;
             AggregationRequests = aggregationRequests;
         }
@@ -119,7 +119,7 @@ namespace seaq
         public SearchDescriptor<BaseDocument> GetSearchDescriptor()
         {
             var s = new SearchDescriptor<BaseDocument>()
-                .Index(Indices)
+                .Index(Indices?.ToArray() ?? Array.Empty<string>())
                 .Take(0)
                 .Aggregations(a => AggregationRequests.GetAggregationsContainer<BaseDocument>(_aggregationCache))
                 .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields, boostFields: BoostedFields))
@@ -185,7 +185,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "indices")]
         [JsonPropertyName("indices")]
-        public string[] Indices { get; private set; }
+        public IEnumerable<string> Indices { get; private set; }
 
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
@@ -249,7 +249,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
-        public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Array.Empty<string>();
         /// <summary>
         /// Override cluster settings for boosted/return fields, giving full preference to the values provided in the provided Criteria object
         /// </summary>
@@ -266,7 +266,7 @@ namespace seaq
             IEnumerable<DefaultAggregationRequest> aggregationRequests = null)
         {
             Text = text;
-            Indices = indices?.ToArray() ?? Array.Empty<string>();
+            Indices = indices ?? Array.Empty<string>();
             _filterFields = filterFields;
             AggregationRequests = aggregationRequests;
         }
@@ -274,7 +274,7 @@ namespace seaq
         public SearchDescriptor<T> GetSearchDescriptor()
         {
             var s = new SearchDescriptor<T>()
-                .Index(Indices)
+                .Index(Indices?.ToArray() ?? Array.Empty<string>())
                 .Take(0)
                 .Aggregations(a => AggregationRequests.GetAggregationsContainer<T>(_aggregationCache))
                 .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields, boostFields: BoostedFields))
