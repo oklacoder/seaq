@@ -30,7 +30,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "indices")]
         [JsonPropertyName("indices")]
-        public string[] Indices { get; private set; }
+        public IEnumerable<string> Indices { get; private set; }
 
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
@@ -82,7 +82,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
-        public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Array.Empty<string>();
         /// <summary>
         /// Override cluster settings for boosted/return fields, giving full preference to the values provided in the provided Criteria object
         /// </summary>
@@ -96,7 +96,7 @@ namespace seaq
         public SimpleQueryCriteria(
             string type = null,
             string text = null,
-            string[] indices = null,
+            IEnumerable<string> indices = null,
             int? skip = null,
             int? take = null,
             IEnumerable<DefaultSortField> sortFields = null,
@@ -125,7 +125,7 @@ namespace seaq
         public SearchDescriptor<BaseDocument> GetSearchDescriptor()
         {
             var res = new SearchDescriptor<BaseDocument>()
-                .Index(Indices)
+                .Index(Indices?.ToArray() ?? Array.Empty<string>())
                 .Skip(Skip ?? 0)
                 .Take(Take ?? 10)
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<BaseDocument>())
@@ -264,7 +264,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "indices")]
         [JsonPropertyName("indices")]
-        public string[] Indices { get; private set; }
+        public IEnumerable<string> Indices { get; private set; }
 
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
@@ -316,7 +316,7 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
-        public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Array.Empty<string>();
         /// <summary>
         /// Override cluster settings for boosted/return fields, giving full preference to the values provided in the provided Criteria object
         /// </summary>
@@ -329,7 +329,7 @@ namespace seaq
         [Newtonsoft.Json.JsonConstructor]
         public SimpleQueryCriteria(
             string text,
-            string[] indices = null,
+            IEnumerable<string> indices = null,
             int? skip = null,
             int? take = null,
             IEnumerable<DefaultSortField> sortFields = null,
@@ -350,7 +350,7 @@ namespace seaq
         public SearchDescriptor<T> GetSearchDescriptor()
         {
             var res = new SearchDescriptor<T>()
-                .Index(Indices)
+                .Index(Indices?.ToArray() ?? Array.Empty<string>())
                 .Skip(Skip ?? 0)
                 .Take(Take ?? 10)
                 .Aggregations(a => BucketFields.GetBucketAggreagationDescriptor<T>())

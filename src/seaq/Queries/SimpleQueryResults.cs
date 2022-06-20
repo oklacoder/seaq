@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace seaq
@@ -28,7 +29,7 @@ namespace seaq
         /// <summary>
         /// Additional information about this query execution
         /// </summary>
-        public IEnumerable<string> Messages { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> Messages { get; set; } = Array.Empty<string>();
 
         public SimpleQueryResults() { }
         public SimpleQueryResults(
@@ -79,7 +80,7 @@ namespace seaq
         /// <summary>
         /// Additional information about this query execution
         /// </summary>
-        public IEnumerable<string> Messages { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> Messages { get; set; } = Array.Empty<string>();
 
         public SimpleQueryResults() { }
         public SimpleQueryResults(

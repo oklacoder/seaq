@@ -25,7 +25,7 @@ namespace seaq
         /// <summary>
         /// Additional information about this query execution
         /// </summary>
-        public IEnumerable<string> Messages { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> Messages { get; set; } = Array.Empty<string>();
 
         public AggregationQueryResults(
             Nest.ISearchResponse<BaseDocument> searchResponse,
@@ -77,7 +77,7 @@ namespace seaq
         /// <summary>
         /// Additional information about this query execution
         /// </summary>
-        public IEnumerable<string> Messages { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> Messages { get; set; } = Array.Empty<string>();
 
         public AggregationQueryResults(
             Nest.ISearchResponse<T> searchResponse,
