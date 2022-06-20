@@ -1346,6 +1346,20 @@ namespace seaq
 
             return await query.ExecuteAsync(_client);
         }
+        public async Task<ISeaqQueryResults> QueryAsync(ISeaqQuery query)
+        {
+            if (query.Criteria is null)
+            {
+                const string msg = @"Can not process query - criteria object is null.";
+                Log.Error(msg);
+                throw new ArgumentNullException(string.Format(msg));
+            }
+            Log.Verbose("Executing sync query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices ?? Array.Empty<string>()));
+
+            query.Criteria.ApplyClusterSettings(this);
+
+            return await query.ExecuteAsync(_client);
+        }
         public async Task<TResp> QueryAsync<TResp>(ISeaqQuery query)
             where TResp : class, ISeaqQueryResults
         {

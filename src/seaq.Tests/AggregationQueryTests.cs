@@ -38,6 +38,27 @@ namespace seaq.Tests
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
         }
+
+        [Fact]
+        public async void AggregationQuery_CanExecuteAsync()
+        {
+            const string name = "AggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.AverageAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = await cluster.QueryAsync(query) as AggregationQueryResults<SampleResult>;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+        }
         [Fact]
         public async void AggregationQuery_CanExecute_Untyped()
         {
@@ -53,6 +74,27 @@ namespace seaq.Tests
 
             var query = new AggregationQuery(criteria);
             var results = cluster.Query(query) as AggregationQueryResults;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+        }
+        [Fact]
+        public async void AggregationQuery_CanExecuteAsync_Untyped()
+        {
+            const string name = "AggregationQuery_CanExecute_Untyped";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria(
+                null,
+                typeof(SampleResult).FullName,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.AverageAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery(criteria);
+            var results = await cluster.QueryAsync(query) as AggregationQueryResults;
 
             DecomissionCluster(cluster);
 
