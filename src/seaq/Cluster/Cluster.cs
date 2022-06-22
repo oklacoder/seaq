@@ -1495,6 +1495,30 @@ namespace seaq
         private bool TryGetIndexForDocument<T>(T document, out Index index)
             where T : IDocument
         {
+            if (!string.IsNullOrWhiteSpace(document.IndexAsType))
+            {
+                var byType = IndicesByType[document.IndexAsType];
+
+                if (byType?.Any() is not true)
+                {
+                    const string msg = @"Document's specified index {0} does not exist in the cluster.";
+                    Log.Warning(msg, document.IndexName);
+                    index = null;
+                    return false;
+                }
+
+                if (byType?.Count() > 1)
+                {
+                    const string msg = @"Document's sepcified type {0} maps to multiple indices, and no index is specified.  Cannot proceed.";
+                    Log.Warning(msg, document.Type);
+                    index = null;
+                    return false;
+                }
+
+                index = byType.First();
+                return true;
+            }
+
             var resp = _indices.TryGetValue(document.IndexName ?? "", out index);
 
             if (!resp)
