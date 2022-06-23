@@ -125,7 +125,8 @@ namespace seaq.Tests
             DecomissionCluster(cluster);
             DecomissionCluster(cluster2);
 
-            Assert.Equal(c1Count, c2Count);
+            Assert.Equal(3, c1Count);
+            Assert.Equal(2, c2Count);
         }
         [Fact]
         public async void CanCreateIndex_WithIndexAsType_FailsWhenMappingTypeDoesntExist()

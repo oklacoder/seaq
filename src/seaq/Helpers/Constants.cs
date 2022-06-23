@@ -136,8 +136,17 @@ namespace seaq
                 "@properties "
             };
         }
+        public static class DateIntervals
+        {
+            public const string Minute = "1m";
+            public const string Hour = "1h";
+            public const string Day = "1d";
+            public const string Week = "1w";
+            public const string Month = "1M";
+            public const string Quarter = "1q";
+            public const string Year = "1y";
+        }
 
     }
-
 
 }

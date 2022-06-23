@@ -11,7 +11,7 @@ namespace seaq
         private DefaultAggregationField _field { get; set; }
         public IAggregationField Field => _field;
 
-        public AggregationContainerDescriptor<T> ApplyAggregationDescriptor<T>(
+        public virtual AggregationContainerDescriptor<T> ApplyAggregationDescriptor<T>(
             AggregationContainerDescriptor<T> agg,
             IAggregationCache aggregationCache) 
             where T : BaseDocument
@@ -19,7 +19,7 @@ namespace seaq
 
             return aggregationCache.ApplyAggregationContainer<T>(AggregationName, agg, Field);
         }
-        public AggregationContainerDescriptor<T> GetAggregationDescriptor<T>(
+        public virtual AggregationContainerDescriptor<T> GetAggregationDescriptor<T>(
             IAggregationCache aggregationCache)
             where T : BaseDocument
         {
