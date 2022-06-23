@@ -32,12 +32,12 @@ namespace seaq.Tests
     public class TestDoc1 :
         TestDoc
     {
-        public override string IndexAsType => typeof(BaseDocument).FullName;
+        public override string IndexAsType => typeof(TestDoc).FullName;
     }
     public class TestDoc2 :
         TestDoc
     {
-        public override string IndexAsType => typeof(BaseDocument).FullName;
+        public override string IndexAsType => typeof(TestDoc).FullName;
 
     }
 }

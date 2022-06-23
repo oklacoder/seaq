@@ -10,6 +10,8 @@ namespace seaq
         public DefaultAggregationCache()
         {
             AggregationsDictionary.Add(AverageAggregation.Name, AverageAggregation);
+            AggregationsDictionary.Add(DateHistogramAggregation.Name, DateHistogramAggregation);
+            AggregationsDictionary.Add(HistogramAggregation.Name, HistogramAggregation);
             AggregationsDictionary.Add(MaxAggregation.Name, MaxAggregation);
             AggregationsDictionary.Add(MinAggregation.Name, MinAggregation);
             AggregationsDictionary.Add(PercentilesAggregation.Name, PercentilesAggregation);
@@ -68,11 +70,14 @@ namespace seaq
         public IEnumerable<IAggregation> Aggregations => AggregationsDictionary.Values;
 
         public static AverageAggregation AverageAggregation { get; } = new AverageAggregation();
+        public static DateHistogramAggregation DateHistogramAggregation { get; } = new DateHistogramAggregation();
+        public static HistogramAggregation HistogramAggregation { get; } = new HistogramAggregation();
         public static MaxAggregation MaxAggregation { get; } = new MaxAggregation();
         public static MinAggregation MinAggregation { get; } = new MinAggregation();
         public static PercentilesAggregation PercentilesAggregation { get; } = new PercentilesAggregation();
         public static StatsAggregation StatsAggregation { get; } = new StatsAggregation();
         public static SumAggregation SumAggregation { get; } = new SumAggregation();
         public static TermsAggregation TermsAggregation { get; } = new TermsAggregation();
+
     }
 }

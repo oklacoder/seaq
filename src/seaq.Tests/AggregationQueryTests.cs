@@ -251,6 +251,211 @@ namespace seaq.Tests
             Assert.Null(results.Results);
         }
 
+        [Fact]
+        public async void DateHistogramAggregationQuery_CanExecute()
+        {
+            const string name = "DateHistogramAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                filterFields: new[] { new DefaultFilterField(DefaultComparator.GreaterThanOrEqual, "2022-03-01", "order_date") },
+                aggregationRequests: new[] { new DateHistogramAggregationRequest(new DefaultAggregationField("order_date")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as DateHistogramAggregationResult;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotNull(r.Buckets);
+            Assert.NotEmpty(r.Buckets);
+        }
+        [Fact]
+        public async void DateHistogramAggregationQuery_CanExecute_Untyped()
+        {
+            const string name = "DateHistogramAggregationQuery_CanExecute_Untyped";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria(
+                null,
+                typeof(SampleResult).FullName,
+                SampleIndices,
+                filterFields: new[] {new DefaultFilterField(DefaultComparator.GreaterThanOrEqual, "2022-03-01", "order_date")},
+                aggregationRequests: new[] { new DateHistogramAggregationRequest(new DefaultAggregationField("order_date")) });
+
+            var query = new AggregationQuery(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults;
+
+            var r = results.AggregationResults.First() as DateHistogramAggregationResult;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotNull(r.Buckets);
+            Assert.NotEmpty(r.Buckets);
+        }
+        [Fact]
+        public async void DateHistogramAggregationQuery_FailsOnNonDate()
+        {
+            const string name = "DateHistogramAggregationQuery_FailsOnNonDate";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                filterFields: new[] { new DefaultFilterField(DefaultComparator.GreaterThanOrEqual, "2022-03-01", "order_date") },
+                aggregationRequests: new[] { new DateHistogramAggregationRequest(new DefaultAggregationField("day_of_week")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            DecomissionCluster(cluster);
+
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.Messages);
+            Assert.Equal(-1, results.Total);
+            Assert.Null(results.AggregationResults);
+            Assert.Null(results.Results);
+        }
+        [Fact]
+        public async void DateHistogramAggregationQuery_FailsOnNonDate_Untyped()
+        {
+            const string name = "DateHistogramAggregationQuery_FailsOnNonDate_Untyped";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria(
+                null,
+                typeof(BaseDocument).FullName,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.DateHistogramAggregation.Name, new DefaultAggregationField("day_of_week")) });
+
+            var query = new AggregationQuery(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults;
+
+            DecomissionCluster(cluster);
+
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.Messages);
+            Assert.Equal(-1, results.Total);
+            Assert.Null(results.AggregationResults);
+            Assert.Null(results.Results);
+        }
+        [Fact]
+        public async void HistogramAggregationQuery_CanExecute()
+        {
+            const string name = "HistogramAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                filterFields: new[] { new DefaultFilterField(DefaultComparator.GreaterThanOrEqual, "2022-03-01", "order_date") },
+                aggregationRequests: new[] { new HistogramAggregationRequest(new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as HistogramAggregationResult;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotNull(r.Buckets);
+            Assert.NotEmpty(r.Buckets);
+        }
+        [Fact]
+        public async void HistogramAggregationQuery_CanExecute_Untyped()
+        {
+            const string name = "HistogramAggregationQuery_CanExecute_Untyped";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria(
+                null,
+                typeof(SampleResult).FullName,
+                SampleIndices,
+                filterFields: new[] {new DefaultFilterField(DefaultComparator.GreaterThanOrEqual, "2022-03-01", "order_date")},
+                aggregationRequests: new[] { new HistogramAggregationRequest(new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults;
+
+            var r = results.AggregationResults.First() as HistogramAggregationResult;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotNull(r.Buckets);
+            Assert.NotEmpty(r.Buckets);
+        }
+        [Fact]
+        public async void HistogramAggregationQuery_FailsOnNonNumber()
+        {
+            const string name = "HistogramAggregationQuery_FailsOnNonDate";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                filterFields: new[] { new DefaultFilterField(DefaultComparator.GreaterThanOrEqual, "2022-03-01", "order_date") },
+                aggregationRequests: new[] { new HistogramAggregationRequest(new DefaultAggregationField("day_of_week")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            DecomissionCluster(cluster);
+
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.Messages);
+            Assert.Equal(-1, results.Total);
+            Assert.Null(results.AggregationResults);
+            Assert.Null(results.Results);
+        }
+        [Fact]
+        public async void HistogramAggregationQuery_FailsOnNonNumber_Untyped()
+        {
+            const string name = "HistogramAggregationQuery_FailsOnNonDate_Untyped";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria(
+                null,
+                typeof(BaseDocument).FullName,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.DateHistogramAggregation.Name, new DefaultAggregationField("day_of_week")) });
+
+            var query = new AggregationQuery(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults;
+
+            DecomissionCluster(cluster);
+
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.Messages);
+            Assert.Equal(-1, results.Total);
+            Assert.Null(results.AggregationResults);
+            Assert.Null(results.Results);
+        }
+
 
         [Fact]
         public async void MinAggregationQuery_CanExecute()
