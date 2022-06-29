@@ -58,7 +58,11 @@ namespace seaq
             return res;
         }
 
-        public override IAggregationResult BuildAggregationResult(AggregateDictionary aggs, string aggKey, string fieldName)
+        public override IAggregationResult BuildAggregationResult(
+            AggregateDictionary aggs,
+            string aggKey,
+            string fieldName,
+            IAggregationCache cache)
         {
             return new HistogramAggregationResult(aggs, aggKey, fieldName);
         }

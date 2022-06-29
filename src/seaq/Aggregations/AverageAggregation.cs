@@ -44,7 +44,7 @@ namespace seaq
 
         }
 
-        public override IAggregationResult BuildAggregationResult(AggregateDictionary aggs, string aggKey, string fieldName)
+        public override IAggregationResult BuildAggregationResult(AggregateDictionary aggs, string aggKey, string fieldName, IAggregationCache cache)
         {
             return new AverageAggregationResult(aggs, aggKey, fieldName);
         }

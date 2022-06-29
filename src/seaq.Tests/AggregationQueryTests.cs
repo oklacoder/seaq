@@ -1005,6 +1005,41 @@ namespace seaq.Tests
             Assert.NotEmpty(r.Buckets);
         }
         [Fact]
+        public async void TermsAggregationQuery_CanExecuteSubAggs()
+        {
+            const string name = "TermsAggregationQuery_CanExecuteSubAggs";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { 
+                    new TermsAggregationRequest( 
+                        new DefaultAggregationField("day_of_week"),
+                        new[]{ new DefaultAggregationRequest(DefaultAggregationCache.StatsAggregation.Name, new DefaultAggregationField("taxful_total_price")) }
+                    )}
+                );
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as TermsAggregationResult;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotEmpty(r.Buckets);
+            Assert.All(r.Buckets, x =>
+            {
+                var z = x as NestedBucketResult;
+                Assert.NotNull(z);
+                Assert.NotEmpty(z.Nested);
+            });
+        }
+        [Fact]
         public async void TermsAggregationQuery_CanExecute_Untyped()
         {
             const string name = "TermsAggregationQuery_CanExecute_Untyped";
@@ -1021,13 +1056,49 @@ namespace seaq.Tests
             var results = cluster.Query(query) as AggregationQueryResults;
 
             var r = results.AggregationResults.First() as TermsAggregationResult;
-            
+
             DecomissionCluster(cluster);
 
             Assert.True(results != null);
             Assert.NotEmpty(results.AggregationResults);
             Assert.NotNull(r);
             Assert.NotEmpty(r.Buckets);
+        }
+        [Fact]
+        public async void TermsAggregationQuery_CanExecuteSubAggs_Untyped()
+        {
+            const string name = "TermsAggregationQuery_CanExecuteSubAggs_Untyped";
+            var cluster = Cluster.Create(GetArgs(name));
+
+
+            var criteria = new AggregationQueryCriteria(
+                null,
+                typeof(SampleResult).FullName,
+                SampleIndices,
+                aggregationRequests: new[] {
+                    new TermsAggregationRequest(
+                        new DefaultAggregationField("day_of_week"),
+                        new[]{ new DefaultAggregationRequest(DefaultAggregationCache.StatsAggregation.Name, new DefaultAggregationField("taxful_total_price")) }
+                    )}
+                );
+
+            var query = new AggregationQuery(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults;
+
+            var r = results.AggregationResults.First() as TermsAggregationResult;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotEmpty(r.Buckets);
+            Assert.All(r.Buckets, x =>
+            {
+                var z = x as NestedBucketResult;
+                Assert.NotNull(z);
+                Assert.NotEmpty(z.Nested);
+            });
         }
     }
 }

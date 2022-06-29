@@ -1,4 +1,6 @@
 ﻿using Nest;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace seaq
 {
@@ -34,5 +36,4 @@ namespace seaq
             return new HistogramAggregation(interval, offset, minBucketSize).GetAggregationDescriptor<T>(Field);
         }
     }
-
 }

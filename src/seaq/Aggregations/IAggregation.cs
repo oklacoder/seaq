@@ -23,6 +23,7 @@ namespace seaq
         public IAggregationResult BuildAggregationResult(
             Nest.AggregateDictionary aggs,
             string aggKey,
-            string fieldName);
+            string fieldName,
+            IAggregationCache cache);
     }
 }

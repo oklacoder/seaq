@@ -76,7 +76,8 @@ namespace seaq
         public override IAggregationResult BuildAggregationResult(
             AggregateDictionary aggs,
             string aggKey, 
-            string fieldName)
+            string fieldName, 
+            IAggregationCache cache)
         {
             return new DateHistogramAggregationResult(aggs, aggKey, fieldName);
         }

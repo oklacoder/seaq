@@ -10,6 +10,6 @@ namespace seaq
 
         public AggregationContainerDescriptor<T> ApplyAggregationContainer<T>(string aggregationName, AggregationContainerDescriptor<T> desc, IAggregationField field) where T : BaseDocument;
         public AggregationContainerDescriptor<T> GetAggregationContainer<T>(string aggregationName, IAggregationField field) where T : BaseDocument;
-        public IAggregationResult BuildAggregationResult(string aggregationKey, AggregateDictionary aggs);
+        public IAggregationResult BuildAggregationResult(string aggregationKey, AggregateDictionary aggs, IAggregationCache cache);
     }
 }
