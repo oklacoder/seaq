@@ -19,7 +19,8 @@ namespace seaq
         public TermsAggregationResult(
             AggregateDictionary aggs,
             string aggKey,
-            string fieldName)
+            string fieldName,
+            IAggregationCache cache)
         {
             var a = aggs.Terms(aggKey);
 
@@ -27,7 +28,10 @@ namespace seaq
                 throw new InvalidOperationException($"Could not resolve key {aggKey} to a valid {GetType().Name}");
 
             FieldName = fieldName;
-            Buckets = a.Buckets.Select(x => new DefaultBucketResult(fieldName, x.Key, x.DocCount));
+            Buckets = a?.Buckets?.Select(x => 
+                x.Any() is true ? 
+                    new NestedBucketResult(fieldName, x.Key, x.DocCount, x, cache) :
+                    new DefaultBucketResult(fieldName, x.Key, x.DocCount));
         }
     }
 }

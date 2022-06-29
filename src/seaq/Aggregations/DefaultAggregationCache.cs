@@ -51,14 +51,15 @@ namespace seaq
         }
         public virtual IAggregationResult BuildAggregationResult(
             string aggregationKey,
-            Nest.AggregateDictionary aggs)
+            Nest.AggregateDictionary aggs,
+            IAggregationCache cache)
         {
             var aggregationName = aggregationKey.Split(Constants.TextPartSeparator).FirstOrDefault();
             var fieldName = aggregationKey.Split(Constants.TextPartSeparator).LastOrDefault();
 
             if (AggregationsDictionary.TryGetValue(aggregationName, out var aggregationContainer))
             {
-                return aggregationContainer.BuildAggregationResult(aggs, aggregationKey, fieldName);
+                return aggregationContainer.BuildAggregationResult(aggs, aggregationKey, fieldName, cache);
             }
             else
             {

@@ -16,7 +16,7 @@ namespace seaq
             IAggregationField field)
             where T : BaseDocument;
 
-        public abstract IAggregationResult BuildAggregationResult(AggregateDictionary aggs, string aggKey, string fieldName);
+        public abstract IAggregationResult BuildAggregationResult(AggregateDictionary aggs, string aggKey, string fieldName, IAggregationCache cache);
 
     }
 }

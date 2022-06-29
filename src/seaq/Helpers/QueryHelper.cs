@@ -110,7 +110,7 @@ namespace seaq
             {
                 foreach(var a in aggs.Keys)
                 {
-                    var r = criteria._aggregationCache.BuildAggregationResult(a, aggs);
+                    var r = criteria._aggregationCache.BuildAggregationResult(a, aggs, criteria._aggregationCache);
                     if (res != null)
                         res.Add(r);
                 }                
@@ -126,7 +126,7 @@ namespace seaq
             {
                 foreach(var a in aggs.Keys)
                 {
-                    var r = criteria._aggregationCache.BuildAggregationResult(a, aggs);
+                    var r = criteria._aggregationCache.BuildAggregationResult(a, aggs, criteria._aggregationCache);
                     if (res != null)
                         res.Add(r);
                 }                
