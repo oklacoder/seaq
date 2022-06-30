@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace seaq
 {
-    public class StatsAggregation :
+    public class ExtendedStatsAggregation :
         BaseAggregation
     {
         public override AggregationContainerDescriptor<T> ApplyAggregationDescriptor<T>(
@@ -21,7 +21,7 @@ namespace seaq
 
             key = $"{Name}{Constants.TextPartSeparator}{key}";
 
-            agg.Stats(key, t => t
+            agg.ExtendedStats(key, t => t
                 .Field(field.FieldName)
                 .Missing(0));
 
@@ -44,7 +44,7 @@ namespace seaq
             string fieldName,
             IAggregationCache cache)
         {
-            return new StatsAggregationResult(aggs, aggKey, fieldName);
+            return new ExtendedStatsAggregationResult(aggs, aggKey, fieldName);
         }
     }
 }

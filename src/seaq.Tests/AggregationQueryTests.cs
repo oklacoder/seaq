@@ -981,6 +981,188 @@ namespace seaq.Tests
             Assert.Null(results.Results);
         }
         [Fact]
+        public async void ExtendedStatsAggregationQuery_CanExecute()
+        {
+            const string name = "ExtendedStatsAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.ExtendedStatsAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as ExtendedStatsAggregationResult;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+
+            Assert.NotNull(r.Average);
+            Assert.IsType<double>(r.Average);
+            Assert.NotNull(r.Count);
+            Assert.IsType<double>(r.Count);
+            Assert.NotNull(r.Max);
+            Assert.IsType<double>(r.Max);
+            Assert.NotNull(r.Min);
+            Assert.IsType<double>(r.Min);
+            Assert.NotNull(r.Sum);
+            Assert.IsType<double>(r.Sum);
+
+            Assert.NotNull(r.StandardDeviation);
+            Assert.IsType<double>(r.StandardDeviation);
+            Assert.NotNull(r.StandardDeviationPopulation);
+            Assert.IsType<double>(r.StandardDeviationPopulation);
+            Assert.NotNull(r.StandardDeviationSampling);
+            Assert.IsType<double>(r.StandardDeviationSampling);
+            
+            Assert.NotNull(r.StandardDeviationBounds);
+            Assert.IsType<Nest.StandardDeviationBounds>(r.StandardDeviationBounds);
+
+            Assert.NotNull(r.StandardDeviationBounds.Upper);
+            Assert.IsType<double>(r.StandardDeviationBounds.Upper);
+            Assert.NotNull(r.StandardDeviationBounds.UpperPopulation);
+            Assert.IsType<double>(r.StandardDeviationBounds.UpperPopulation);
+            Assert.NotNull(r.StandardDeviationBounds.UpperSampling);
+            Assert.IsType<double>(r.StandardDeviationBounds.UpperSampling);
+            Assert.NotNull(r.StandardDeviationBounds.Lower);
+            Assert.IsType<double>(r.StandardDeviationBounds.Lower);
+            Assert.NotNull(r.StandardDeviationBounds.LowerPopulation);
+            Assert.IsType<double>(r.StandardDeviationBounds.LowerPopulation);
+            Assert.NotNull(r.StandardDeviationBounds.LowerSampling);
+            Assert.IsType<double>(r.StandardDeviationBounds.LowerSampling);
+
+            Assert.NotNull(r.SumOfSquares);
+            Assert.IsType<double>(r.SumOfSquares);
+            Assert.NotNull(r.Variance);
+            Assert.IsType<double>(r.Variance);
+            Assert.NotNull(r.VariancePopulation);
+            Assert.IsType<double>(r.VariancePopulation);
+            Assert.NotNull(r.VarianceSampling);
+            Assert.IsType<double>(r.VarianceSampling);
+        }
+        [Fact]
+        public async void ExtendedStatsAggregationQuery_CanExecute_Untyped()
+        {
+            const string name = "ExtendedStatsAggregationQuery_CanExecute_Untyped";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria(
+                null,
+                typeof(SampleResult).FullName,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.ExtendedStatsAggregation.Name, new DefaultAggregationField("taxful_total_price")) });
+
+            var query = new AggregationQuery(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults;
+
+            var r = results.AggregationResults.First() as ExtendedStatsAggregationResult;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+
+            Assert.NotNull(r.Average);
+            Assert.IsType<double>(r.Average);
+            Assert.NotNull(r.Count);
+            Assert.IsType<double>(r.Count);
+            Assert.NotNull(r.Max);
+            Assert.IsType<double>(r.Max);
+            Assert.NotNull(r.Min);
+            Assert.IsType<double>(r.Min);
+            Assert.NotNull(r.Sum);
+            Assert.IsType<double>(r.Sum);
+
+            Assert.NotNull(r.StandardDeviation);
+            Assert.IsType<double>(r.StandardDeviation);
+            Assert.NotNull(r.StandardDeviationPopulation);
+            Assert.IsType<double>(r.StandardDeviationPopulation);
+            Assert.NotNull(r.StandardDeviationSampling);
+            Assert.IsType<double>(r.StandardDeviationSampling);
+
+            Assert.NotNull(r.StandardDeviationBounds);
+            Assert.IsType<Nest.StandardDeviationBounds>(r.StandardDeviationBounds);
+
+            Assert.NotNull(r.StandardDeviationBounds.Upper);
+            Assert.IsType<double>(r.StandardDeviationBounds.Upper);
+            Assert.NotNull(r.StandardDeviationBounds.UpperPopulation);
+            Assert.IsType<double>(r.StandardDeviationBounds.UpperPopulation);
+            Assert.NotNull(r.StandardDeviationBounds.UpperSampling);
+            Assert.IsType<double>(r.StandardDeviationBounds.UpperSampling);
+            Assert.NotNull(r.StandardDeviationBounds.Lower);
+            Assert.IsType<double>(r.StandardDeviationBounds.Lower);
+            Assert.NotNull(r.StandardDeviationBounds.LowerPopulation);
+            Assert.IsType<double>(r.StandardDeviationBounds.LowerPopulation);
+            Assert.NotNull(r.StandardDeviationBounds.LowerSampling);
+            Assert.IsType<double>(r.StandardDeviationBounds.LowerSampling);
+
+            Assert.NotNull(r.SumOfSquares);
+            Assert.IsType<double>(r.SumOfSquares);
+            Assert.NotNull(r.Variance);
+            Assert.IsType<double>(r.Variance);
+            Assert.NotNull(r.VariancePopulation);
+            Assert.IsType<double>(r.VariancePopulation);
+            Assert.NotNull(r.VarianceSampling);
+            Assert.IsType<double>(r.VarianceSampling);
+        }
+        [Fact]
+        public async void ExtendedStatsAggregationQuery_FailsOnNonNumeric()
+        {
+            const string name = "ExtendedStatsAggregationQuery_FailsOnNonNumeric";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.ExtendedStatsAggregation.Name, new DefaultAggregationField("day_of_week")) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            DecomissionCluster(cluster);
+
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.Messages);
+            Assert.Equal(-1, results.Total);
+            Assert.Null(results.AggregationResults);
+            Assert.Null(results.Results);
+        }
+        [Fact]
+        public async void ExtendedStatsAggregationQuery_FailsOnNonNumeric_Untyped()
+        {
+            const string name = "ExtendedStatsAggregationQuery_FailsOnNonNumeric_Untyped";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria(
+                null,
+                typeof(BaseDocument).FullName,
+                SampleIndices,
+                aggregationRequests: new[] { new DefaultAggregationRequest(DefaultAggregationCache.ExtendedStatsAggregation.Name, new DefaultAggregationField("day_of_week")) });
+
+            var query = new AggregationQuery(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults;
+
+            DecomissionCluster(cluster);
+
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.Messages);
+            Assert.Equal(-1, results.Total);
+            Assert.Null(results.AggregationResults);
+            Assert.Null(results.Results);
+        }
+        [Fact]
         public async void TermsAggregationQuery_CanExecute()
         {
             const string name = "TermsAggregationQuery_CanExecute";
