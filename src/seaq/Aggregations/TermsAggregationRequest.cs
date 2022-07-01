@@ -7,14 +7,18 @@ namespace seaq
     public class TermsAggregationRequest :
         DefaultAggregationRequest
     {
+        private int _size { get; set; }
         private IEnumerable<DefaultAggregationRequest> _aggregations;
 
         public TermsAggregationRequest(
             DefaultAggregationField field,
-            IEnumerable<DefaultAggregationRequest> aggregations = null)
+            IEnumerable<DefaultAggregationRequest> aggregations = null,
+            int? size = null)
             : base (DefaultAggregationCache.TermsAggregation.Name, field)
         {
             _aggregations = aggregations;
+            if (size.HasValue)
+                _size = size.Value;
         }
 
         public override AggregationContainerDescriptor<T> ApplyAggregationDescriptor<T>(

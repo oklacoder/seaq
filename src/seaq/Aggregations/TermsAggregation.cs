@@ -33,7 +33,8 @@ namespace seaq
             AggregationContainerDescriptor<T> agg,
             IAggregationField field,
             IEnumerable<DefaultAggregationRequest> nestedAggregations,
-            IAggregationCache aggregationCache)
+            IAggregationCache aggregationCache,
+            int size = 10)
             where T : BaseDocument
         {
             if (string.IsNullOrWhiteSpace(field?.FieldName))
@@ -48,6 +49,7 @@ namespace seaq
 
             agg.Terms(key, t => t
                 .Field(field.FieldName)
+                .Size(size)
                 .MinimumDocumentCount(2)
                 .Aggregations(x => 
                 {
@@ -74,12 +76,13 @@ namespace seaq
         public AggregationContainerDescriptor<T> GetAggregationDescriptor<T>(
             IAggregationField field,
             IEnumerable<DefaultAggregationRequest> nestedAggregations,
-            IAggregationCache aggregationCache)
+            IAggregationCache aggregationCache,
+            int size = 10)
             where T : BaseDocument
         {
             var res = new AggregationContainerDescriptor<T>();
 
-            ApplyAggregationDescriptor(res, field, nestedAggregations, aggregationCache);
+            ApplyAggregationDescriptor(res, field, nestedAggregations, aggregationCache, size);
 
             return res;
         }
