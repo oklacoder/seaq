@@ -35,6 +35,7 @@ namespace seaq
                 AnyWordComparator aw => GetQuery(aw, filter),
                 BetweenComparator bw => GetQuery(bw, filter),
                 EqualComparator eq => GetQuery(eq, filter),
+                ExistsComparator ex => GetQuery(ex, filter),
                 FullPhraseComparator full => GetQuery(full, filter),
                 GreaterThanComparator gt => GetQuery(gt, filter),
                 GreaterThanOrEqualComparator gte => GetQuery(gte, filter),
@@ -83,6 +84,10 @@ namespace seaq
         private static QueryContainer GetQuery(EqualComparator c, IFilterField filter)
         {
             return new QueryContainerDescriptor<BaseDocument>().Bool(b => b.Must(m => m.Match(ma => ma.Field(filter.FieldName).Query(filter.Value))));
+        }
+        private static QueryContainer GetQuery(ExistsComparator c, IFilterField filter)
+        {
+            return new QueryContainerDescriptor<BaseDocument>().Exists(x => x.Field(filter.FieldName));
         }
         private static QueryContainer GetQuery(FullPhraseComparator c, IFilterField filter)
         {

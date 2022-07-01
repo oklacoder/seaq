@@ -48,6 +48,7 @@ namespace seaq
         public static AnyWordComparator AnyWord { get; } = new AnyWordComparator();
         public static BetweenComparator Between { get; } = new BetweenComparator();
         public static EqualComparator Equal { get; } = new EqualComparator();
+        public static ExistsComparator Exists { get; } = new ExistsComparator();
         public static FullPhraseComparator FullPhrase { get; } = new FullPhraseComparator();
         public static GreaterThanComparator GreaterThan { get; } = new GreaterThanComparator();
         public static GreaterThanOrEqualComparator GreaterThanOrEqual { get; } = new GreaterThanOrEqualComparator();
@@ -63,6 +64,7 @@ namespace seaq
             AnyWord,
             Between,
             Equal,
+            Exists,
             FullPhrase,
             GreaterThan,
             GreaterThanOrEqual,
