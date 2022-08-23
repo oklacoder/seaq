@@ -40,6 +40,27 @@ namespace seaq.Tests
             Assert.True(sync_sync);
             Assert.True(sync_async);
         }
+        [Fact]
+        public async void CanPingCluster_ApiKey()
+        {
+            const string method = "CanPingCluster";
+            //GetArgs(method)
+            var cluster = Cluster.Create(GetApiKeyArgs(method));
+            var clusterAsync = await Cluster.CreateAsync(GetArgs(method));
+
+            var sync_sync = cluster.CanPing();
+            var sync_async = await cluster.CanPingAsync();
+            var async_sync = cluster.CanPing();
+            var async_async = await cluster.CanPingAsync();
+
+            DecomissionCluster(cluster);
+            DecomissionCluster(clusterAsync);
+
+            Assert.True(async_sync);
+            Assert.True(async_async);
+            Assert.True(sync_sync);
+            Assert.True(sync_async);
+        }
 
         [Fact]
         public async void CanCreateIndex()
