@@ -16,6 +16,7 @@ namespace seaq.Tests
         protected const string Url_6x = "http://localhost:9200/";
         protected const string Username = "elastic";
         protected const string Password = "elastic";
+        protected const string ApiKey = "dmdzVnk0SUJHYzIxcnZyMXBDU1A6YnA4UGV1WEVUbGV3OU9WZUpucC1rdw==";
         protected string Url => Url_8x;
 
         protected ConnectionSettings _connection => new ConnectionSettings(
@@ -63,6 +64,14 @@ namespace seaq.Tests
         {
             var scope = scopeOverride ?? $"{Scope}_{method}".ToLower();
             return new ClusterArgs(scope, Url, Username, Password, true, null, allowAutomaticIndexCreation);
+        }
+        protected ClusterArgs GetApiKeyArgs(string method, bool allowAutomaticIndexCreation = true, string scopeOverride = null)
+        {
+            var scope = scopeOverride ?? $"{Scope}_{method}".ToLower();
+            return new ClusterArgs(scope, Url,
+                apiKey: ApiKey,
+                bypassCertificateValidation: true, 
+                allowAutomaticIndexCreation: allowAutomaticIndexCreation);
         }
 
         public IEnumerable<T> GetFakeDocs<T>(int count = 100)

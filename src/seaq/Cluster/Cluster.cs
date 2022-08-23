@@ -1409,20 +1409,26 @@ namespace seaq
             if (!string.IsNullOrWhiteSpace(args.Username) && !string.IsNullOrWhiteSpace(args.Password))
             {
                 settings.BasicAuthentication(args.Username, args.Password);
+            }
+            else if (!string.IsNullOrWhiteSpace(args.ApiKey))
+            {
+                settings.ApiKeyAuthentication(new ApiKeyAuthenticationCredentials(args.ApiKey));
+            }
+            if (args.BypassCertificateValidation)
+            {
                 ///this is the great big hammer to break out when things aren't working - 
                 ///it bypasses certificate validation entirely, which is necessary for local self-signed certs,
                 ///but can be a GIANT security risk otherwise.  Only used for debugging for a reason.
+                Log.Warning("Bypassing SSL Certificate Validation.  This is necessary for self-signed and other untrusted certificates, but can pose a large security risk.  Make sure that this is intentional.");
+                settings.ServerCertificateValidationCallback((a, b, c, d) => true);
+            }
+
 #if DEBUG
                 Log.Debug("DEBUG mode enabled.  Ignoring server certificate validation and enabling additional Elasticsearch debug messages.");
                 settings.ServerCertificateValidationCallback((a, b, c, d) => true);
                 settings.EnableDebugMode();
 #endif
-            }
-            if (args.BypassCertificateValidation)
-            {
-                Log.Warning("Bypassing SSL Certificate Validation.  This is necessary for self-signed and other untrusted certificates, but can pose a large security risk.  Make sure that this is intentional.");
-                settings.ServerCertificateValidationCallback((a, b, c, d) => true);
-            }
+            
 
             return new ElasticClient(settings);
         }
