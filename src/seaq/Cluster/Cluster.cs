@@ -368,7 +368,7 @@ namespace seaq
         {
             if (!TryGetOrCreateIndexForDocument(document, out var idx))
             {
-                Log.Information("Could not identify index for provided document {0} and cluster settings do not allow for automatic index creation.", document.Id);
+                Log.Error("Could not identify index for provided document {0} and cluster settings do not allow for automatic index creation.", document.Id);
                 return false;
             }
             Log.Verbose("Attempting to index document {0} to index {1}", document.Id, idx.Name);
