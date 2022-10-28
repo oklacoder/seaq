@@ -427,6 +427,8 @@ namespace seaq
 
             var resp = await _client.BulkAsync(bulk);
 
+            return resp?.ApiCall?.HttpStatusCode == 200;
+
             //There are issues with cross-version compatability and error detection on bulk methods - many successful index ops report unknown errors.
             //Taking a simpler, more naive path towards success detection until a new release of the client that functions correctly.
 
@@ -455,8 +457,6 @@ namespace seaq
             //        Log.Error(resp.OriginalException?.StackTrace);
             //    }
             //}
-
-            return resp?.Items?.Count.Equals(documents?.Count()) ?? false;
         }
 
         public bool Commit(BaseDocument document)
@@ -546,6 +546,8 @@ namespace seaq
 
             var resp = await _client.BulkAsync(bulk);
 
+            return resp?.ApiCall?.HttpStatusCode == 200;
+            
             //There are issues with cross-version compatability and error detection on bulk methods - many successful index ops report unknown/empty errors.
             //Taking a simpler, more naive path towards success detection until a new release of the client that functions correctly.
 
@@ -575,7 +577,6 @@ namespace seaq
             //    }
             //}
 
-            return resp?.Items?.Count.Equals(documents?.Count()) ?? false;
         }
 
 
@@ -1092,6 +1093,8 @@ namespace seaq
 
             var resp = await _client.BulkAsync(bulk);
 
+            return resp?.ApiCall?.HttpStatusCode == 200;
+
             //There are issues with cross-version compatability and error detection on bulk methods - many successful index ops report unknown errors.
             //Taking a simpler, more naive path towards success detection until a new release of the client that functions correctly.
 
@@ -1130,8 +1133,6 @@ namespace seaq
             //    Log.Error(resp.OriginalException?.Message);
             //    Log.Error(resp.OriginalException?.StackTrace);
             //}
-
-            return resp?.Items?.Count.Equals(documents?.Count()) ?? false;
         }
 
         public bool Delete(BaseDocument document)
@@ -1243,6 +1244,8 @@ namespace seaq
 
             var resp = await _client.BulkAsync(bulk);
 
+            return resp?.ApiCall?.HttpStatusCode == 200;
+
             //There are issues with cross-version compatability and error detection on bulk methods - many successful index ops report unknown errors.
             //Taking a simpler, more naive path towards success detection until a new release of the client that functions correctly.
 
@@ -1281,8 +1284,6 @@ namespace seaq
             //    Log.Error(resp.OriginalException?.Message);
             //    Log.Error(resp.OriginalException?.StackTrace);
             //}
-
-            return resp?.Items?.Count.Equals(documents?.Count()) ?? false;
         }
 
         //query
