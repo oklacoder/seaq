@@ -1187,6 +1187,32 @@ namespace seaq.Tests
             Assert.NotEmpty(r.Buckets);
         }
         [Fact]
+        public async void TermsAggregationQuery_RespectsSizeParam()
+        {
+            const string name = "TermsAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                aggregationRequests: new[] { new TermsAggregationRequest(new DefaultAggregationField("manufacturer.keyword"), size: 20) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as TermsAggregationResult;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotEmpty(r.Buckets);
+            var cnt = r.Buckets.Count();
+            Assert.True(cnt > 10);
+        }
+        [Fact]
         public async void TermsAggregationQuery_CanExecuteSubAggs()
         {
             const string name = "TermsAggregationQuery_CanExecuteSubAggs";
