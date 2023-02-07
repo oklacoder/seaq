@@ -2,6 +2,7 @@
 using Nest;
 using Serilog;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -76,7 +77,7 @@ namespace seaq
         public bool AllowAutomaticIndexCreation { get; private set; }
         public string InternalStoreIndex => IndexNameUtilities.FormatIndexName(typeof(Index), ClusterScope);
 
-        private Dictionary<string, Index> _indices;
+        private ConcurrentDictionary<string, Index> _indices;
         private Dictionary<string, Type> _searchableTypes;
         private ISeaqElasticsearchSerializer _serializer;
         private readonly ElasticClient _client;
@@ -132,7 +133,7 @@ namespace seaq
         {
             IndexCacheInitializing?.Invoke(this, null);
 
-            _indices = new Dictionary<string, Index>();
+            _indices = new ConcurrentDictionary<string, Index>();
 
             var query = new GetIndexRequest(Nest.Indices.Index($"{ClusterScope}*"));
             var resp = await _client.Indices
@@ -229,9 +230,13 @@ namespace seaq
             }
 
 
-            _indices.Add(index.Name, index);
-
-            await SaveToInternalStore(index);
+            if (_indices.TryAdd(index.Name, index))
+                await SaveToInternalStore(index);
+            else
+            {
+                Log.Error("Could not save index {0} to internal index store, even though it was succesfully created on the server.", index.Name);
+                return null;
+            }
 
             return index;
         }
@@ -277,7 +282,7 @@ namespace seaq
                 {
                     var dependants = Indices.Where(x => x?.IndexAsType?.Equals(idx?.DocumentType) is true);
                     foreach (var dependant in dependants)
-                        _indices.Remove(dependant.Name);
+                        _indices.Remove(dependant.Name, out _);
                 }
             }
             else
@@ -300,7 +305,7 @@ namespace seaq
                 }
             }
             
-            if (_indices.Remove(indexName))
+            if (_indices.Remove(indexName, out _))
             {
                 await DeleteFromInternalStore(idx);
             }
@@ -1466,7 +1471,7 @@ namespace seaq
                 if (resp.IsValid)
                 {
                     if (_indices?.Any() is not true)
-                        _indices = new Dictionary<string, Index>();
+                        _indices = new ConcurrentDictionary<string, Index>();
                     resp.Documents.ToList().ForEach(x =>
                     {
                         _indices[x.Name] = x;
