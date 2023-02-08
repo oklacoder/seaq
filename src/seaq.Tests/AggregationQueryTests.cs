@@ -354,6 +354,43 @@ namespace seaq.Tests
             Assert.Null(results.Results);
         }
         [Fact]
+        public async void DateHistogramAggregationQuery_ExtendedBoundsWork()
+        {
+            const string name = "DateHistogramAggregationQuery_CanExecute";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            var extended_bounds_start = new DateTime(2020, 01, 01);
+            var extended_bounds_end = new DateTime(2022, 12, 31);
+            var expected_buckets = Math.Abs(extended_bounds_end.Subtract(extended_bounds_start).Days)+1; //"+1" because Elastic treats it as an inclusive range
+
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                SampleIndices,
+                filterFields: new[] { new DefaultFilterField(DefaultComparator.GreaterThanOrEqual, "2022-03-01", "order_date") },
+                aggregationRequests: new[] { new DateHistogramAggregationRequest(
+                    new DefaultAggregationField("order_date"),
+                    interval: Constants.DateIntervals.Day,
+                    minBucketSize: 0,
+                    extendedBoundsMin: extended_bounds_start,
+                    extendedBoundsMax: extended_bounds_end
+                ) });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as DateHistogramAggregationResult;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotNull(r.Buckets);
+            Assert.NotEmpty(r.Buckets);
+            Assert.Equal(expected_buckets, r.Buckets.Count());
+        }
+        
+        [Fact]
         public async void HistogramAggregationQuery_CanExecute()
         {
             const string name = "HistogramAggregationQuery_CanExecute";

@@ -10,15 +10,19 @@ namespace seaq
         public string Interval { get; set; } = Constants.DateIntervals.Day;
         public string Offset { get; set; } = "0";
         public int MinBucketSize { get; set; } = 1;
+        public DateTime? ExtendedBoundsMin { get; set; } = null;
+        public DateTime? ExtendedBoundsMax { get; set; } = null;
 
         public DateHistogramAggregation()
         {
 
         }
         public DateHistogramAggregation(
-            string? interval = null, 
-            string? offset = null, 
-            int? minBucketSize = null)
+            string? interval = null,
+            string? offset = null,
+            int? minBucketSize = null,
+            DateTime? extendedBoundsMin = null,
+            DateTime? extendedBoundsMax = null)
         {
             if (!string.IsNullOrWhiteSpace(interval))
                 Interval = interval;
@@ -26,6 +30,10 @@ namespace seaq
                 Offset = offset;
             if (minBucketSize.HasValue)
                 MinBucketSize = minBucketSize.Value;
+            if (extendedBoundsMin.HasValue)
+                ExtendedBoundsMin = extendedBoundsMin;
+            if (extendedBoundsMax.HasValue)
+                ExtendedBoundsMax = extendedBoundsMax;
         }
 
         public override AggregationContainerDescriptor<T> ApplyAggregationDescriptor<T>(
@@ -42,8 +50,9 @@ namespace seaq
 
             key = $"{Name}{Constants.TextPartSeparator}{key}";
 
-            agg.DateHistogram(key, t => t
-                .Field(field.FieldName)
+            agg.DateHistogram(key, t =>
+            {
+                t.Field(field.FieldName)
                 .CalendarInterval(
                     //we use this so we can pass in string arguments - primary objective is to simplify accepting serialized queries from web clients
                     Interval switch
@@ -59,7 +68,17 @@ namespace seaq
                     }
                 )
                 .Offset(Offset)
-                .MinimumDocumentCount(MinBucketSize));
+                .MinimumDocumentCount(MinBucketSize);
+
+                if (ExtendedBoundsMin.HasValue && ExtendedBoundsMax.HasValue)
+                {
+                    t.ExtendedBounds(
+                        DateMath.Anchored(ExtendedBoundsMin.Value), 
+                        DateMath.Anchored(ExtendedBoundsMax.Value));
+                }
+
+                return t;
+            });
 
             return agg;
         }
