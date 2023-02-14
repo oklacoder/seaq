@@ -219,7 +219,7 @@ namespace seaq
             }
 
             var index =
-                string.IsNullOrWhiteSpace(config.IndexAsType) ?
+                string.IsNullOrWhiteSpace(config.IndexAsType) || config.DocumentType.Equals(config.IndexAsType) ?
                 await CreateIndexAsIndex(config, type) :
                 await CreateIndexAsAlias(config);
 
@@ -1643,12 +1643,16 @@ namespace seaq
         private async Task<Index> CreateIndexAsAlias(
             IndexConfig config)
         {
-            var any = IndicesByType[config.IndexAsType].FirstOrDefault();
-            if (any == null)
+            Index any = null;
+            if (config.Name.Equals(config.IndexAsType) is not true)
             {
-                Log.Error("Cannot create an index with an {0} mapping of {1} since no index with type {1} exists on the cluster",
-                    nameof(IndexConfig.IndexAsType), config.IndexAsType, config.IndexAsType);
-                return null;
+                any = IndicesByType[config.IndexAsType].FirstOrDefault();
+                if (any == null)
+                {
+                    Log.Error("Cannot create an index with an {0} mapping of {1} since no index with type {1} exists on the cluster",
+                        nameof(IndexConfig.IndexAsType), config.IndexAsType, config.IndexAsType);
+                    return null;
+                }
             }
             var t0 = SearchableTypes.FirstOrDefault(x => x.FullName.Equals(config.IndexAsType, StringComparison.OrdinalIgnoreCase));
             var t = SearchableTypes.FirstOrDefault(x => x.FullName.Equals(config.DocumentType, StringComparison.OrdinalIgnoreCase));
