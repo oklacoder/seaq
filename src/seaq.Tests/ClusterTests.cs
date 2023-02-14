@@ -77,7 +77,7 @@ namespace seaq.Tests
             var exists = cluster.Indices.Any(x => x.Name == config.Name);
             var existsByType = cluster.IndicesByType[type]?.Any();
 
-            var hasAlias = _client.Cat.Aliases(x => x.Name(test_alias));
+            var hasAlias = _client.Cat.Aliases(x => x.Name(test_alias.FormatIndexName(cluster.ClusterScope)));
 
             DecomissionCluster(cluster);
 

@@ -1625,7 +1625,7 @@ namespace seaq
             IndexConfig config,
             Type type)
         {
-            var result = await _client.Indices.CreateAsync(config.Name, desc => desc.Extend(config, type));
+            var result = await _client.Indices.CreateAsync(config.Name, desc => desc.Extend(config, type, ClusterScope));
 
             if (!result.IsValid)
             {

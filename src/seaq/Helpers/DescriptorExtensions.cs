@@ -8,9 +8,10 @@ namespace seaq
         public static CreateIndexDescriptor Extend(
             this CreateIndexDescriptor descriptor,
             IndexConfig config,
-            Type type)
+            Type type,
+            string clusterScope)
         {
-            return CreateIndexDescriptorExtender.Extend(config, type, descriptor);
+            return CreateIndexDescriptorExtender.Extend(config, type, descriptor, clusterScope);
         }
     }
 }

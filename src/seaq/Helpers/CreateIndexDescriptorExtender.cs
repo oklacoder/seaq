@@ -10,7 +10,8 @@ namespace seaq
         public static CreateIndexDescriptor Extend(
             IndexConfig config,
             Type type,
-            CreateIndexDescriptor descriptor)
+            CreateIndexDescriptor descriptor,
+            string clusterScope)
         {
             return
                 descriptor
@@ -18,15 +19,22 @@ namespace seaq
                     .Aliases(x => 
                     {
                         Dictionary<string, object> cache = new Dictionary<string, object>();
-                        cache.Add(config.DocumentType, null);
+                        //cache.Add(
+                        //    config.DocumentType.FormatIndexName(clusterScope),
+                        //    null);
 
                         if (config?.Aliases is not null)
                         foreach(var a in config.Aliases)
                         {
-                            if (!cache.ContainsKey(a)) cache.Add(a, null);                                                            
+                            var comp = IndexNameUtilities.FormatIndexName(a, clusterScope);
+                            if (!cache.ContainsKey(comp)) cache.Add(comp, null);                                                            
                         }
 
-                        cache.Keys.ToList().ForEach(a => x.Alias(a));
+                        cache.Keys.ToList().ForEach(a =>
+                        {
+                            if (a.Equals(config.Name) is not true)
+                                x.Alias(a);
+                        });
 
                         return x;
                     })
