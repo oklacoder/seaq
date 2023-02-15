@@ -135,7 +135,11 @@ namespace seaq
 
             _indices = new ConcurrentDictionary<string, Index>();
 
-            var query = new GetIndexRequest(Nest.Indices.Index($"{ClusterScope}*"));
+            var scope = ClusterScope;
+            if (scope.EndsWith(Constants.Indices.NamePartSeparator) is not true)
+                scope = scope + Constants.Indices.NamePartSeparator;
+
+            var query = new GetIndexRequest(Nest.Indices.Index($"{scope}*"));
             var resp = await _client.Indices
                 .GetAsync(query);
 
