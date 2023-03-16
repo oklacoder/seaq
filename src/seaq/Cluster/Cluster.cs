@@ -200,7 +200,7 @@ namespace seaq
             IndexConfig config)
         {
             Log.Debug("Attempting to create index {0}", config.Name);
-
+            
             if (string.IsNullOrWhiteSpace(config.Name))
             {
                 throw new InvalidOperationException($"Cannot create index - no {nameof(config.Name)} was provided.");
@@ -211,14 +211,18 @@ namespace seaq
             if (_indices.ContainsKey(config.Name))
             {
                 Log.Warning("Couldn't create index {0} - an index with that name already exists in cluster cache.", config.Name);
-                await Task.CompletedTask;
+
+                await HydrateInternalStore();
+
                 return _indices[config.Name];
             }
 
             if (!_searchableTypes.TryGetValue(config.DocumentType, out var type))
             {
                 Log.Error("Attempted to create an index for type {0}, which is not present in the cluster's type cache.  Reference the type prior to attempting index creation to ensure that its assembly is forced to load.", config.DocumentType);
-                await Task.CompletedTask;
+
+                await HydrateInternalStore();
+
                 return null;
             }
 
@@ -230,6 +234,9 @@ namespace seaq
             if (index == null)
             {
                 Log.Error("Index {0} creation reported success, but could not retrieve index definition from server.  This cannot be automatically resolved - suggest handling with index cache refresh.", config.Name);
+
+                await HydrateInternalStore();
+
                 return null;
             }
 
@@ -239,6 +246,9 @@ namespace seaq
             else
             {
                 Log.Error("Could not save index {0} to internal index store, even though it was succesfully created on the server.", index.Name);
+
+                await HydrateInternalStore();
+
                 return null;
             }
 
