@@ -52,12 +52,7 @@ jobs:
       - name: setup dotnet5
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.0.201
-      - name: setup dotnet6
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 6.0.100
-
+          dotnet-version: 7.0.203
       - name: build
         run: dotnet build src/$PROJECT_NAME.sln --configuration $ENV -p:Version=$VERSION
         shell: bash
