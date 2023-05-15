@@ -49,11 +49,10 @@ jobs:
           mkdir --parents staging/artifact
         shell: bash
 
-      - name: setup dotnet
+      - name: setup dotnet5
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 7.0.203
-
       - name: build
         run: dotnet build src/$PROJECT_NAME.sln --configuration $ENV -p:Version=$VERSION
         shell: bash

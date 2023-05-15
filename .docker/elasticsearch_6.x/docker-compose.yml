@@ -1,8 +1,9 @@
 version: '3.7'
 services:
   elasticsearch:
-    container_name: seaq_local
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+    container_name: seaq_6x_local
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
+    command: ["elasticsearch", "-v"]
     ports:
       - 9200:9200
     environment:
@@ -12,33 +13,33 @@ services:
       - bootstrap.memory_lock=false
       - "ES_JAVA_OPTS=-Xms1500m -Xmx1500m"
     networks:
-      - seaq_local_network
+      - seaq_local_network_6x
   kibana:
-    container_name: kb_kibana
-    image: docker.elastic.co/kibana/kibana:7.16.1
+    container_name: seaq_6x_kibana
+    image: docker.elastic.co/kibana/kibana:6.7.1
     ports:
       - 5601:5601
     environment:
-      - ELASTICSEARCH_HOSTS=http://seaq_local:9200
+      - ELASTICSEARCH_HOSTS=http://seaq_6x_local:9200
       - ELASTICSEARCH_USERNAME=elastic
       - ELASTICSEARCH_PASSWORD=elastic
     networks:
-      - seaq_local_network
+      - seaq_local_network_6x
   apm:
-    container_name: seaq_apm
-    image: docker.elastic.co/apm/apm-server:7.16.1
+    container_name: seaq_6x_apm
+    image: docker.elastic.co/apm/apm-server:6.7.1
     ports:
       - 8200:8200
     command: >
       apm-server -e
-      -E output.elasticsearch.hosts=["seaq_local:9200"]
+      -E output.elasticsearch.hosts=["seaq_6x_local:9200"]
       -E output.elasticsearch.protocol=http
       -E output.elasticsearch.username=elastic
       -E output.elasticsearch.password=elastic
       -E apm-server.secret_token=lRiDTwv2dis5J53dke
-      -E setup.kibana.host=seaq_kibana:5601
+      -E setup.kibana.host=seaq_6x_kibana:5601
       -E apm-server.kibana.enabled=true
-      -E apm-server.kibana.host=seaq_kibana:5601
+      -E apm-server.kibana.host=seaq_6x_kibana:5601
       -E apm-server.kibana.protocol=http
       -E apm-server.kibana.username=elastic
       -E apm-server.kibana.password=elastic
@@ -48,7 +49,9 @@ services:
       -E apm-server.auth.rate_limit.event_limit=100
       -E apm-server.rum.enabled=true
     networks:
-      - seaq_local_network
+      - seaq_local_network_6x
 
 networks:
-  seaq_local_network:
+  seaq_local_network_6x:
+
+   # -E apm-server.auth.secret_token=lRiDTwv2dis5J53dke
