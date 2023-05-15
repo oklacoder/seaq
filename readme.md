@@ -35,3 +35,6 @@ A developer can create a `cluster` by calling the static `seaq.Cluster.Create(`C
 <hr/>
 
 A seaq `index` is a direct representation of an Elasticsearch index.  Each seaq `index` is mapped to a dotnet type - you'll want fully-qualified `Type.FullName` values as index names in most circumstances.  
+
+
+### <a id="field">Field</a>
