@@ -143,19 +143,21 @@ namespace seaq
             var resp = await _client.Indices
                 .GetAsync(query);
 
-            var vals = resp.Indices.Select(Index.Create); 
-            
+            var vals = resp.Indices.Select(Index.Create);
+
             foreach (var v in vals)
+            {
                 _indices[v.Name] = v;
+            }
 
             if (!IndicesByType.Contains(typeof(seaq.Index).FullName))
             {
                 var indexConfig = new IndexConfig(
                     typeof(seaq.Index).FullName, typeof(Index).FullName);
                 await CreateIndexAsync(indexConfig);
-                await HydrateInternalStore();
             }
             await RefreshFromInternalStore();
+            await HydrateInternalStore();
 
             IndexCacheInitialized?.Invoke(this, null);
         }
