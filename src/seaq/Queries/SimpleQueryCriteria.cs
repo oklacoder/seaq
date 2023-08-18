@@ -197,7 +197,7 @@ namespace seaq
                 if (idx?.Fields is null) continue;
                 if (Indices.Contains(idx.Name))
                 {
-                    fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields));
+                    fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields()));
                 }
             }
             if (fields?.Any() is not true)
@@ -214,14 +214,14 @@ namespace seaq
 
             var flat = indices
                 .SelectMany(x =>
-                    x.Fields.Where(x => x.IsIncludedField is true || x.HasIncludedField is true))
+                    x.Fields.Where(x => x.IsIncludedField() is true || x.HasIncludedField() is true))
                 .SelectMany(x =>
                     new[] { x }.Concat(x.Fields));
 
             _returnFields = flat
-                .Where(x => x.IsIncludedField is true)
+                .Where(x => x.IsIncludedField() is true)
                 .SelectMany(x =>
-                    x.FieldTree?
+                    x.FieldTree()?
                         .Select(z => new DefaultReturnField(z)));
         }
         internal void ApplyDefaultBuckets(Cluster cluster)
@@ -233,15 +233,15 @@ namespace seaq
 
             var flat = indices
                 .SelectMany(x =>
-                    x.Fields.Where(x => x.IsFilterable is true || x.HasFilterField is true))
+                    x.Fields.Where(x => x.IsFilterable is true || x.HasFilterField() is true))
                 .SelectMany(x =>
                     new[] { x }.Concat(x.Fields));
 
             _bucketFields = flat
                 .Where(x => x.IsFilterable is true)
                 .SelectMany(x =>
-                    x.HasKeywordField is true ?
-                    x.AllKeywordFields.Select(z => new DefaultBucketField(z)) :
+                    x.HasKeywordField() is true ?
+                    x.AllKeywordFields().Select(z => new DefaultBucketField(z)) :
                     new[] { new DefaultBucketField(x.Name) }
                 );
         }
@@ -422,7 +422,7 @@ namespace seaq
                 if (idx?.Fields is null) continue;
                 if (Indices.Contains(idx.Name))
                 {
-                    fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields));
+                    fields.AddRange(idx.Fields.SelectMany(x => x.AllBoostedFields()));
                 }
             }
             if (fields?.Any() is not true)
@@ -439,14 +439,14 @@ namespace seaq
 
             var flat = indices
                 .SelectMany(x =>
-                    x.Fields.Where(x => x.IsIncludedField is true || x.HasIncludedField is true))
+                    x.Fields.Where(x => x.IsIncludedField() is true || x.HasIncludedField() is true))
                 .SelectMany(x =>
                     new[] { x }.Concat(x.Fields));
 
             _returnFields = flat
-                .Where(x => x.IsIncludedField is true)
+                .Where(x => x.IsIncludedField() is true)
                 .SelectMany(x =>
-                    x.FieldTree?
+                    x.FieldTree()?
                         .Select(z => new DefaultReturnField(z)));
         }
         internal void ApplyDefaultBuckets(Cluster cluster)
@@ -458,15 +458,15 @@ namespace seaq
 
             var flat = indices
                 .SelectMany(x =>
-                    x.Fields.Where(x => x.IsFilterable is true || x.HasFilterField is true))
+                    x.Fields.Where(x => x.IsFilterable is true || x.HasFilterField() is true))
                 .SelectMany(x =>
                     new[] { x }.Concat(x.Fields));
 
             _bucketFields = flat
                 .Where(x => x.IsFilterable is true)
                 .SelectMany(x =>
-                    x.HasKeywordField is true ?
-                    x.AllKeywordFields.Select(z => new DefaultBucketField(z)) :
+                    x.HasKeywordField() is true ?
+                    x.AllKeywordFields().Select(z => new DefaultBucketField(z)) :
                     new[] { new DefaultBucketField(x.Name) }
                 );
         }

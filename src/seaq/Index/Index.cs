@@ -242,6 +242,9 @@ namespace seaq
             {
                 resp.Aliases = index.Value.Aliases.Select(x => x.Key.Name);
             }
+
+            if (string.IsNullOrWhiteSpace(resp.IndexAsType) is not true)
+                return resp;
             
             var fieldList = index.Value?.Mappings?.Properties?.Select(x => x.Value.FromNestProperty());
             
