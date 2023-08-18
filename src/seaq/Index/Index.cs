@@ -251,7 +251,7 @@ namespace seaq
             }
             else if (!fieldList.All(x => resp.Fields.Any(z => x.Name.Equals(z.Name, StringComparison.OrdinalIgnoreCase))))
             {
-                resp.Fields.Merge(fieldList);
+                resp.Fields = resp.Fields.Merge(fieldList);
             }
 
             return resp;
