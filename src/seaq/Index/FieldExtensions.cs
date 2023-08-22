@@ -14,32 +14,15 @@ namespace seaq
             if (target is null) return Array.Empty<Field>();
 
             var resp = new List<Field>();
-            resp.AddRange(source);
+            resp.AddRange(target);
 
-            foreach(var tgt in target)
-            {
-                var src = resp.FirstOrDefault(x => x.Name.Equals(tgt.Name));
-                if (src is not null)
-                {
-                    if (src.Boost.HasValue)
-                        tgt.Boost = src.Boost;
-                    if (src.IsFilterable.HasValue)
-                        tgt.IsFilterable = src.IsFilterable;
-                    if (src.IncludeInResults.HasValue)
-                        tgt.IncludeInResults = tgt.IncludeInResults;
-                    if (!string.IsNullOrWhiteSpace(src.Label))
-                        tgt.Label = src.Label;
-
-                    if (src.Fields?.Any() == tgt.Fields?.Any() == true)
-                        src.Fields.Merge(tgt.Fields);
-                }
-            }
-            foreach(var src in source)
+            foreach (var src in source)
             {
                 var tgt = resp.FirstOrDefault(x => x.Name.Equals(src.Name));
                 if (tgt is null)
                     resp.Add(src);
             }
+
             return resp;
         }
         public static void Merge(
