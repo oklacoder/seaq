@@ -298,7 +298,7 @@ namespace seaq
                 {
                     var dependants = Indices.Where(x => x?.IndexAsType?.Equals(idx?.DocumentType) is true);
                     foreach (var dependant in dependants)
-                        _indices.Remove(dependant.Name, out _);
+                        _indices.TryRemove(dependant.Name, out _);
                 }
             }
             else
@@ -321,7 +321,7 @@ namespace seaq
                 }
             }
             
-            if (_indices.Remove(indexName, out _))
+            if (_indices.TryRemove(indexName, out _))
             {
                 await DeleteFromInternalStore(idx);
             }
@@ -486,7 +486,8 @@ namespace seaq
         }
         public async Task<bool> CommitAsync(object document)
         {
-            if (!document.GetType().IsAssignableTo(typeof(BaseDocument)))
+            //if (!document.GetType().IsAssignableTo(typeof(BaseDocument)))
+            if (!typeof(BaseDocument).IsAssignableFrom(document.GetType()))
             {
                 Log.Warning("Type {0} could not be indexed - only types that inherit from {1} are allowed.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
                 return false;
@@ -537,7 +538,7 @@ namespace seaq
             Dictionary<string, string> idx_as_type_cache = new Dictionary<string, string>();
             foreach (var document in documents)
             {
-                if (!document.GetType().IsAssignableTo(typeof(BaseDocument)))
+                if (!typeof(BaseDocument).IsAssignableFrom(document.GetType()))
                 {
                     Log.Warning("Type {0} could not be indexed - only types that inherit from {1} are allowed.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
                     return false;
@@ -1162,7 +1163,7 @@ namespace seaq
         }
         public async Task<bool> DeleteAsync(object document)
         {
-            if (!document.GetType().IsAssignableTo(typeof(BaseDocument)))
+            if (!typeof(BaseDocument).IsAssignableFrom(document.GetType()))
             {
                 Log.Warning("Type {0} could not be indexed - only types that inherit from {1} are allowed.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
                 return false;
@@ -1226,7 +1227,7 @@ namespace seaq
             Dictionary<string, string> idx_as_type_cache = new Dictionary<string, string>();
             foreach (var document in documents)
             {
-                if (!document.GetType().IsAssignableTo(typeof(BaseDocument)))
+                if (!typeof(BaseDocument).IsAssignableFrom(document.GetType()))
                 {
                     Log.Warning("Type {0} could not be indexed - only types that inherit from {1} are allowed.", document.GetType().FullName, typeof(seaq.BaseDocument).FullName);
                     return false;

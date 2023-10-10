@@ -55,8 +55,8 @@ namespace seaq
             Nest.AggregateDictionary aggs,
             IAggregationCache cache)
         {
-            var aggregationName = aggregationKey.Split(Constants.TextPartSeparator).FirstOrDefault();
-            var fieldName = aggregationKey.Split(Constants.TextPartSeparator).LastOrDefault();
+            var aggregationName = aggregationKey.Split(new[] { Constants.TextPartSeparator }, System.StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            var fieldName = aggregationKey.Split(new[] { Constants.TextPartSeparator }, System.StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
 
             if (AggregationsDictionary.TryGetValue(aggregationName, out var aggregationContainer))
             {

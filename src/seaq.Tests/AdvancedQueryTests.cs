@@ -360,7 +360,7 @@ namespace seaq.Tests
 
             var all = results.Results.All(
                 x => x.Document.Products.Any(
-                    z => z.ProductName.Contains(valToMatch, StringComparison.OrdinalIgnoreCase)));
+                    z => z.ProductName.IndexOf(valToMatch, StringComparison.OrdinalIgnoreCase) > -1));
             Assert.NotEmpty(results.Results);
             Assert.True(all);
         }
@@ -384,7 +384,7 @@ namespace seaq.Tests
 
             var all = results.Results.Select(x => x?.Document as SampleResult).All(
                 x => x.Products.Any(
-                    z => z.ProductName.Contains(valToMatch, StringComparison.OrdinalIgnoreCase)));
+                    z => z.ProductName.IndexOf(valToMatch, StringComparison.OrdinalIgnoreCase) > -1));
             Assert.NotEmpty(results.Results);
             Assert.True(all);
         }

@@ -16,7 +16,8 @@ namespace seaq
         }
         public static bool CacheComparator(IComparator comparator, Func<IComparator, IFilterField, QueryContainer> function)
         {
-            return comparatorQueries.TryAdd(comparator.Value, function);
+            comparatorQueries.Add(comparator.Value, function);
+            return comparatorQueries.ContainsKey(comparator.Value);
         }
 
         static ComparatorCache()
@@ -56,7 +57,7 @@ namespace seaq
         }
         private static QueryContainer GetQuery(BetweenComparator c, IFilterField filter)
         {
-            var parts = filter.Value.Split(Constants.TextPartSeparator, StringSplitOptions.None);
+            var parts = filter.Value.Split(new[] { Constants.TextPartSeparator }, StringSplitOptions.None);
             if (parts.Length != 2)
                 throw new ArgumentException($"The provided value {filter.Value} is not valid for the comparator {c.Display}.");
 

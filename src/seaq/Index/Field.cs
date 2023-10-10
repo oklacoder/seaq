@@ -15,9 +15,9 @@ namespace seaq
     public record KeywordField :
         IField
     {
-        public string Name { get; init;}
+        public string Name { get; set;}
 
-        public string Type { get; init; }
+        public string Type { get; set; }
         public bool? IsKeywordField => true;
         public bool? IsSortField => false;
         public IEnumerable<IField> Fields => null;
@@ -25,9 +25,9 @@ namespace seaq
     public record SortField :
         IField
     {
-        public string Name { get; init; }
+        public string Name { get; set; }
 
-        public string Type { get; init; }
+        public string Type { get; set; }
         public bool? IsKeywordField => false;
         public bool? IsSortField => true;
         public IEnumerable<IField> Fields => null;
