@@ -360,7 +360,7 @@ namespace seaq.Tests
             var cluster = Cluster.Create(GetArgs(name));
 
             var extended_bounds_start = new DateTime(2020, 01, 01);
-            var extended_bounds_end = new DateTime(2022, 12, 31);
+            var extended_bounds_end = new DateTime(DateTime.Now.Year, DateTime.Now.Day, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month));
             var expected_buckets = Math.Abs(extended_bounds_end.Subtract(extended_bounds_start).Days)+1; //"+1" because Elastic treats it as an inclusive range
 
             var criteria = new AggregationQueryCriteria<SampleResult>(
@@ -388,6 +388,8 @@ namespace seaq.Tests
             Assert.NotNull(r.Buckets);
             Assert.NotEmpty(r.Buckets);
             Assert.Equal(expected_buckets, r.Buckets.Count());
+            //1096
+            //1369
         }
         
         [Fact]

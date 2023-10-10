@@ -16,7 +16,7 @@ namespace seaq.Tests
         protected const string Url_6x = "http://localhost:9200/";
         protected const string Username = "elastic";
         protected const string Password = "elastic";
-        protected const string ApiKey = "dmdzVnk0SUJHYzIxcnZyMXBDU1A6YnA4UGV1WEVUbGV3OU9WZUpucC1rdw==";
+        protected const string ApiKey = "dF9qemhJb0JhTmpRYmE4TGhMTGY6T2FJbGcxc1hTZC13a25JMHRjLVVwZw==";
         protected string Url => Url_8x;
 
         protected ConnectionSettings _connection => new ConnectionSettings(
