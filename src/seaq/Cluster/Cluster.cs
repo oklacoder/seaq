@@ -15,7 +15,8 @@ namespace seaq
     {
 
     }
-    public partial class Cluster : 
+
+    public partial class Cluster :
         ICluster
     {
         public event EventHandler IndexCacheInitializing;
