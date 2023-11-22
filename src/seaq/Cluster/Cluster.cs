@@ -15,7 +15,8 @@ namespace seaq
     {
 
     }
-    public partial class Cluster
+    public partial class Cluster : 
+        ICluster
     {
         public event EventHandler IndexCacheInitializing;
         public event EventHandler IndexCacheInitialized;
@@ -58,7 +59,7 @@ namespace seaq
         /// Lookup of indices *not* included in global results
         /// </summary>
         public IEnumerable<Index> NotGlobalResultIndices => _indices?.Values.Where(x => x.ReturnInGlobalSearch is not true);
-        
+
         /// <summary>
         /// List of loaded types that implement the BaseDocument interface
         /// </summary>
@@ -174,7 +175,7 @@ namespace seaq
             var vals = resp.Indices.Select(Index.Create);
             foreach (var v in vals)
                 _indices[v.Name] = v;
-            
+
 
             await HydrateInternalStore();
 
@@ -202,14 +203,14 @@ namespace seaq
             IndexConfig config)
         {
             Log.Debug("Attempting to create index {0}", config.Name);
-            
+
             if (string.IsNullOrWhiteSpace(config.Name))
             {
                 throw new InvalidOperationException($"Cannot create index - no {nameof(config.Name)} was provided.");
             }
 
             config.Name = config.Name.FormatIndexName(ClusterScope);
-            
+
             if (_indices.ContainsKey(config.Name))
             {
                 Log.Warning("Couldn't create index {0} - an index with that name already exists in cluster cache.", config.Name);
@@ -320,7 +321,7 @@ namespace seaq
                     return false;
                 }
             }
-            
+
             if (_indices.TryRemove(indexName, out _))
             {
                 await DeleteFromInternalStore(idx);
@@ -366,9 +367,9 @@ namespace seaq
             {
                 Log.Debug("Beginning reindex from {0} to {1}", sourceIndex, resp.Name);
                 var docResp = _client.ReindexOnServer(x => x
-                    .Source(z => 
+                    .Source(z =>
                         z.Index(sourceIndex))
-                    .Destination(z => 
+                    .Destination(z =>
                         z.Index(resp.Name))
                     .WaitForCompletion());
                 Log.Debug("Completed reindex from {0} to {1}", sourceIndex, resp.Name);
@@ -427,7 +428,7 @@ namespace seaq
 
             var bulk = new BulkDescriptor();
             Dictionary<string, string> idx_as_type_cache = new Dictionary<string, string>();
-            foreach(var document in documents)
+            foreach (var document in documents)
             {
 
                 if (!TryGetOrCreateIndexForDocument(document, out var idx))
@@ -569,7 +570,7 @@ namespace seaq
             var resp = await _client.BulkAsync(bulk);
 
             return resp?.ApiCall?.HttpStatusCode == 200;
-            
+
             //There are issues with cross-version compatability and error detection on bulk methods - many successful index ops report unknown/empty errors.
             //Taking a simpler, more naive path towards success detection until a new release of the client that functions correctly.
 
@@ -669,7 +670,7 @@ namespace seaq
 
             return index;
         }
-        
+
         public Index UpdateIndexField(string indexName, Field field)
         {
             return UpdateIndexFieldAsync(indexName, field).Result;
@@ -698,7 +699,7 @@ namespace seaq
 
             return await UpdateIndexDefinitionAsync(index);
         }
-        
+
         public Index DeprecateIndex(string indexName, string deprecationMessage)
         {
             return DeprecateIndexAsync(indexName, deprecationMessage).Result;
@@ -997,7 +998,7 @@ namespace seaq
                 await Task.CompletedTask;
                 return null;
             }
-            foreach(var key in meta.Keys)
+            foreach (var key in meta.Keys)
             {
                 index.Meta[key] = meta[key];
             }
@@ -1041,7 +1042,7 @@ namespace seaq
 
             var idxTarget = IndicesByType[idx.IndexAsType].FirstOrDefault()?.Name ?? idx.Name;
             var resp = await _client.DeleteAsync<T>(
-                document.Id, 
+                document.Id,
                 x => x
                     .Index(Nest.Indices.Index(idxTarget))
                     .Refresh(idx.ForceRefreshOnDocumentCommit
@@ -1392,11 +1393,11 @@ namespace seaq
                 Log.Error(msg);
                 throw new ArgumentNullException(string.Format(msg));
             }
-            
+
             Log.Verbose("Executing sync query against cluster {0}, indices {1}", ClusterScope, string.Join(", ", query.Criteria.Indices));
 
             query.Criteria.ApplyClusterSettings(this);
-            
+
             return await query.ExecuteAsync(_client) as TResp;
         }
 
@@ -1447,15 +1448,15 @@ namespace seaq
             }
 
 #if DEBUG
-                Log.Debug("DEBUG mode enabled.  Ignoring server certificate validation and enabling additional Elasticsearch debug messages.");
-                settings.ServerCertificateValidationCallback((a, b, c, d) => true);
-                settings.EnableDebugMode();
+            Log.Debug("DEBUG mode enabled.  Ignoring server certificate validation and enabling additional Elasticsearch debug messages.");
+            settings.ServerCertificateValidationCallback((a, b, c, d) => true);
+            settings.EnableDebugMode();
 #endif
-            
+
 
             return new ElasticClient(settings);
         }
-        
+
         private async Task HydrateInternalStore()
         {
             await CommitAsync(_indices.Values);
@@ -1703,7 +1704,7 @@ namespace seaq
 
             var field = FieldNameUtilities.GetElasticAggregatablePropertyName(typeof(BaseDocument), nameof(BaseDocument.Type));
             var aResp = await _client.Indices.PutAliasAsync(
-                any.Name, 
+                any.Name,
                 config.Name,
                 f => f
                     .IsWriteIndex()
@@ -1724,7 +1725,7 @@ namespace seaq
             var resp = await BuildIndexDefinitionFromServer(config.Name);
             //adjust this.  a get index mapping op that targets an alias returns the underlying index,
             //complete with original (and wrong, for these purposes) index name
-            
+
             if (resp == null)
             {
                 Log.Error("Unknown error occurred when creating index {0} as alias.  The create operation reported success, but the definition could not be retrieved.", config.Name);
