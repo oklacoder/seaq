@@ -214,15 +214,18 @@ namespace seaq
 
             var flat = indices
                 .SelectMany(x =>
-                    x.Fields.Where(x => x.IsIncludedField() is true || x.HasIncludedField() is true))
+                    x.Fields
+                        .Where(x => x.IsIncludedByDefault is not true)
+                        .Where(x => x.IsIncludedField() is true || x.HasIncludedField() is true))
                 .SelectMany(x =>
                     new[] { x }.Concat(x.Fields));
 
-            _returnFields = flat
-                .Where(x => x.IsIncludedField() is true)
-                .SelectMany(x =>
-                    x.FieldTree()?
-                        .Select(z => new DefaultReturnField(z)));
+            if (flat?.Any() is true)
+                _returnFields = flat
+                    .Where(x => x.IsIncludedField() is true)
+                    .SelectMany(x =>
+                        x.FieldTree()?
+                            .Select(z => new DefaultReturnField(z)));
         }
         internal void ApplyDefaultBuckets(Cluster cluster)
         {
@@ -439,15 +442,18 @@ namespace seaq
 
             var flat = indices
                 .SelectMany(x =>
-                    x.Fields.Where(x => x.IsIncludedField() is true || x.HasIncludedField() is true))
+                    x.Fields
+                        .Where(x => x.IsIncludedByDefault is not true)
+                        .Where(x => x.IsIncludedField() is true || x.HasIncludedField() is true))
                 .SelectMany(x =>
                     new[] { x }.Concat(x.Fields));
 
-            _returnFields = flat
-                .Where(x => x.IsIncludedField() is true)
-                .SelectMany(x =>
-                    x.FieldTree()?
-                        .Select(z => new DefaultReturnField(z)));
+            if (flat?.Any() is true)
+                _returnFields = flat
+                    .Where(x => x.IsIncludedField() is true)
+                    .SelectMany(x =>
+                        x.FieldTree()?
+                            .Select(z => new DefaultReturnField(z)));
         }
         internal void ApplyDefaultBuckets(Cluster cluster)
         {
