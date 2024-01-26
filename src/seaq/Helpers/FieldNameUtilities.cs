@@ -2,12 +2,46 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace seaq
 {
 
     public static class FieldNameUtilities
     {
+        public static bool CheckIsFieldAlwaysReturned(
+            this string fieldName)
+        {
+            if (string.IsNullOrWhiteSpace(fieldName))
+                return false;
+
+            string[] toCheck;
+
+            if (fieldName.IndexOf(
+                Constants.Fields.SortField, 
+                StringComparison.OrdinalIgnoreCase) > -1)
+            {
+                toCheck = Constants.Fields.AlwaysReturnedFields
+                    .Select(x => $"{x}.{Constants.Fields.SortField}")
+                    .ToArray();
+            }
+            else if (fieldName.IndexOf(
+                Constants.Fields.KeywordField,
+                StringComparison.OrdinalIgnoreCase) > -1)
+            {
+                toCheck = Constants.Fields.AlwaysReturnedFields
+                    .Select(x => $"{x}.{Constants.Fields.KeywordField}")
+                    .ToArray();
+            }
+            else
+            {
+                toCheck = Constants.Fields.AlwaysReturnedFields
+                    .ToArray();
+            }
+            return toCheck.Any(x => 
+                x.Equals(fieldName, StringComparison.OrdinalIgnoreCase)) is true;
+        }
+
         public static string GetElasticPropertyName(
             Type type,
             string propertyName)
@@ -134,9 +168,16 @@ namespace seaq
             {
                 return input;
             }
-            char[] chars = input.ToCharArray();
-            FixCasing(chars);
-            return new string(chars);
+            var chunks = input.Split('.');
+            var resp = new StringBuilder();
+            foreach(var c in chunks)
+            {
+                char[] chars = input.ToCharArray();
+                FixCasing(chars);
+                var s = new string(chars);
+                resp.Append(s);
+            }
+            return resp.ToString();
         }
 
         private static string GetElasticPropertyName(
