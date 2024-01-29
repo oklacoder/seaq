@@ -50,6 +50,12 @@ namespace seaq
 
         public string Label { get; set; }
 
+        /// <summary>
+        /// A collection of other, implementation-driven index details that can't be cleanly mapped onto the provided fields.  These aren't used by seaq directly in any way.  
+        /// Map objects will be converted into form Dictionary<string, object>.
+        /// </summary>
+        public Dictionary<string, object> Meta { get; set; }
+
         public IEnumerable<Field> Fields { get; set; } = Array.Empty<Field>();
 
         public IEnumerable<string> FieldTree()
