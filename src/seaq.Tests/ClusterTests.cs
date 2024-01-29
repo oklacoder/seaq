@@ -666,6 +666,42 @@ namespace seaq.Tests
             Assert.Equal(resp.Fields.FirstOrDefault(x => x.Name.Equals(fName, StringComparison.OrdinalIgnoreCase))?.Label, method);
             Assert.Equal(idx.Fields.FirstOrDefault(x => x.Name.Equals(fName, StringComparison.OrdinalIgnoreCase))?.Label, method);
         }
+        [Fact]
+        public async void CanUpdateIndexFieldMeta()
+        {
+            const string method = "CanUpdateIndexFieldMeta";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type = typeof(TestDoc).FullName;
+
+            var config = new IndexConfig(type, type);
+            var createResp = await cluster.CreateIndexAsync(config);
+
+            var fName = nameof(TestDoc.StringValue);
+            var f = createResp.Fields.FirstOrDefault(x => x.Name.Equals(fName, StringComparison.OrdinalIgnoreCase));
+
+            const string meta_key = "test";
+            f.Meta = new Dictionary<string, object>
+            {
+                {meta_key, method}
+            };
+
+            var resp = await cluster.UpdateIndexFieldAsync(createResp.Name, f);
+
+            var idx = await cluster.GetIndexDefinitionAsync(createResp.Name);// cluster.Indices.FirstOrDefault(x => x.Name.Equals(createResp.Name));
+
+            DecomissionCluster(cluster);
+
+            Assert.NotNull(resp);
+            Assert.NotNull(idx);
+
+            //has key in dict
+            var field = idx.Fields.FirstOrDefault(x => x.Name.Equals(fName, StringComparison.OrdinalIgnoreCase));
+            Assert.NotNull(field);
+            Assert.True(field.Meta.ContainsKey(meta_key));
+            //val matches expected
+            Assert.Equal(method, field.Meta[meta_key].ToString());
+        }
 
         //deprecate index
         [Fact]

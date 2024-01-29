@@ -41,6 +41,18 @@ namespace seaq
                     source.IncludeInResults = target.IncludeInResults;
                 if (!string.IsNullOrWhiteSpace(target.Label))
                     source.Label = target.Label;
+                if (target.DisplayOrder.HasValue && target.DisplayOrder > -1)
+                    source.DisplayOrder = target.DisplayOrder;
+                if (target.Meta?.Any() == true)
+                {
+                    if (source.Meta is null)
+                        source.Meta = new Dictionary<string, object>();
+
+                    foreach(var k in target.Meta.Keys)
+                    {
+                        source.Meta[k] = target.Meta[k];
+                    }
+                }
 
                 if (target.Fields?.Any() == source.Fields?.Any() == true)
                     target.Fields.Merge(source.Fields);
