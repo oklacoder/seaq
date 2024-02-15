@@ -14,7 +14,11 @@ namespace seaq
         /// <summary>
         /// Specify which indices to query.  If empty or null, query will default to the default index for the provided type.
         /// </summary>
-        public IEnumerable<string> Indices { get; }
+        public IEnumerable<string> Indices { get; internal set; }
+        /// <summary>
+        /// List of targeted indices that are deprecated - still available, but may not be regularly updated or maintained
+        /// </summary>
+        public IEnumerable<string> DeprecatedIndexTargets { get; internal set; }
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
         /// </summary>
@@ -52,7 +56,11 @@ namespace seaq
         /// <summary>
         /// Specify which indices to query.  If empty or null, query will default to the default index for the provided type.
         /// </summary>
-        public IEnumerable<string> Indices { get; }
+        public IEnumerable<string> Indices { get; internal set; }
+        /// <summary>
+        /// List of targeted indices that are deprecated - still available, but may not be regularly updated or maintained
+        /// </summary>
+        public IEnumerable<string> DeprecatedIndexTargets { get; internal set; }
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
         /// </summary>

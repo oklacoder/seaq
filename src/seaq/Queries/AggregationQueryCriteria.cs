@@ -1,4 +1,5 @@
 ﻿using Nest;
+using seaq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,38 +16,38 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "type")]
         [JsonPropertyName("type")]
-        public string Type { get; private set; }
+        public string Type { get; set; }
         /// <summary>
         /// Query text
         /// </summary>
         [DataMember(Name = "text")]
         [JsonPropertyName("text")]
-        public string Text { get; private set; }
+        public string Text { get; set; }
 
         /// <summary>
         /// Specify which indices to query.  If empty or null, query will default to the default index for the provided type.
         /// </summary>
         [DataMember(Name = "indices")]
         [JsonPropertyName("indices")]
-        public IEnumerable<string> Indices { get; private set; }
+        public IEnumerable<string> Indices { get; set; }
 
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
         /// </summary>
         [DataMember(Name = "skip")]
         [JsonPropertyName("skip")]
-        public int? Skip { get; private set; } = 0;
+        public int? Skip { get; set; } = 0;
 
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
         /// </summary>
         [DataMember(Name = "take")]
         [JsonPropertyName("take")]
-        public int? Take { get; private set; } = 0;
+        public int? Take { get; set; } = 0;
 
         [DataMember(Name = "aggregations")]
         [JsonPropertyName("aggregations")]
-        public IEnumerable<DefaultAggregationRequest> AggregationRequests { get; private set; }
+        public IEnumerable<DefaultAggregationRequest> AggregationRequests { get; set; }
 
         /// <summary>
         /// Collection of FilterField objects used to construct the query
@@ -85,14 +86,14 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "boostedFields")]
         [JsonPropertyName("boostedFields")]
-        public IEnumerable<string> BoostedFields { get; private set; } = new string[] { "*" };
+        public IEnumerable<string> BoostedFields { get; set; } = new string[] { "*" };
 
         /// <summary>
         /// Indexes targeted by this query that are marked as "deprecated" on the containing cluster
         /// </summary>
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
-        public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Array.Empty<string>();
+        public IEnumerable<string> DeprecatedIndexTargets { get; set; } = Array.Empty<string>();
         /// <summary>
         /// Override cluster settings for boosted/return fields, giving full preference to the values provided in the provided Criteria object
         /// </summary>
@@ -130,43 +131,10 @@ namespace seaq
 
         public void ApplyClusterSettings(Cluster cluster)
         {
-            ApplyClusterIndices(cluster);
+            this.ApplyClusterIndices(cluster);
             _aggregationCache = cluster.AggregationCache;
         }
 
-        internal void ApplyClusterIndices(Cluster cluster)
-        {
-            if (Indices?.Any() is true)
-            {
-                if (Indices.Any(z => cluster.DeprecatedIndices.Any(x => x.Name.Equals(z, StringComparison.OrdinalIgnoreCase))))
-                {
-                    var deps = cluster.DeprecatedIndices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
-
-                    DeprecatedIndexTargets = deps.Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
-                }
-                return;
-            }
-            IEnumerable<Index> idx;
-            if (string.IsNullOrWhiteSpace(Type))
-            {
-                idx = cluster.Indices.Where(x =>
-                    x.IsHidden is not true &&
-                    x.ReturnInGlobalSearch is true);
-            }
-            else
-            {
-                idx = cluster.IndicesByType[Type];
-                idx = idx.Where(x => x.IsHidden is not true);
-            }
-            DeprecatedIndexTargets = idx.Where(x => x.IsDeprecated).Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
-            Indices = idx.Select(x => x.Name).ToArray();
-
-            if (Indices?.Any() is not true)
-            {
-                throw new InvalidOperationException($"No indices could be identified for type {Type}.  Query could not be processed.  " +
-                    $"Ensure that either an index exists on your seaq cluster fo this type, or that you have specified an explicit type in your query definition.");
-            }
-        }
 
     }
     public class AggregationQueryCriteria<T> :
@@ -178,32 +146,32 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "text")]
         [JsonPropertyName("text")]
-        public string Text { get; private set; }
+        public string Text { get; set; }
 
         /// <summary>
         /// Specify which indices to query.  If empty or null, query will default to the default index for the provided type.
         /// </summary>
         [DataMember(Name = "indices")]
         [JsonPropertyName("indices")]
-        public IEnumerable<string> Indices { get; private set; }
+        public IEnumerable<string> Indices { get; set; }
 
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
         /// </summary>
         [DataMember(Name = "skip")]
         [JsonPropertyName("skip")]
-        public int? Skip { get; private set; } = 0;
+        public int? Skip { get; set; } = 0;
 
         /// <summary>
         /// Used for paging.  Note that this is only deterministic if consistent sort fields are provided on each related query.
         /// </summary>
         [DataMember(Name = "take")]
         [JsonPropertyName("take")]
-        public int? Take { get; private set; } = 0;
+        public int? Take { get; set; } = 0;
 
         [DataMember(Name = "aggregations")]
         [JsonPropertyName("aggregations")]
-        public IEnumerable<DefaultAggregationRequest> AggregationRequests { get; private set; }
+        public IEnumerable<DefaultAggregationRequest> AggregationRequests { get; set; }
 
         /// <summary>
         /// Collection of FilterField objects used to construct the query
@@ -242,14 +210,14 @@ namespace seaq
         /// </summary>
         [DataMember(Name = "boostedFields")]
         [JsonPropertyName("boostedFields")]
-        public IEnumerable<string> BoostedFields { get; private set; } = new string[] { "*" };
+        public IEnumerable<string> BoostedFields { get; set; } = new string[] { "*" };
 
         /// <summary>
         /// Indexes targeted by this query that are marked as "deprecated" on the containing cluster
         /// </summary>
         [DataMember(Name = "deprecatedIndexTargets")]
         [JsonPropertyName("deprecatedIndexTargets")]
-        public IEnumerable<string> DeprecatedIndexTargets { get; private set; } = Array.Empty<string>();
+        public IEnumerable<string> DeprecatedIndexTargets { get; set; } = Array.Empty<string>();
         /// <summary>
         /// Override cluster settings for boosted/return fields, giving full preference to the values provided in the provided Criteria object
         /// </summary>
@@ -285,43 +253,8 @@ namespace seaq
 
         public void ApplyClusterSettings(Cluster cluster)
         {
-            ApplyClusterIndices(cluster);
+            this.ApplyClusterIndices(cluster);
             _aggregationCache = cluster.AggregationCache;
-        }
-
-        internal void ApplyClusterIndices(Cluster cluster)
-        {
-            if (Indices?.Any() is true)
-            {
-                if (Indices.Any(z => cluster.DeprecatedIndices.Any(x => x.Name.Equals(z, StringComparison.OrdinalIgnoreCase))))
-                {
-                    var deps = cluster.DeprecatedIndices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
-
-                    DeprecatedIndexTargets = deps.Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
-                }
-                return;
-            }
-            IEnumerable<Index> idx;
-            if (string.IsNullOrWhiteSpace(typeof(T).FullName))
-            {
-                idx = cluster.Indices.Where(x =>
-                    x.IsHidden is not true &&
-                    x.ReturnInGlobalSearch is true);
-            }
-            else
-            {
-                idx = cluster.IndicesByType[typeof(T).FullName];
-                DeprecatedIndexTargets = idx.Where(x => x.IsDeprecated).Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
-                idx = idx.Where(x => x.IsHidden is not true);
-            }
-
-            Indices = idx.Select(x => x.Name).ToArray();
-            if (Indices?.Any() is not true)
-            {
-                throw new InvalidOperationException($"No indices could be identified for type {typeof(T).FullName}.  Query could not be processed.  " +
-                    $"Ensure that either an index exists on your seaq cluster fo this type, or that you have specified an explicit type in your query definition.");
-            }
-        }
-        
+        }        
     }
 }
