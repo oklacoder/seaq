@@ -38,41 +38,6 @@ public static class CriteriaExtensions
         else
         {
             idx = cluster.IndicesByType[typeName];
-
-            var hasChecked = new HashSet<string>();
-
-            Func<string, IEnumerable<seaq.Index>> recurseCheckIndices = null;
-            recurseCheckIndices = (string type) =>
-            {
-                if (hasChecked.Contains(type))
-                {
-                    return Array.Empty<seaq.Index>();
-                }
-                hasChecked.Add(type);
-                if (cluster.IndicesByType.Contains(type))
-                {
-                    var i = cluster.IndicesByType[type];
-                    if (i.Any(x => x.IsHidden is not true))
-                    {
-                        return i;
-                    }
-                    return i.Select(x => x.IndexAsType).SelectMany(recurseCheckIndices);
-                }
-                else
-                {
-                    return Array.Empty<seaq.Index>();
-                }
-            };
-            if (idx?.Any() is not true)
-            foreach(var i in idx)
-            {
-                if (!string.IsNullOrWhiteSpace(i.IndexAsType))
-                    idx = idx.Concat(recurseCheckIndices(i.IndexAsType));
-                //if (!string.IsNullOrWhiteSpace(i.IndexAsType))
-                //{
-                //    idx = idx.Concat(cluster.IndicesByType[i.IndexAsType]);
-                //}
-            }
             deprecatedIndices = idx.Where(x => x.IsDeprecated).Select(x => $"{x.Name} is deprecated - {x.DeprecationMessage}");
             idx = idx.Where(x => x.IsHidden is not true);
         }

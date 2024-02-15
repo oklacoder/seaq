@@ -620,8 +620,8 @@ namespace seaq.Tests
             var docs = GetFakeDocs<TestDoc1>();
             cluster.Commit(docs);
 
-            var criteria = new AdvancedQueryCriteria<TestDoc1>();
-            var query = new AdvancedQuery<TestDoc1>(criteria);
+            var criteria = new AdvancedQueryCriteria<TestDoc>();
+            var query = new AdvancedQuery<TestDoc>(criteria);
 
             var resp = cluster.Query(query);
 
@@ -630,7 +630,7 @@ namespace seaq.Tests
             Assert.NotNull(resp);
             Assert.NotNull(resp.Results);
             Assert.NotEmpty(resp.Results);
-            var t = typeof(TestDoc1);
+            var t = typeof(TestDoc);
             resp.Results.ToList().ForEach(x => Assert.IsType(t, x.Document));
         }
         [Fact]
