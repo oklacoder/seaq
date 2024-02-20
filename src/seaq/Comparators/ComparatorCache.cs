@@ -45,6 +45,7 @@ namespace seaq
                 MultiMatchComparator mm => GetQuery(mm, filter),
                 NotAnyWordComparator naw => GetQuery(naw, filter),
                 NotEqualComparator neq => GetQuery(neq, filter),
+                ORComparator or => GetQuery(or, filter),
                 PartialPhraseComparator part => GetQuery(part, filter),
                 null => GetQuery(DefaultComparator.Equal, filter),
 
@@ -93,6 +94,12 @@ namespace seaq
         private static QueryContainer GetQuery(FullPhraseComparator c, IFilterField filter)
         {
             return new QueryContainerDescriptor<BaseDocument>().Bool(b => b.Must(mu => mu.Match(m => m.Field(filter.FieldName).Query(filter.Value))));
+        }
+        private static QueryContainer GetQuery(ORComparator c, IFilterField filter)
+        {
+            var vals = filter.Value.Split(new[] { Constants.TextPartSeparator }, StringSplitOptions.None);
+
+            return new QueryContainerDescriptor<BaseDocument>().Terms(t => t.Field(filter.FieldName).Terms(vals));
         }
         private static QueryContainer GetQuery(GreaterThanComparator c, IFilterField filter)
         {

@@ -57,6 +57,7 @@ namespace seaq
         public static MultiMatchComparator MultiMatch { get; } = new MultiMatchComparator();
         public static NotAnyWordComparator NotAnyWord { get; } = new NotAnyWordComparator();
         public static NotEqualComparator NotEqual { get; } = new NotEqualComparator();
+        public static ORComparator OR { get; } = new ORComparator();
         public static PartialPhraseComparator PartialPhrase { get; } = new PartialPhraseComparator();
 
         public static IEnumerable<BaseComparator> DefaultComparators = new BaseComparator[]
@@ -73,6 +74,7 @@ namespace seaq
             MultiMatch,
             NotAnyWord,
             NotEqual,
+            OR,
             PartialPhrase
         };
 

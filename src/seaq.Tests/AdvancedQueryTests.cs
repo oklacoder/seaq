@@ -6,6 +6,7 @@ using Xunit.Abstractions;
 
 namespace seaq.Tests
 {
+
     public class AdvancedQueryTests :
         TestModule
     {

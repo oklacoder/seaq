@@ -8,6 +8,65 @@ using Xunit.Abstractions;
 
 namespace seaq.Tests
 {
+
+
+    public class ComparatorTests :
+        TestModule
+    {
+        public ComparatorTests(
+            ITestOutputHelper testOutput) :
+            base(testOutput)
+        {
+
+        }
+
+        [Fact]
+        public async void ORComparator_Works()
+        {
+            const string name = "ORComparator_Works";
+            var cluster = Cluster.Create(GetArgs(name));
+
+            const string manufacturer = "Microlutions";
+            const string category = "Men's Clothing";
+
+            var filters = new List<DefaultFilterField>
+            {
+                new DefaultFilterField(DefaultComparator.OR, category, "category.keyword"),
+                new DefaultFilterField(DefaultComparator.OR, manufacturer, "manufacturer.keyword"),
+            };
+
+            var criteria = new AggregationQueryCriteria<SampleResult>(
+                null,
+                take: 100,
+                indices: SampleIndices,
+                filterFields: filters,
+                aggregationRequests: new[] { 
+                    new DefaultAggregationRequest(DefaultAggregationCache.TermsAggregation.Name, new DefaultAggregationField("category.keyword")),
+                    new DefaultAggregationRequest(DefaultAggregationCache.TermsAggregation.Name, new DefaultAggregationField("manufacturer.keyword")),
+                });
+
+            var query = new AggregationQuery<SampleResult>(criteria);
+            var results = cluster.Query(query) as AggregationQueryResults<SampleResult>;
+
+            var r = results.AggregationResults.First() as TermsAggregationResult;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.NotEmpty(results.AggregationResults);
+            Assert.NotNull(r);
+            Assert.NotEmpty(r.Buckets);
+
+            //expect 308 total results
+            Assert.Equal(308, results.Total);
+            Assert.All(results.Results, x =>
+            {
+                Assert.Contains(x.Document.Manufacturer, z => z.Equals(manufacturer));
+                Assert.Contains(x.Document.Category, z => z.Equals(category));
+            });
+        }
+    }
+
     public class AggregationQueryTests :
         TestModule
     {

@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 namespace seaq.Tests
 {
     public class QueryInternalsTests :
-    TestModule
+        TestModule
     {
         public QueryInternalsTests(
             ITestOutputHelper testOutput) :

@@ -231,19 +231,21 @@ namespace seaq
             string text = null,
             IEnumerable<string> indices = null,
             IEnumerable<DefaultFilterField> filterFields = null,
-            IEnumerable<DefaultAggregationRequest> aggregationRequests = null)
+            IEnumerable<DefaultAggregationRequest> aggregationRequests = null,
+            int take = 0)
         {
             Text = text;
             Indices = indices ?? Array.Empty<string>();
             _filterFields = filterFields;
             AggregationRequests = aggregationRequests;
+            Take = take;
         }
 
         public SearchDescriptor<T> GetSearchDescriptor()
         {
             var s = new SearchDescriptor<T>()
                 .Index(Indices?.ToArray() ?? Array.Empty<string>())
-                .Take(0)
+                .Take(Take)
                 .Aggregations(a => AggregationRequests.GetAggregationsContainer<T>(_aggregationCache))
                 .Query(x => x.GetQueryContainerDescriptor(Text, FilterFields, boostFields: BoostedFields))
                 .Source(t => t.ExcludeAll());
