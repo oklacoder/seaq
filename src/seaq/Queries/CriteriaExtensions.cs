@@ -14,7 +14,7 @@ public static class CriteriaExtensions
         IEnumerable<string> deprecatedIndices = new List<string>();
         if (string.IsNullOrWhiteSpace(typeName))
         {
-            return (indices, deprecatedIndices);
+            return (criteriaIndices, deprecatedIndices);
         }
 
         if (criteriaIndices?.Any() is true)
