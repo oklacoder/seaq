@@ -84,6 +84,21 @@ namespace seaq
         private ISeaqElasticsearchSerializer _serializer;
         private readonly ElasticClient _client;
 
+        public async Task<ISearchResponse<T>> SearchAsync<T>(
+            ISearchRequest request)
+            where T : class
+        {
+            return await _client.SearchAsync<T>(request);
+        }
+        public async Task<DeleteByQueryResponse> DeleteByQuery<T>(
+            Func<DeleteByQueryDescriptor<T>, IDeleteByQueryRequest> selector)
+            where T : class
+        {
+            return await _client.DeleteByQueryAsync(selector);
+        }
+
+
+
         public static Cluster Create(
             ClusterArgs args)
         {
