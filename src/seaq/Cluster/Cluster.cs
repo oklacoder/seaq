@@ -184,7 +184,7 @@ namespace seaq
         {
             IndexCacheRefreshing?.Invoke(this, null);
 
-            var query = new GetIndexRequest(Nest.Indices.Index($"{ClusterScope}*"));
+            var query = new GetIndexRequest(Nest.Indices.Index($"{ClusterScope}{Constants.Indices.NamePartSeparator}*"));
             var resp = await _client.Indices
                 .GetAsync(query);
 
