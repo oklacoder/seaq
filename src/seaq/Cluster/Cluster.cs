@@ -84,6 +84,21 @@ namespace seaq
         private ISeaqElasticsearchSerializer _serializer;
         private readonly ElasticClient _client;
 
+        public async Task<ISearchResponse<T>> SearchAsync<T>(
+            ISearchRequest request)
+            where T : class
+        {
+            return await _client.SearchAsync<T>(request);
+        }
+        public async Task<DeleteByQueryResponse> DeleteByQuery<T>(
+            Func<DeleteByQueryDescriptor<T>, IDeleteByQueryRequest> selector)
+            where T : class
+        {
+            return await _client.DeleteByQueryAsync(selector);
+        }
+
+
+
         public static Cluster Create(
             ClusterArgs args)
         {
@@ -169,7 +184,7 @@ namespace seaq
         {
             IndexCacheRefreshing?.Invoke(this, null);
 
-            var query = new GetIndexRequest(Nest.Indices.Index($"{ClusterScope}*"));
+            var query = new GetIndexRequest(Nest.Indices.Index($"{ClusterScope}{Constants.Indices.NamePartSeparator}*"));
             var resp = await _client.Indices
                 .GetAsync(query);
 
