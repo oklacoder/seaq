@@ -211,13 +211,15 @@ namespace seaq
                 .SelectMany(x =>
                     new[] { x }.Concat(x.Fields));
 
-            _bucketFields = flat
+            var buckets = flat
                 .Where(x => x.IsFilterable is true)
                 .SelectMany(x =>
                     x.HasKeywordField() is true ?
                     x.AllKeywordFields().Select(z => new DefaultBucketField(z)) :
                     new[] { new DefaultBucketField(x.Name) }
-                );
+                ).ToList();
+            buckets.AddRange(Constants.Fields.AlwaysBucketFields.Select(x => new DefaultBucketField(x)));
+            _bucketFields = buckets;
         }
 
     }
