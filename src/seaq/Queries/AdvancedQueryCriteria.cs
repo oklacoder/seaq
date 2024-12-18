@@ -200,8 +200,16 @@ namespace seaq
         }
         internal void ApplyDefaultBuckets(Cluster cluster)
         {
+            var defaultBuckets = new List<DefaultBucketField>();
+            defaultBuckets.AddRange(Constants.Fields.AlwaysBucketFields.Select(x => 
+                new DefaultBucketField(FieldNameUtilities.GetElasticPropertyName(typeof(BaseDocument), x))));
+
             if (_bucketFields?.Any() is true)
+            {
+                defaultBuckets.AddRange(_bucketFields);
+                _bucketFields = defaultBuckets;
                 return;
+            }
 
             var indices = cluster.Indices.Where(x => Indices.Any(z => z.Equals(x.Name, StringComparison.OrdinalIgnoreCase)));
 
@@ -218,7 +226,7 @@ namespace seaq
                     x.AllKeywordFields().Select(z => new DefaultBucketField(z)) :
                     new[] { new DefaultBucketField(x.Name) }
                 ).ToList();
-            buckets.AddRange(Constants.Fields.AlwaysBucketFields.Select(x => new DefaultBucketField(x)));
+            buckets.AddRange(defaultBuckets);
             _bucketFields = buckets;
         }
 
