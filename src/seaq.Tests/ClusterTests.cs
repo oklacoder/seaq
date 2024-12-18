@@ -1380,5 +1380,126 @@ namespace seaq.Tests
             Assert.True(resp);
         }
 
+        [Fact]
+        public async void ReturnsBucketsForDefaultFields_WhenProvidedBucketsExist()
+        {
+            const string method = "ReturnsBucketsForDefaultFields_WhenProvidedBucketsExist";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type0 = typeof(TestDoc).FullName;
+            var type = typeof(TestDoc1).FullName;
+
+            var config0 = new IndexConfig(type0, type0);
+            var r = await cluster.CreateIndexAsync(config0);
+            var config = new IndexConfig(type, type, indexAsType: type0);
+            var r2 = await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs<TestDoc1>(100).ToList();
+            await cluster.CommitAsync(docs);
+
+
+
+            var b = new[] { new DefaultBucketField(seaq.FieldNameUtilities.GetElasticPropertyName(typeof(TestDoc), nameof(TestDoc.StringValue))) };
+
+            var criteria = new AdvancedQueryCriteria(
+                null,
+                null,
+                new[] {r.Name, r2.Name},
+                bucketFields: b,
+                take: 0);
+            var query = new AdvancedQuery(
+                criteria);
+
+            var res = await cluster.QueryAsync(query);
+            var results = res as AdvancedQueryResults;
+            
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.Empty(results.Results);
+            Assert.NotEmpty(results.Buckets);
+            Assert.True(results.Buckets.Any(x => x.Key.Equals("type.keyword", StringComparison.OrdinalIgnoreCase)));
+
+        }
+        [Fact]
+        public async void ReturnsBucketsForDefaultFields_WhenProvidedBucketsIsEmpty()
+        {
+            const string method = "ReturnsBucketsForDefaultFields_WhenProvidedBucketsExist";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type0 = typeof(TestDoc).FullName;
+            var type = typeof(TestDoc1).FullName;
+
+            var config0 = new IndexConfig(type0, type0);
+            var r = await cluster.CreateIndexAsync(config0);
+            var config = new IndexConfig(type, type, indexAsType: type0);
+            var r2 = await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs<TestDoc1>(100).ToList();
+            await cluster.CommitAsync(docs);
+
+
+
+            var b = new[] { new DefaultBucketField(seaq.FieldNameUtilities.GetElasticPropertyName(typeof(TestDoc), nameof(TestDoc.StringValue))) };
+
+            var criteria = new AdvancedQueryCriteria(
+                null,
+                null,
+                new[] { r.Name, r2.Name },
+                bucketFields: Array.Empty<DefaultBucketField>(),
+                take: 0);
+            var query = new AdvancedQuery(
+                criteria);
+
+            var res = await cluster.QueryAsync(query);
+            var results = res as AdvancedQueryResults;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.Empty(results.Results);
+            Assert.NotEmpty(results.Buckets);
+            Assert.True(results.Buckets.Any(x => x.Key.Equals("type.keyword", StringComparison.OrdinalIgnoreCase)));
+        }
+        [Fact]
+        public async void ReturnsBucketsForDefaultFields_WhenProvidedBucketsIsNull()
+        {
+            const string method = "ReturnsBucketsForDefaultFields_WhenProvidedBucketsExist";
+            var cluster = await Cluster.CreateAsync(GetArgs(method));
+
+            var type0 = typeof(TestDoc).FullName;
+            var type = typeof(TestDoc1).FullName;
+
+            var config0 = new IndexConfig(type0, type0);
+            var r = await cluster.CreateIndexAsync(config0);
+            var config = new IndexConfig(type, type, indexAsType: type0);
+            var r2 = await cluster.CreateIndexAsync(config);
+
+            var docs = GetFakeDocs<TestDoc1>(100).ToList();
+            await cluster.CommitAsync(docs);
+
+
+
+            var b = new[] { new DefaultBucketField(seaq.FieldNameUtilities.GetElasticPropertyName(typeof(TestDoc), nameof(TestDoc.StringValue))) };
+
+            var criteria = new AdvancedQueryCriteria(
+                null,
+                null,
+                new[] { r.Name, r2.Name },
+                bucketFields: null,
+                take: 0);
+            var query = new AdvancedQuery(
+                criteria);
+
+            var res = await cluster.QueryAsync(query);
+            var results = res as AdvancedQueryResults;
+
+            DecomissionCluster(cluster);
+
+            Assert.True(results != null);
+            Assert.Empty(results.Results);
+            Assert.NotEmpty(results.Buckets);
+            Assert.True(results.Buckets.Any(x => x.Key.Equals("type.keyword", StringComparison.OrdinalIgnoreCase)));
+        }
     }
 }
