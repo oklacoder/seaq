@@ -174,7 +174,7 @@ namespace seaq
                 await CreateIndexAsync(indexConfig);
             }
             await RefreshFromInternalStore();
-            await HydrateInternalStore();
+            //await HydrateInternalStore();
 
             IndexCacheInitialized?.Invoke(this, null);
         }
