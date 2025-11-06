@@ -174,7 +174,7 @@ namespace seaq
                 await CreateIndexAsync(indexConfig);
             }
             await RefreshFromInternalStore();
-            await HydrateInternalStore();
+            //await HydrateInternalStore();
 
             IndexCacheInitialized?.Invoke(this, null);
         }
@@ -1524,6 +1524,11 @@ namespace seaq
             }
             else
             {
+                if (typeof(T).IsAssignableFrom(typeof(Index)))
+                {
+                    return false;
+                }
+
                 if (AllowAutomaticIndexCreation is not true)
                 {
                     return false;
