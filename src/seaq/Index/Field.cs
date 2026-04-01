@@ -67,7 +67,7 @@ namespace seaq
 
         public bool? IsBoostedField => Boost.HasValue && Boost != 0;
 
-        public bool? IsIncludedField() { return IncludeInResults == true || IsIncludedByDefault == true; }
+        public bool? IsIncludedField() { return IncludeInResults == true || IsIncludedByDefault == true || IsFilterable == true; }
 
         public bool? IsKeywordField() { return Name?.EndsWith(Constants.Fields.KeywordField, StringComparison.OrdinalIgnoreCase); }
 
